@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [
     react(),
+    tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate', // Otomatis update SW saat ada versi baru
       devOptions: {
@@ -12,11 +14,11 @@ export default defineConfig({
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', '*.svg'], // Assets yang dicache
       manifest: {
-        name: 'Nama App Kamu (Sosmed Titip Barang)', // Nama lengkap
-        short_name: 'TitipBareng', // Nama pendek
-        description: 'Aplikasi sosial media untuk titip barang via ekspedisi',
-        theme_color: '#ffffff', // Warna theme
-        background_color: '#ffffff',
+        name: 'Nebeng.in',
+        short_name: 'Nebeng',
+        description: 'Titip barang aman via traveler & ekspedisi',
+        theme_color: '#6366f1', // indigo primary DaisyUI
+        background_color: '#f3f4f6', // base-200
         display: 'standalone', // Tampilan full screen seperti native app
         icons: [
           {

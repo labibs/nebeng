@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import { useRegisterSW } from 'virtual:pwa-register/react' // Virtual module dari plugin
+import './index.css'
 
 function SWUpdatePrompt() {
   const {

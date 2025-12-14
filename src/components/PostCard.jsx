@@ -20,14 +20,19 @@ export default function PostCard({ post }) {
     ? format(new Date(post.travel_date), 'd MMM yyyy', { locale: id })
     : formatDate(post.created_at)
 
-  // Foto barang (dari Supabase storage atau URL dummy)
-  const itemPhoto = post.item_photo || 'https://cdns.klimg.com/mav-prod-resized/480x/ori/feedImage/2023/9/27/1695798211582-whzv7.jpeg'
+  // Foto barang (dari Supabase storage atau URL default)
+    const itemPhoto =
+    post.item_photo ||
+    'https://beritabeta.com/storage/img/2020/06/jastip-ota-ok-17668.jpg'
 
-  // Avatar user sementara (pakai foto barang atau placeholder)
-  const userAvatar = post.item_photo || 'https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg'
+    // Avatar user sementara (pakai foto barang atau placeholder)
+    const userAvatar =
+    post.user_avatar ||
+    'https://img.freepik.com/free-vector/user-circles-set_78370-4704.jpg?semt=ais_hybrid&w=740&q=80'
+
 
   // Username sementara (nanti dari profiles)
-  const username = 'Anonymous Traveler'
+  const username = post.type === "bawa" ? "Traveler" : "Titipers";
 
   return (
     <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300">
@@ -45,9 +50,13 @@ export default function PostCard({ post }) {
               <p className="text-sm text-base-content/70">{displayDate}</p>
             </div>
           </div>
-          <div className={`badge ${isTitip ? 'badge-primary' : 'badge-secondary'} badge-lg font-medium`}>
+          <div
+            className={`badge ${
+                isTitip ? 'badge-primary' : 'badge-secondary'
+            } badge-sm text-xs font-normal`}
+            >
             {isTitip ? 'Mau Titip' : 'Bisa Bawa'}
-          </div>
+            </div>
         </div>
 
         {/* Foto Barang */}

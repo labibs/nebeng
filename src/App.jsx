@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { SignedIn, SignedOut } from '@clerk/clerk-react'
 
+import SyncUser from './components/SyncUser' // ✅ WAJIB
+
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Home from './pages/Home'
@@ -13,6 +15,9 @@ import BottomNav from './components/BottomNav'
 function App() {
   return (
     <BrowserRouter>
+      {/* 🔥 Sync user SETELAH login */}
+      <SyncUser />
+
       <div className="min-h-screen bg-base-200">
 
         {/* ===================== */}

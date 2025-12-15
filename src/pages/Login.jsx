@@ -5,7 +5,7 @@ export default function Login() {
     <div className="min-h-screen bg-base-200 flex items-center justify-center p-6">
       <div className="card w-full max-w-sm bg-base-100 shadow-2xl">
         <div className="card-body">
-          <h2 className="card-title text-2xl text-center mb-6">Masuk ke Nebeng.in</h2>
+          <h2 className="card-title text-2xl text-center mb-6">Masuk ke Nebeng.id</h2>
           
           <div className="form-control">
             <label className="label">

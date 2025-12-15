@@ -14,7 +14,7 @@ export default defineConfig({
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', '*.svg'], // Assets yang dicache
       manifest: {
-        name: 'Nebeng.in',
+        name: 'Nebeng.id',
         short_name: 'Nebeng',
         description: 'Titip barang aman via traveler & ekspedisi',
         theme_color: '#6366f1', // indigo primary DaisyUI

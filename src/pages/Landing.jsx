@@ -19,7 +19,7 @@ export default function Landing() {
         {/* Jika belum login */}
         <SignedOut>
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
-            Nebeng.in
+            Nebeng.id
           </h1>
 
           <p className="text-xl text-white mb-10 opacity-90">
@@ -49,7 +49,7 @@ export default function Landing() {
           </div>
 
           <p className="text-white/60 text-sm mt-12">
-            Ribuan orang sudah saling percaya di Nebeng.in
+            Ribuan orang sudah saling percaya di Nebeng.id
           </p>
         </SignedOut>
       </div>

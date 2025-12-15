@@ -78,7 +78,7 @@ export default function Home() {
       <div className="sticky top-0 z-40 bg-base-100 shadow-lg">
         <div className="navbar px-4 py-3">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-primary">Nebeng.in</h1>
+            <h1 className="text-2xl font-bold text-primary">Nebeng.id</h1>
           </div>
           <button
             onClick={() => setSearchOpen(true)}

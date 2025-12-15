@@ -11,6 +11,7 @@
     "generate-pwa-assets": "npx @vite-pwa/assets-generator public/logo.svg --preset minimal"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.59.0",
     "@supabase/supabase-js": "^2.87.1",
     "daisyui": "^5.5.14",
     "date-fns": "^4.1.0",

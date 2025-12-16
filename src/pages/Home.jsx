@@ -1,60 +1,58 @@
-import { useState, useEffect, useMemo } from 'react'
-import { useAuth } from '@clerk/clerk-react'
-import { createSupabaseClient } from '../lib/supabaseClient'
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabaseClient'
 import PostCard from '../components/PostCard'
 
 export default function Home() {
-  const { getToken } = useAuth()
-
-  // Supabase client dengan Clerk JWT
-  const supabase = useMemo(
-    () => createSupabaseClient(getToken),
-    [getToken]
-  )
-
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('semua')
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true)
+  // =========================
+  // FETCH POSTS
+  // =========================
+  const fetchPosts = async () => {
+    setLoading(true)
 
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .order('created_at', { ascending: false })
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-      if (error) {
-        console.error('Error fetching posts:', error)
-        setPosts([])
-      } else {
-        setPosts(data || [])
-      }
-
-      setLoading(false)
+    if (error) {
+      console.error('Error fetching posts:', error)
+      setPosts([])
+    } else {
+      setPosts(data || [])
     }
 
+    setLoading(false)
+  }
+
+  // =========================
+  // INITIAL LOAD + REALTIME
+  // =========================
+  useEffect(() => {
     fetchPosts()
 
-    // Realtime subscription
     const channel = supabase
       .channel('posts-changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'posts' },
-        () => fetchPosts()
+        fetchPosts
       )
       .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [supabase])
+  }, [])
 
-  // Filter posts
+  // =========================
+  // FILTER POSTS
+  // =========================
   const filteredPosts = posts
     .filter((post) => {
       if (activeTab === 'titip') return post.type === 'titip'
@@ -74,7 +72,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-base-200">
-      {/* AppBar */}
+      {/* ================= AppBar ================= */}
       <div className="sticky top-0 z-40 bg-base-100 shadow-lg">
         <div className="navbar px-4 py-3">
           <div className="flex-1">
@@ -91,22 +89,24 @@ export default function Home() {
         {/* Tabs */}
         <div className="tabs tabs-boxed justify-center gap-2 px-4 pb-3">
           {['semua', 'titip', 'bawa'].map((tab) => (
-            <a
+            <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`tab tab-lg ${activeTab === tab ? 'tab-active' : ''}`}
+              className={`tab tab-lg ${
+                activeTab === tab ? 'tab-active' : ''
+              }`}
             >
               {tab === 'semua'
                 ? 'Semua'
                 : tab === 'titip'
                 ? 'Mau Titip'
                 : 'Bisa Bawa'}
-            </a>
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Search Modal */}
+      {/* ================= Search Modal ================= */}
       {searchOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-start justify-center pt-20 px-4">
           <div className="w-full max-w-lg bg-base-100 rounded-2xl shadow-2xl p-5">
@@ -132,10 +132,10 @@ export default function Home() {
         </div>
       )}
 
-      {/* Feed */}
+      {/* ================= Feed ================= */}
       <div className="pt-4 pb-32 px-4 max-w-2xl mx-auto">
         {loading ? (
-          <div className="space-y-6">Loading...</div>
+          <div className="space-y-6 text-center py-10">Loading...</div>
         ) : filteredPosts.length ? (
           <div className="space-y-6">
             {filteredPosts.map((post) => (

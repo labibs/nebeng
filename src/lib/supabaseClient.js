@@ -1,26 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
-import { useAuth } from '@clerk/clerk-react'
 
-export const createSupabaseClient = (getToken) => {
-  return createClient(
-    import.meta.env.VITE_SUPABASE_URL,
-    import.meta.env.VITE_SUPABASE_ANON_KEY,
-    {
-      global: {
-        fetch: async (url, options = {}) => {
-          const clerkToken = await getToken({ template: 'supabase' })
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-          return fetch(url, {
-            ...options,
-            headers: {
-              ...options.headers,
-              Authorization: clerkToken
-                ? `Bearer ${clerkToken}`
-                : undefined,
-            },
-          })
-        },
-      },
-    }
-  )
-}
+export const supabase = createClient(
+  supabaseUrl,
+  supabaseAnonKey,
+  {
+    auth: {
+      persistSession: false,      // Clerk yang pegang session
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  }
+)

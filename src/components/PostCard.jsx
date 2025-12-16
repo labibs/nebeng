@@ -73,7 +73,7 @@ export default function PostCard({ post }) {
         {/* Rute Besar */}
         <div className="flex items-center gap-4 my-5 text-xl font-bold">
           <span className="text-primary">{post.from_city}</span>
-          <svg className="w-8 h-8 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-8 h-8 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
           </svg>
           <span className="text-secondary">{post.to_city}</span>

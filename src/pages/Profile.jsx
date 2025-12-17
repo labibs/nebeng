@@ -62,7 +62,7 @@ export default function Profile() {
 
       {/* Logout */}
       <button
-        onClick={() => signOut({ redirectUrl: '/login' })}
+        onClick={() => signOut({ redirectUrl: '/' })}
         className="btn btn-error btn-outline w-full flex items-center gap-2"
       >
         <LogOut size={18} />

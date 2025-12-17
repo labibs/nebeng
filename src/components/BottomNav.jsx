@@ -1,66 +1,92 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, PlusCircle, MessageCircle, Receipt, User } from 'lucide-react'  // Receipt untuk Transaksi
+import { Home, PlusCircle, MessageCircle, Receipt, User } from 'lucide-react'
 
 export default function BottomNav() {
   const location = useLocation()
 
   const tabs = [
-    { path: '/', icon: Home, label: 'Home' },
-    { path: '/chat', icon: MessageCircle, label: 'Chat' },
-    { path: '/create', icon: PlusCircle, label: 'Buat' },  // Ini yang tengah
-    { path: '/transaksi', icon: Receipt, label: 'Transaksi' },
-    { path: '/profile', icon: User, label: 'Profil' },
+    { path: '/', icon: Home },
+    { path: '/chat', icon: MessageCircle },
+    { path: '/create', icon: PlusCircle },
+    { path: '/transaksi', icon: Receipt },
+    { path: '/profile', icon: User },
   ]
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 pb-2">  {/* pb-2 biar nggak ketutup safe area iOS */}
-      {/* Background blur */}
-      <div className="absolute inset-x-0 bottom-0 h-20 bg-base-100/80 backdrop-blur-lg" />
-      
-      {/* Dock dengan 5 item */}
-      <div className="relative flex justify-around items-end px-4 pt-2">
+    <div className="fixed inset-x-0 bottom-4 z-50 flex justify-center">
+      {/* Dock */}
+      <div className="relative w-[92%] max-w-md h-16 bg-black rounded-full flex items-center justify-between px-6 shadow-xl">
+
+        {/* Notch */}
+        <div className="absolute left-1/2 -top-6 -translate-x-1/2 w-20 h-20 pointer-events-none">
+          <div className="absolute bottom-0 w-20 h-10 bg-black rounded-b-full" />
+        </div>
+
         {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = location.pathname === tab.path
-          const isCreate = tab.path === '/create'  // Tombol tengah spesial
+          const isCreate = tab.path === '/create'
+
+          if (isCreate) {
+            return (
+              <Link
+                key={tab.path}
+                to={tab.path}
+                className="absolute left-1/2 -top-8 -translate-x-1/2
+                  active:scale-90 transition-transform duration-150"
+              >
+                {/* Create Button */}
+                <div
+                  className="
+                    w-16 h-16 rounded-full
+                    bg-gradient-to-br from-orange-400 to-orange-600
+                    flex items-center justify-center
+                    shadow-2xl
+                    animate-pulse
+                    hover:scale-105
+                    transition
+                  "
+                  style={{
+                    filter:
+                      'drop-shadow(0 0 12px rgba(251,146,60,0.9))'
+                  }}
+                >
+                  <Icon size={32} className="text-white" strokeWidth={2.5} />
+                </div>
+              </Link>
+            )
+          }
 
           return (
             <Link
               key={tab.path}
               to={tab.path}
-              className={`
-                flex flex-col items-center justify-center relative
-                w-16 pt-2 pb-3 transition-all duration-200
-                ${isActive && !isCreate ? 'text-primary' : 'text-base-content/60'}
-                ${isCreate ? ' -mt-6' : ''}  // Naik tinggi biar menonjol
-              `}
+              className="
+                flex flex-1 items-center justify-center
+                transition-transform duration-150
+                active:scale-90
+              "
             >
-              {/* Circle background untuk tombol Buat */}
-              {isCreate && (
-                <div className="absolute -top-4 w-16 h-16 rounded-full bg-primary shadow-2xl" />
-              )}
-
-              <Icon 
-                size={isCreate ? 36 : 26} 
-                strokeWidth={isActive ? 3 : 2}
-                className={isCreate ? 'text-white relative z-10' : ''}
+              <Icon
+                size={24}
+                strokeWidth={2}
+                className={`
+                  transition-all duration-200
+                  ${isActive ? 'text-white scale-110' : 'text-white/70'}
+                `}
+                style={
+                  isActive
+                    ? {
+                        filter:
+                          'drop-shadow(0 0 8px rgba(255,255,255,0.9))'
+                      }
+                    : {}
+                }
               />
-
-              <span className="text-xs mt-1">
-                {tab.label}
-              </span>
-
-              {/* Dot indicator active (kecuali Buat) */}
-              {isActive && !isCreate && (
-                <span className="absolute top-1 w-1.5 h-1.5 bg-primary rounded-full" />
-              )}
             </Link>
           )
         })}
       </div>
-
-      {/* Garis tipis atas dock */}
-      <div className="absolute inset-x-0 top-0 h-px bg-base-300" />
     </div>
   )
 }

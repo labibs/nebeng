@@ -6,7 +6,8 @@ export async function uploadPostImage(file) {
   const filePath = `posts/${fileName}`
 
   const { error } = await supabase.storage
-    .from('nebeng-photeo')
+    .from('nebeg-photeo') // ✅ SAMA PERSIS DENGAN DASHBOARD
+
     .upload(filePath, file, {
       cacheControl: '3600',
       upsert: false,
@@ -16,8 +17,9 @@ export async function uploadPostImage(file) {
   if (error) throw error
 
   const { data } = supabase.storage
-    .from('nebeng-photeo')
+    .from('nebeg-photeo')
     .getPublicUrl(filePath)
+
 
   return data.publicUrl // ✅ SUDAH ADA /public/
 }

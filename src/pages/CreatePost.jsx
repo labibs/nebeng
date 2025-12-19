@@ -90,8 +90,8 @@ export default function CreatePost() {
       <h1 className="text-lg font-semibold">Buat Post Jastip</h1>
 
       <select name="type" value={form.type} onChange={handleChange} className="input w-full">
-        <option value="titip">Titip Barang (Jastip)</option>
-        <option value="cari">Cari Orang Titip</option>
+        <option value="titip">Mau Titip</option>
+        <option value="bawa">Bisa Bawa</option>
       </select>
 
       <input name="from_city" value={form.from_city} onChange={handleChange} placeholder="Dari Kota" className="input w-full" />

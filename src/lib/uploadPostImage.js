@@ -1,25 +1,26 @@
 import { supabase } from './supabaseClient'
 
 export async function uploadPostImage(file) {
-  const ext = file.name.split('.').pop()
-  const fileName = `post-${crypto.randomUUID()}.${ext}`
-  const filePath = `posts/${fileName}`
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
 
-  const { error } = await supabase.storage
-    .from('nebeg-photeo') // ✅ SAMA PERSIS DENGAN DASHBOARD
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('upload_preset', uploadPreset)
 
-    .upload(filePath, file, {
-      cacheControl: '3600',
-      upsert: false,
-      contentType: file.type,
-    })
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+    {
+      method: 'POST',
+      body: formData,
+    }
+  )
 
-  if (error) throw error
+  const data = await res.json()
 
-  const { data } = supabase.storage
-    .from('nebeg-photeo')
-    .getPublicUrl(filePath)
+  if (!data.secure_url) {
+    throw new Error('Upload ke Cloudinary gagal')
+  }
 
-
-  return data.publicUrl // ✅ SUDAH ADA /public/
+  return data.secure_url // ✅ HTTPS, CDN
 }

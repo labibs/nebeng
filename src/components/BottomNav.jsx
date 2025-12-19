@@ -103,14 +103,19 @@ function NavItem({ to, icon: Icon, activePath }) {
 
   return (
     <Link to={to} className="flex-1 flex items-center justify-center">
-      <Icon
-        size={22}
-        className={
-          isActive
-            ? 'text-blue scale-110 drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]'
-            : 'text-blue/70'
-        }
-      />
-    </Link>
+  <div className="relative">
+    {isActive && (
+      <div className="absolute inset-0 bg-blue-600 rounded-full blur-md opacity-70 -z-10" />
+    )}
+    <Icon
+      size={22}
+      className={
+        isActive
+          ? 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.9)]'
+          : 'text-blue-600/70'
+      }
+    />
+  </div>
+</Link>
   )
 }

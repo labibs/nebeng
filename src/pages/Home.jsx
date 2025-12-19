@@ -3,6 +3,7 @@ import { useUser } from '@clerk/clerk-react'
 import { useClerk } from '@clerk/clerk-react'
 import { supabase } from '../lib/supabaseClient'
 import PostCard from '../components/PostCard'
+import PostCardSkeleton from '../components/PostCardSkeleton'
 
 export default function Home() {
   const { user, isLoaded } = useUser()
@@ -317,26 +318,27 @@ export default function Home() {
         </div>
       )}
 
-      {/* Main Content - Posts Feed */}
       <main className="pt-4 pb-32 px-4 max-w-2xl mx-auto">
-        {loading ? (
-          <div className="text-center py-10 text-lg">
-            Loading posts...
-          </div>
-        ) : filteredPosts.length > 0 ? (
-          <div className="space-y-6">
-            {filteredPosts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <p className="text-xl text-base-content/60">
-              {searchQuery ? 'Tidak ada post yang cocok' : 'Belum ada posts'}
-            </p>
-          </div>
-        )}
-      </main>
+  {loading ? (
+    <div className="space-y-6">
+      {[...Array(4)].map((_, i) => (
+        <PostCardSkeleton key={i} />
+      ))}
+    </div>
+  ) : filteredPosts.length > 0 ? (
+    <div className="space-y-6">
+      {filteredPosts.map((post) => (
+        <PostCard key={post.id} post={post} />
+      ))}
+    </div>
+  ) : (
+    <div className="text-center py-16">
+      <p className="text-xl text-base-content/60">
+        {searchQuery ? 'Tidak ada post yang cocok' : 'Belum ada posts'}
+      </p>
+    </div>
+  )}
+</main>
     </div>
   )
 }

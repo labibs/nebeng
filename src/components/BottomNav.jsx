@@ -107,8 +107,8 @@ function NavItem({ to, icon: Icon, activePath }) {
         size={22}
         className={
           isActive
-            ? 'text-white scale-110 drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]'
-            : 'text-white/70'
+            ? 'text-blue scale-110 drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]'
+            : 'text-blue/70'
         }
       />
     </Link>

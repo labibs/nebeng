@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useUser } from '@clerk/clerk-react'
-import { useClerk } from '@clerk/clerk-react' // untuk signOut
+import { useClerk } from '@clerk/clerk-react'
 import { supabase } from '../lib/supabaseClient'
 import PostCard from '../components/PostCard'
 
@@ -15,9 +15,25 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isSyncingUser, setIsSyncingUser] = useState(false)
 
-  // =========================
-  // FETCH POSTS DENGAN JOIN USERS
-  // =========================
+  // Scroll hide/show header
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true)
+  let lastScrollY = 0
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const current = window.scrollY
+      if (current > lastScrollY && current > 100) {
+        setIsHeaderVisible(false)
+      } else if (current < lastScrollY) {
+        setIsHeaderVisible(true)
+      }
+      lastScrollY = current
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Fetch, sync, realtime tetap sama (tidak diubah)
   const fetchPosts = useCallback(async () => {
     setLoading(true)
     const { data, error } = await supabase
@@ -40,16 +56,12 @@ export default function Home() {
     setLoading(false)
   }, [])
 
-  // =========================
-  // SYNC USER CLERK KE TABEL USERS
-  // =========================
   useEffect(() => {
     if (!user || isSyncingUser) return
-
-    const syncUserToSupabase = async () => {
+    const syncUser = async () => {
       setIsSyncingUser(true)
       try {
-        const { data: existingUser, error: checkError } = await supabase
+        const { data: existing } = await supabase
           .from('users')
           .select('id')
           .eq('clerk_id', user.id)
@@ -61,161 +73,152 @@ export default function Home() {
           avatar_url: user.imageUrl,
         }
 
-        if (checkError || !existingUser) {
-          // Insert baru
+        if (!existing) {
           await supabase.from('users').insert(userData)
         } else {
-          // Update kalau ada perubahan
           await supabase.from('users').update(userData).eq('clerk_id', user.id)
         }
       } catch (err) {
-        console.error('Error syncing user to Supabase:', err)
+        console.error('Sync user error:', err)
       } finally {
         setIsSyncingUser(false)
       }
     }
-
-    syncUserToSupabase()
+    syncUser()
   }, [user, isSyncingUser])
 
-  // =========================
-  // REALTIME SUBSCRIPTION
-  // =========================
   useEffect(() => {
-    fetchPosts() // initial load
-
-    const channel = supabase
-      .channel('posts-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'posts' },
-        () => {
-          fetchPosts()
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('Realtime subscribed')
-        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-          console.warn('Realtime issue:', status)
-        }
-      })
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    fetchPosts()
+    const channel = supabase.channel('posts-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, fetchPosts).subscribe()
+    return () => supabase.removeChannel(channel)
   }, [fetchPosts])
 
-  // =========================
-  // FILTER POSTS
-  // =========================
   const filteredPosts = posts
-    .filter((post) => {
-      if (activeTab === 'titip') return post.type === 'titip'
-      if (activeTab === 'bawa') return post.type === 'bawa'
-      return true
-    })
-    .filter((post) => {
+    .filter(post => activeTab === 'semua' || post.type === (activeTab === 'titip' ? 'titip' : 'bawa'))
+    .filter(post => {
       if (!searchQuery.trim()) return true
       const q = searchQuery.toLowerCase()
-      return (
-        post.from_city?.toLowerCase().includes(q) ||
-        post.to_city?.toLowerCase().includes(q) ||
-        post.item_description?.toLowerCase().includes(q) ||
-        post.description?.toLowerCase().includes(q)
-      )
+      return [post.from_city, post.to_city, post.item_description, post.description]
+        .some(field => field?.toLowerCase().includes(q))
     })
 
-  // =========================
-  // RENDER
-  // =========================
+  // Handle Enter di search → langsung apply & close modal
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      setSearchOpen(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-base-200">
-      {/* AppBar */}
-      <div className="sticky top-0 z-40 bg-base-100 shadow-lg">
-        <div className="navbar px-4 py-3">
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-primary">Nebeng.id</h1>
+      {/* Glass Header with Hide/Show */}
+      <div className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+        <div className="bg-base-100/80 backdrop-blur-md border-b border-base-300 shadow-lg">
+          <div className="navbar px-5 py-4">
+            <div className="flex-1">
+              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Nebeng.id
+              </h1>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <button onClick={() => setSearchOpen(true)} className="btn btn-ghost btn-circle">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+
+              {isLoaded && user ? (
+                <div className="dropdown dropdown-end">
+                  <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+                    <div className="w-11 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                      <img src={user.imageUrl} alt={user.fullName || 'User'} className="object-cover" />
+                    </div>
+                  </label>
+                  <ul tabIndex={0} className="menu menu-sm dropdown-content mt-4 z-[1] p-3 shadow-xl bg-base-100/95 backdrop-blur-md rounded-2xl w-56 border border-base-300">
+                    <li className="menu-title px-3 py-2">
+                      <span className="font-semibold">{user.fullName || user.username || 'User'}</span>
+                    </li>
+                    <div className="divider my-1" />
+                    <li><a href="/profile" className="py-3 hover:bg-base-200 rounded-lg">Profil Saya</a></li>
+                    <li><a href="/create-post" className="py-3 hover:bg-base-200 rounded-lg">Buat Post Baru</a></li>
+                    <li><button onClick={() => signOut()} className="py-3 text-error hover:bg-error/10 rounded-lg">Keluar</button></li>
+                  </ul>
+                </div>
+              ) : (
+                <div className="skeleton w-11 h-11 rounded-full" />
+              )}
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="btn btn-ghost btn-circle"
-            >
-              🔍
-            </button>
-
-            {/* Profil Dropdown */}
-            {isLoaded && user ? (
-              <div className="dropdown dropdown-end">
-                <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-                  <div className="w-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                    <img src={user.imageUrl} alt={user.fullName || 'User'} className="object-cover" />
-                  </div>
-                </label>
-                <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-                  <li className="menu-title">
-                    <span>{user.fullName || user.username || 'User'}</span>
-                  </li>
-                  <li><a href="/profile">Profil Saya</a></li>
-                  <li><a href="/create-post">Buat Post Baru</a></li>
-                  <li>
-                    <button onClick={() => signOut()}>Keluar</button>
-                  </li>
-                </ul>
+          {/* Segmented Tab seperti Preview (HTML/JSX) */}
+          <div className="px-6 pb-5">
+            <div className="flex justify-center">
+              <div className="bg-base-200/60 backdrop-blur-sm rounded-full p-1 shadow-inner inline-flex">
+                {['semua', 'titip', 'bawa'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`
+                      px-6 py-2 rounded-full text-xs font-medium transition-all duration-200 capitalize
+                      ${activeTab === tab
+                        ? 'bg-white text-primary shadow-md'
+                        : 'text-base-content/60 hover:text-base-content'
+                      }
+                    `}
+                  >
+                    {tab === 'semua' ? 'Semua' : tab === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}
+                  </button>
+                ))}
               </div>
-            ) : (
-              <div className="skeleton w-10 h-10 rounded-full" />
-            )}
+            </div>
           </div>
-        </div>
-
-        {/* Tabs Filter */}
-        <div className="tabs tabs-boxed justify-center gap-2 px-4 pb-3">
-          {['semua', 'titip', 'bawa'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`tab tab-lg ${activeTab === tab ? 'tab-active' : ''}`}
-            >
-              {tab === 'semua' ? 'Semua' : tab === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}
-            </button>
-          ))}
         </div>
       </div>
 
-      {/* Search Modal */}
+      <div className="h-36" /> {/* Spacer lebih tinggi karena tab lebih besar */}
+
+      {/* Search Modal dengan X close & Enter to search */}
       {searchOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-start justify-center pt-20 px-4">
-          <div className="w-full max-w-lg bg-base-100 rounded-2xl shadow-2xl p-5">
-            <div className="flex items-center gap-3">
-              <input
-                type="text"
-                className="input input-bordered w-full"
-                placeholder="Cari kota, barang, atau deskripsi..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-              />
-              <button
-                onClick={() => {
-                  setSearchOpen(false)
-                  setSearchQuery('')
-                }}
-                className="btn btn-ghost"
-              >
-                Batal
-              </button>
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center pt-24 px-4">
+          <div className="w-full max-w-xl">
+            <div className="bg-base-100/90 backdrop-blur-xl rounded-3xl shadow-2xl p-6 border border-base-300">
+              <div className="flex items-center gap-4">
+                <div className="flex-1 relative">
+                  <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-base-content/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <input
+                    type="text"
+                    className="input input-lg w-full pl-14 bg-base-200/50 focus:bg-base-200 focus:outline-none"
+                    placeholder="Cari kota, barang, atau deskripsi..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
+                    autoFocus
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    setSearchOpen(false)
+                    setSearchQuery('')
+                  }}
+                  className="btn btn-ghost btn-circle btn-lg"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Feed Posts */}
+      {/* Feed */}
       <div className="pt-4 pb-32 px-4 max-w-2xl mx-auto">
         {loading ? (
-          <div className="text-center py-10">Loading posts...</div>
+          <div className="text-center py-10 text-lg">Loading posts...</div>
         ) : filteredPosts.length > 0 ? (
           <div className="space-y-6">
             {filteredPosts.map((post) => (

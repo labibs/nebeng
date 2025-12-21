@@ -2,7 +2,7 @@
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabaseClient'; // sesuaikan path
+import { supabase } from '../lib/supabaseClient';
 
 export default function ChatRoom() {
   const { conversationId } = useParams();
@@ -13,78 +13,73 @@ export default function ChatRoom() {
   const currentUserId = user?.id;
   const currentUserAvatar = user?.imageUrl || '/default-avatar.png';
 
-  // Recipient = pemosting post (nama & avatar diambil dari state saat navigate)
-  const [recipient, setRecipient] = useState({
-    name: 'Loading...',
-    imageUrl: '/default-avatar.png',
-  });
-
-  useEffect(() => {
-    if (!currentUserId || !conversationId) return;
-
-    const fetchRecipient = async () => {
-      // Ambil participant lain (bukan current user)
-      const { data: participants } = await supabase
-        .from('conversation_participants')
-        .select('user_id')
-        .eq('conversation_id', conversationId)
-        .neq('user_id', currentUserId); // bukan diri sendiri
-
-      if (participants && participants.length > 0) {
-        const opponentClerkId = participants[0].user_id;
-
-        // Ambil data user lawan bicara
-        const { data: opponentUser } = await supabase
-          .from('users')
-          .select('name, avatar_url')
-          .eq('clerk_id', opponentClerkId)
-          .single();
-
-        if (opponentUser) {
-          setRecipient({
-            name: opponentUser.name || 'User',
-            imageUrl: opponentUser.avatar_url || '/default-avatar.png',
-          });
-        }
-      } else {
-        setRecipient({ name: 'User Tidak Ditemukan', imageUrl: '/default-avatar.png' });
-      }
-    };
-
-    fetchRecipient();
-  }, [currentUserId, conversationId]);
+  // Recipient dari state atau fallback
+  const [recipient, setRecipient] = useState(
+    state?.recipient || { name: 'Loading...', imageUrl: '/default-avatar.png' }
+  );
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef(null);
 
+  // Auto scroll ke bawah saat pesan baru
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
-    if (!conversationId || !currentUserId) {
-      setLoading(false);
-      return;
-    }
+    scrollToBottom();
+  }, [messages]);
+
+  // Fetch recipient dari database (biar selalu akurat)
+  useEffect(() => {
+    if (!currentUserId || !conversationId) return;
+
+    const fetchRecipient = async () => {
+      const { data: participants } = await supabase
+        .from('conversation_participants')
+        .select('user_id')
+        .eq('conversation_id', conversationId)
+        .neq('user_id', currentUserId);
+
+      if (participants?.length > 0) {
+        const opponentId = participants[0].user_id;
+        const { data: opponent } = await supabase
+          .from('users')
+          .select('name, avatar_url')
+          .eq('clerk_id', opponentId)
+          .single();
+
+        setRecipient({
+          name: opponent?.name || 'User',
+          imageUrl: opponent?.avatar_url || '/default-avatar.png',
+        });
+      }
+    };
+
+    fetchRecipient();
+  }, [currentUserId, conversationId]);
+
+  // Fetch messages + realtime
+  useEffect(() => {
+    if (!conversationId || !currentUserId) return;
 
     const fetchMessages = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('messages')
         .select('id, content, created_at, sender_id')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
-      if (error) console.error('Error fetching messages:', error);
-      else setMessages(data || []);
-
+      setMessages(data || []);
       setLoading(false);
+      scrollToBottom(); // langsung scroll ke bawah saat pertama load
     };
 
     fetchMessages();
 
-    // Realtime: pesan baru masuk
+    // Realtime: pesan baru dari siapa pun langsung muncul
     const channel = supabase
       .channel(`chat:${conversationId}`)
       .on(
@@ -97,20 +92,20 @@ export default function ChatRoom() {
         },
         (payload) => {
           setMessages((prev) => [...prev, payload.new]);
+          // Scroll ke bawah saat pesan baru (termasuk dari lawan)
+          setTimeout(scrollToBottom, 100); // delay kecil biar render dulu
         }
       )
       .subscribe();
 
-    return () => supabase.removeChannel(channel);
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [conversationId, currentUserId]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !currentUserId) return;
+    if (!newMessage.trim()) return;
 
     const { error } = await supabase.from('messages').insert({
       conversation_id: conversationId,
@@ -120,18 +115,16 @@ export default function ChatRoom() {
 
     if (error) {
       console.error('Gagal kirim:', error);
-      alert('Pesan gagal terkirim');
+      alert('Gagal mengirim pesan');
     } else {
       setNewMessage('');
+      // Scroll langsung setelah kirim (optimistic)
+      setTimeout(scrollToBottom, 100);
     }
   };
 
   if (!conversationId) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-lg">Chat tidak ditemukan</p>
-      </div>
-    );
+    return <div className="flex h-screen items-center justify-center text-lg">Chat tidak ditemukan</div>;
   }
 
   return (
@@ -145,7 +138,7 @@ export default function ChatRoom() {
         </button>
         <div className="flex-1 flex items-center gap-3">
           <div className="avatar online">
-            <div className="w-12 rounded-full ring ring-emerald-500 ring-offset-base-100 ring-offset-2">
+            <div className="w-12 rounded-full ring ring-emerald-500 ring-offset-2">
               <img src={recipient.imageUrl} alt={recipient.name} />
             </div>
           </div>
@@ -156,8 +149,8 @@ export default function ChatRoom() {
         </div>
       </div>
 
-      {/* Daftar Pesan */}
-      <div className="flex-1 overflow-y-auto p-4 pb-20">
+      {/* Area Chat - scrollable */}
+      <div className="flex-1 overflow-y-auto p-4 pb-20"> {/* pb-20 biar gak ketutup input fixed */}
         {loading ? (
           <div className="flex justify-center mt-10">
             <span className="loading loading-spinner loading-lg"></span>
@@ -176,16 +169,11 @@ export default function ChatRoom() {
                 <div className="chat-image avatar">
                   <div className="w-10 rounded-full">
                     <img
-                      src={
-                        msg.sender_id === currentUserId
-                          ? currentUserAvatar
-                          : recipient.imageUrl
-                      }
+                      src={msg.sender_id === currentUserId ? currentUserAvatar : recipient.imageUrl}
                       alt="avatar"
                     />
                   </div>
                 </div>
-
                 <div className="chat-header">
                   <time className="text-xs opacity-70">
                     {new Date(msg.created_at).toLocaleTimeString('id-ID', {
@@ -194,17 +182,15 @@ export default function ChatRoom() {
                     })}
                   </time>
                 </div>
-
                 <div
                   className={`chat-bubble ${
                     msg.sender_id === currentUserId
-                      ? 'chat-bubble-primary'  // Hijau/emerald untuk pesan kamu
-                      : 'chat-bubble-neutral'  // Abu-abu untuk pesan lawan
+                      ? 'chat-bubble-primary'
+                      : 'chat-bubble-neutral'
                   }`}
                 >
                   {msg.content}
                 </div>
-
                 {msg.sender_id === currentUserId && (
                   <div className="chat-footer opacity-70 text-xs mt-1">Terkirim</div>
                 )}
@@ -215,9 +201,9 @@ export default function ChatRoom() {
         )}
       </div>
 
-      {/* Input */}
-      <form onSubmit={sendMessage} className="p-4 bg-base-100 border-t">
-        <div className="join w-full">
+      {/* Input Fixed di Bawah - Selalu Kelihatan */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-base-100 border-t shadow-lg">
+        <form onSubmit={sendMessage} className="join w-full max-w-4xl mx-auto">
           <input
             type="text"
             value={newMessage}
@@ -233,8 +219,8 @@ export default function ChatRoom() {
           >
             Kirim
           </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

@@ -94,7 +94,7 @@ export default function PostCard({ post }) {
         // Kirim pesan sistem: info post sebagai pesan pertama
         await supabase.from('messages').insert({
           conversation_id: conversationId,
-          content: 'Post terkait obrolan ini', // bisa kosongin kalau mau pure card
+          content: null, // bisa kosongin kalau mau pure card
           message_type: 'post_card',
           sender_id: currentUserId,
           post_id: post.id,

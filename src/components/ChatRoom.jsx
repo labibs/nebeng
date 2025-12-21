@@ -2,28 +2,23 @@
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient'; // sesuaikan path
 
 export default function ChatRoom() {
   const { conversationId } = useParams();
-  const { state } = useLocation();
   const navigate = useNavigate();
 
   const { user } = useUser();
   const currentUserId = user?.id;
   const currentUserAvatar = user?.imageUrl || '/default-avatar.png';
 
-  // Recipient dari state atau fallback
-  const [recipient, setRecipient] = useState(
-    state?.recipient || { name: 'Loading...', imageUrl: '/default-avatar.png' }
-  );
-
+  const [recipient, setRecipient] = useState({ name: 'Loading...', imageUrl: '/default-avatar.png' });
+  const [postInfo, setPostInfo] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef(null);
 
-  // Auto scroll ke bawah saat pesan baru
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -32,7 +27,7 @@ export default function ChatRoom() {
     scrollToBottom();
   }, [messages]);
 
-  // Fetch recipient dari database (biar selalu akurat)
+  // Fetch recipient (lawan bicara)
   useEffect(() => {
     if (!currentUserId || !conversationId) return;
 
@@ -61,9 +56,34 @@ export default function ChatRoom() {
     fetchRecipient();
   }, [currentUserId, conversationId]);
 
+  // Fetch postInfo dari conversations.post_id
+  useEffect(() => {
+    if (!conversationId) return;
+
+    const fetchPostInfo = async () => {
+      const { data: conv } = await supabase
+        .from('conversations')
+        .select('post_id')
+        .eq('id', conversationId)
+        .single();
+
+      if (conv?.post_id) {
+        const { data: postData } = await supabase
+          .from('posts')
+          .select('item_description, item_photo, from_city, to_city, price, fee, type')
+          .eq('id', conv.post_id)
+          .single();
+
+        setPostInfo(postData);
+      }
+    };
+
+    fetchPostInfo();
+  }, [conversationId]);
+
   // Fetch messages + realtime
   useEffect(() => {
-    if (!conversationId || !currentUserId) return;
+    if (!conversationId) return;
 
     const fetchMessages = async () => {
       const { data } = await supabase
@@ -74,12 +94,11 @@ export default function ChatRoom() {
 
       setMessages(data || []);
       setLoading(false);
-      scrollToBottom(); // langsung scroll ke bawah saat pertama load
+      scrollToBottom();
     };
 
     fetchMessages();
 
-    // Realtime: pesan baru dari siapa pun langsung muncul
     const channel = supabase
       .channel(`chat:${conversationId}`)
       .on(
@@ -92,35 +111,29 @@ export default function ChatRoom() {
         },
         (payload) => {
           setMessages((prev) => [...prev, payload.new]);
-          // Scroll ke bawah saat pesan baru (termasuk dari lawan)
-          setTimeout(scrollToBottom, 100); // delay kecil biar render dulu
+          setTimeout(scrollToBottom, 100);
         }
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [conversationId, currentUserId]);
+    return () => supabase.removeChannel(channel);
+  }, [conversationId]);
 
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
 
-    // 1. Buat object pesan sementara (optimistic)
     const tempMessage = {
-      id: `temp-${Date.now()}`, // ID sementara biar React gak error key
+      id: `temp-${Date.now()}`,
       content: newMessage.trim(),
       created_at: new Date().toISOString(),
       sender_id: currentUserId,
     };
 
-    // 2. Tampilkan langsung di UI (optimistic update)
     setMessages((prev) => [...prev, tempMessage]);
     setNewMessage('');
-    setTimeout(scrollToBottom, 100); // scroll langsung
+    setTimeout(scrollToBottom, 100);
 
-    // 3. Kirim ke Supabase
     const { data: newMsg, error } = await supabase
       .from('messages')
       .insert({
@@ -128,16 +141,14 @@ export default function ChatRoom() {
         sender_id: currentUserId,
         content: newMessage.trim(),
       })
-      .select() // penting: return data yang baru diinsert
+      .select()
       .single();
 
     if (error) {
-      console.error('Gagal kirim pesan:', error);
+      console.error('Gagal kirim:', error);
       alert('Pesan gagal terkirim');
-      // Hapus pesan sementara kalau gagal
       setMessages((prev) => prev.filter((msg) => msg.id !== tempMessage.id));
     } else {
-      // Ganti pesan sementara dengan data real dari server
       setMessages((prev) =>
         prev.map((msg) => (msg.id === tempMessage.id ? newMsg : msg))
       );
@@ -170,18 +181,82 @@ export default function ChatRoom() {
         </div>
       </div>
 
-      {/* Area Chat - scrollable */}
-      <div className="flex-1 overflow-y-auto p-4 pb-20"> {/* pb-20 biar gak ketutup input fixed */}
+      {/* Chat Area */}
+      <div className="flex-1 overflow-y-auto p-4 pb-20">
         {loading ? (
           <div className="flex justify-center mt-10">
             <span className="loading loading-spinner loading-lg"></span>
           </div>
-        ) : messages.length === 0 ? (
-          <p className="text-center text-base-content/50 mt-20">
-            Belum ada pesan. Mulai deal yuk! 💰
-          </p>
         ) : (
           <div className="space-y-6">
+            {/* Card Post di sisi sender (kanan) */}
+            {postInfo && (
+  <div className="chat chat-end my-8">
+    <div className="chat-image avatar">
+      <div className="w-10 rounded-full">
+        <img src={currentUserAvatar} alt="avatar" />
+      </div>
+    </div>
+
+    <div className="chat-bubble bg-base-100 border border-base-300 max-w-md shadow-lg">
+      {/* Card Post Horizontal - Gambar kecil kiri, info kanan */}
+      <div className="flex gap-4 items-start px-0 py-2">
+        {/* Gambar Barang Kecil */}
+        <div className="avatar">
+          <div className="w-24 h-24 rounded-xl overflow-hidden">
+            <img
+              src={postInfo.item_photo || '/default-item.jpg'}
+              alt="Barang"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+
+        {/* Info Post */}
+        <div className="flex-1">
+          {/* Badge Tipe */}
+          <div className="mb-2 text-end">
+            <div className="badge badge-primary badge-sm">
+              {postInfo.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}
+            </div>
+          </div>
+
+          {/* Deskripsi Barang */}
+          {/* <h3 className="font-semibold text-base leading-tight">
+            {postInfo.item_description || 'Barang Jastip'}
+          </h3> */}
+
+          {/* Rute */}
+          <div className="flex items-center gap-2 text-sm text-base-content/80 mt-3">
+            <span className="font-medium">{postInfo.from_city}</span>
+            <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+            <span className="font-medium">{postInfo.to_city}</span>
+          </div>
+
+          {/* Harga & Fee */}
+          <div className="flex justify-between items-end mt-3 text-sm">
+            
+            <p className="text-emerald-600 font-bold">
+              Fee: Rp{postInfo.fee.toLocaleString('id-ID')}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Caption kecil di bawah card */}
+      <hr className="my-2" />
+      <p className="text-xs text-center text-base-content/60 mt-2">
+        Saya tertarik dengan penawaran ini
+      </p>
+    </div>
+
+    <div className="chat-footer opacity-70 text-xs mt-1">Terkirim</div>
+  </div>
+)}
+
+            {/* Pesan teks biasa */}
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -222,7 +297,7 @@ export default function ChatRoom() {
         )}
       </div>
 
-      {/* Input Fixed di Bawah - Selalu Kelihatan */}
+      {/* Input Fixed */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-base-100 border-t shadow-lg">
         <form onSubmit={sendMessage} className="join w-full max-w-4xl mx-auto">
           <input

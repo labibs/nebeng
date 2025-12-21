@@ -49,9 +49,6 @@ export default function PostCard({ post }) {
   // Ambil Clerk ID poster dari relasi users
   const posterClerkId = post.clerk_user_id || null
 
-  console.log('Current User ID:', currentUserId)
-  console.log('Poster Clerk ID:', posterClerkId)
-
   if (!posterClerkId) {
     alert('Data user tidak lengkap!')
     console.error('post.users:', post.users)
@@ -76,22 +73,33 @@ export default function PostCard({ post }) {
 
     if (participants && participants.length >= 2) {
       conversationId = participants[0].conversation_id
-    } else {
-      // Buat conversation baru
-      const { data: newConv } = await supabase
-        .from('conversations')
-        .insert({})
-        .select('id')
-        .single()
+    } // Di dalam else (buat conversation baru)
+      else {
+        const { data: newConv } = await supabase
+          .from('conversations')
+          .insert({
+            post_id: post.id,
+          })
+          .select('id')
+          .single();
 
-      conversationId = newConv.id
+        conversationId = newConv.id;
 
-      // Insert participant pakai Clerk ID string
-      await supabase.from('conversation_participants').insert([     // Clerk string
-        { conversation_id: conversationId, user_id: currentUserId },     // Clerk string
-        { conversation_id: conversationId, user_id: posterClerkId },     // Clerk string
-      ])
-    }
+        // Insert participants
+        await supabase.from('conversation_participants').insert([
+          { conversation_id: conversationId, user_id: currentUserId },
+          { conversation_id: conversationId, user_id: posterClerkId },
+        ]);
+
+        // Kirim pesan sistem: info post sebagai pesan pertama
+        await supabase.from('messages').insert({
+          conversation_id: conversationId,
+          content: 'Post terkait obrolan ini', // bisa kosongin kalau mau pure card
+          message_type: 'post_card',
+          sender_id: currentUserId,
+          post_id: post.id,
+        });
+      }
 
     // Navigasi
     navigate(`/chat/${conversationId}`);

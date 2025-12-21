@@ -42,10 +42,11 @@ serve(async (req) => {
 
   const { error } = await supabase.from('users').upsert(
     {
-      clerk_id: user.id,
+      id: user.id,
       email: user.email_addresses?.[0]?.email_address,
       name: `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim(),
       avatar_url: user.image_url,
+      clerk_id: user.clerk_id,
     },
     { onConflict: 'clerk_id' }
   )

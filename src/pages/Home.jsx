@@ -70,7 +70,7 @@ export default function Home() {
 
     const syncUserToSupabase = async () => {
       setIsSyncingUser(true)
-      
+
       try {
         const { data: existingUser } = await supabase
           .from('users')
@@ -93,14 +93,14 @@ export default function Home() {
           await supabase.from('users').update(userData).eq('clerk_id', user.id)
         }
       } catch (error) {
-        console.error('Sync user error:', error)
-      } finally {
-        setIsSyncingUser(false)
-      }
+      console.error(error)
+    } finally {
+      setIsSyncingUser(false)
     }
+  }
 
-    syncUserToSupabase()
-  }, [user, isSyncingUser])
+  syncUserToSupabase()
+}, [user])  // ← Tetap hanya [user], karena isSyncingUser cuma guard
 
   // Initial fetch + realtime subscription
   useEffect(() => {
@@ -174,6 +174,7 @@ export default function Home() {
           isTopHeaderVisible ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
+        
         <div className="bg-base-100/80 backdrop-blur-md border-b border-base-300 shadow-lg">
           <div className="navbar px-5 py-4">
             {/* Logo */}

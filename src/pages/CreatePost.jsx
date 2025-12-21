@@ -70,6 +70,7 @@ export default function CreatePost() {
         fee: Number(form.fee) || null,
         description: form.description,
         item_photo: photoUrl,
+        clerk_user_id: user.id,
         status: 'open',
       })
 

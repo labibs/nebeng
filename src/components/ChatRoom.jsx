@@ -105,21 +105,42 @@ export default function ChatRoom() {
 
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !currentUserId) return;
 
-    const { error } = await supabase.from('messages').insert({
-      conversation_id: conversationId,
-      sender_id: currentUserId,
+    // 1. Buat object pesan sementara (optimistic)
+    const tempMessage = {
+      id: `temp-${Date.now()}`, // ID sementara biar React gak error key
       content: newMessage.trim(),
-    });
+      created_at: new Date().toISOString(),
+      sender_id: currentUserId,
+    };
+
+    // 2. Tampilkan langsung di UI (optimistic update)
+    setMessages((prev) => [...prev, tempMessage]);
+    setNewMessage('');
+    setTimeout(scrollToBottom, 100); // scroll langsung
+
+    // 3. Kirim ke Supabase
+    const { data: newMsg, error } = await supabase
+      .from('messages')
+      .insert({
+        conversation_id: conversationId,
+        sender_id: currentUserId,
+        content: newMessage.trim(),
+      })
+      .select() // penting: return data yang baru diinsert
+      .single();
 
     if (error) {
-      console.error('Gagal kirim:', error);
-      alert('Gagal mengirim pesan');
+      console.error('Gagal kirim pesan:', error);
+      alert('Pesan gagal terkirim');
+      // Hapus pesan sementara kalau gagal
+      setMessages((prev) => prev.filter((msg) => msg.id !== tempMessage.id));
     } else {
-      setNewMessage('');
-      // Scroll langsung setelah kirim (optimistic)
-      setTimeout(scrollToBottom, 100);
+      // Ganti pesan sementara dengan data real dari server
+      setMessages((prev) =>
+        prev.map((msg) => (msg.id === tempMessage.id ? newMsg : msg))
+      );
     }
   };
 

@@ -180,7 +180,7 @@ export default function Home() {
             {/* Logo */}
             <div className="flex-1">
               <h1 className="text-3xl font-extrabold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Nebeng.id
+                Nebeng
               </h1>
             </div>
 

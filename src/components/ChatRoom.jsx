@@ -170,21 +170,21 @@ export default function ChatRoom() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-
+        
         <div className="flex-1 flex items-center gap-3">
-          {/* Avatar dengan Skeleton Loading */}
+          {/* Skeleton Avatar */}
           <div className="avatar online">
             <div className="w-12 rounded-full ring ring-emerald-500 ring-offset-base-100 ring-offset-2">
-              {recipient.imageUrl ? (
-                <img src={recipient.imageUrl} alt={recipient.name} />
+              {recipient.imageUrl && recipient.imageUrl !== '/default-avatar.png' ? (
+                <img src={recipient.imageUrl} alt={recipient.name} className="object-cover" />
               ) : (
-                // Skeleton saat loading
-                <div className="bg-base-300 animate-pulse w-full h-full rounded-full" />
+                // Skeleton Avatar: lingkaran berdenyut
+                <div className="w-full h-full bg-gradient-to-r from-base-300 to-base-200 rounded-full animate-pulse shadow-lg" />
               )}
             </div>
           </div>
 
-          {/* Nama dengan Skeleton */}
+          {/* Skeleton Nama & Status */}
           <div>
             {recipient.name !== 'Loading...' ? (
               <>
@@ -192,9 +192,10 @@ export default function ChatRoom() {
                 <p className="text-sm opacity-70">Online</p>
               </>
             ) : (
-              <div className="space-y-2">
-                <div className="h-5 bg-base-300 rounded w-32 animate-pulse" />
-                <div className="h-4 bg-base-300 rounded w-20 animate-pulse" />
+              // Skeleton Nama + Status
+              <div className="space-y-1.5">
+                <div className="h-6 bg-gradient-to-r from-base-300 to-base-200 rounded-full w-28 animate-pulse" />
+                <div className="h-4 bg-gradient-to-r from-base-300 to-base-200 rounded w-20 animate-pulse" />
               </div>
             )}
           </div>
@@ -204,77 +205,81 @@ export default function ChatRoom() {
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto p-4 pb-20">
         {loading ? (
-          <div className="flex justify-center mt-10">
-            <span className="loading loading-spinner loading-lg"></span>
-          </div>
-        ) : (
+            <div className="space-y-6 p-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className={`chat ${i % 2 === 0 ? 'chat-end' : 'chat-start'}`}>
+                  <div className="chat-bubble bg-base-300 animate-pulse w-64 h-20 rounded-2xl" />
+                </div>
+              ))}
+            </div>
+          ) : (
           <div className="space-y-6">
             {/* Card Post di sisi sender (kanan) */}
             {postInfo && (
-  <div className="chat chat-end my-8">
-    <div className="chat-image avatar">
-      <div className="w-10 rounded-full">
-        <img src={currentUserAvatar} alt="avatar" />
-      </div>
-    </div>
+              <div className="chat chat-end my-8">
+                <div className="chat-image avatar">
+                  <div className="w-10 rounded-full">
+                    <img src={currentUserAvatar} alt="avatar" />
+                  </div>
+                </div>
 
-    <div className="chat-bubble bg-base-100 border border-base-300 max-w-md shadow-lg">
-      {/* Card Post Horizontal - Gambar kecil kiri, info kanan */}
-      <div className="flex gap-4 items-start px-0 py-2">
-        {/* Gambar Barang Kecil */}
-        <div className="avatar">
-          <div className="w-24 h-24 rounded-xl overflow-hidden">
-            <img
-              src={postInfo.item_photo || '/default-item.jpg'}
-              alt="Barang"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
+                <div className="chat-bubble bg-base-100 border border-base-300 max-w-md shadow-lg">
+                  {/* Card Post Horizontal - Gambar kecil kiri, info kanan */}
+                  <div className="flex gap-4 items-start px-0 py-2">
+                    {/* Gambar Barang Kecil */}
+                    <div className="avatar">
+                      <div className="w-24 h-24 rounded-xl overflow-hidden">
+                        <img
+                          src={postInfo.item_photo || '/default-item.jpg'}
+                          alt="Barang"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
 
-        {/* Info Post */}
-        <div className="flex-1">
-          {/* Badge Tipe */}
-          <div className="mb-2 text-end">
-            <div className="badge badge-primary badge-sm">
-              {postInfo.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}
-            </div>
-          </div>
+                    {/* Info Post */}
+                    <div className="flex-1">
+                      {/* Badge Tipe */}
+                      <div className="mb-2 text-end">
+                        <div className="badge badge-primary badge-sm">
+                          {postInfo.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}
+                        </div>
+                      </div>
 
-          {/* Deskripsi Barang */}
-          {/* <h3 className="font-semibold text-base leading-tight">
-            {postInfo.item_description || 'Barang Jastip'}
-          </h3> */}
+                      {/* Deskripsi Barang */}
+                      {/* <h3 className="font-semibold text-base leading-tight">
+                        {postInfo.item_description || 'Barang Jastip'}
+                      </h3> */}
 
-          {/* Rute */}
-          <div className="flex items-center gap-2 text-sm text-base-content/80 mt-3">
-            <span className="font-medium">{postInfo.from_city}</span>
-            <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-            <span className="font-medium">{postInfo.to_city}</span>
-          </div>
+                      {/* Rute */}
+                      <div className="flex items-center gap-2 text-sm text-base-content/80 mt-3">
+                        <span className="font-medium">{postInfo.from_city}</span>
+                        <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                        <span className="font-medium">{postInfo.to_city}</span>
+                      </div>
 
-          {/* Harga & Fee */}
-          <div className="flex justify-between items-end mt-3 text-sm">
-            
-            <p className="text-emerald-600 font-bold">
-              Fee: Rp{postInfo.fee.toLocaleString('id-ID')}
-            </p>
-          </div>
-        </div>
-      </div>
+                      {/* Harga & Fee */}
+                      <div className="flex justify-between items-end mt-3 text-sm">
+                        
+                        <p className="text-emerald-600 font-bold">
+                          Fee: Rp{postInfo.fee.toLocaleString('id-ID')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-      {/* Caption kecil di bawah card */}
-      <hr className="my-2" />
-      <p className="text-xs text-center text-base-content/60 mt-2">
-        Saya tertarik dengan penawaran ini
-      </p>
-    </div>
+                  {/* Caption kecil di bawah card */}
+                  <hr className="my-2" />
+                  <p className="text-xs text-center text-base-content/60 mt-2">
+                    Saya tertarik dengan penawaran ini
+                  </p>
+                </div>
 
-    <div className="chat-footer opacity-70 text-xs mt-1">Terkirim</div>
-  </div>
-)}
+                <div className="chat-footer opacity-70 text-xs mt-1">Terkirim</div>
+              </div>
+            )}
 
             {/* Pesan teks biasa */}
             {messages.map((msg) => (
@@ -292,10 +297,30 @@ export default function ChatRoom() {
                 </div>
                 <div className="chat-header">
                   <time className="text-xs opacity-70">
-                    {new Date(msg.created_at).toLocaleTimeString('id-ID', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                    {(() => {
+                      const messageDate = new Date(msg.created_at);
+                      const today = new Date();
+                      const isToday =
+                        messageDate.getDate() === today.getDate() &&
+                        messageDate.getMonth() === today.getMonth() &&
+                        messageDate.getFullYear() === today.getFullYear();
+
+                      if (isToday) {
+                        // Hari ini → hanya jam:menit
+                        return messageDate.toLocaleTimeString('id-ID', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        });
+                      } else {
+                        // Bukan hari ini → hari, tanggal bulan tahun
+                        return messageDate.toLocaleDateString('id-ID', {
+                          weekday: 'short',
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        });
+                      }
+                    })()}
                   </time>
                 </div>
                 <div

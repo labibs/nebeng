@@ -8,51 +8,57 @@ import { Navigate } from 'react-router-dom'
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-linear-to-br from-primary to-secondary flex items-center justify-center p-6">
-      <div className="text-center max-w-md">
+    <div className="min-h-screen bg-linear-to-br from-primary to-secondary flex items-center justify-center px-6">
+      
+      <SignedIn>
+        <Navigate to="/dashboard" replace />
+      </SignedIn>
 
-        {/* Jika sudah login, langsung redirect */}
-        <SignedIn>
-          <Navigate to="/dashboard" replace />
-        </SignedIn>
+      <SignedOut>
+        <div className="w-full max-w-md rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl p-10 text-center">
 
-        {/* Jika belum login */}
-        <SignedOut>
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
-            Nebeng.id
+          {/* Brand */}
+          <h1 className="text-5xl font-extrabold text-white mb-3 tracking-tight">
+            Nebeng
           </h1>
 
-          <p className="text-xl text-white mb-10 opacity-90">
-            Aplikasi titip barang aman via traveler atau ekspedisi
+          {/* Tagline utama */}
+          <p className="text-white/90 text-lg leading-relaxed mb-6">
+            Cara baru mengirim barang,<br />
+            dibawa traveller langsung tanpa transit.
           </p>
 
-          <p className="text-white/80 mb-12 text-lg">
-            Uang ditahan sampai barang sampai di tangan kamu
-          </p>
+          {/* Trust message */}
+          <div className="bg-white/10 rounded-xl px-4 py-3 mb-10">
+            <p className="text-white/80 text-sm">
+              Uang ditahan sampai barang sampai di tangan kamu
+            </p>
+          </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          {/* CTA */}
+          <div className="flex flex-col gap-4">
 
-            {/* LOGIN */}
             <SignInButton mode="modal">
-              <button className="btn btn-neutral btn-lg text-white">
+              <button className="w-full py-3 rounded-xl bg-black text-white text-lg font-semibold shadow-lg hover:scale-[1.02] active:scale-95 transition">
                 Masuk
               </button>
             </SignInButton>
 
-            {/* REGISTER */}
             <SignUpButton mode="modal">
-              <button className="btn btn-outline btn-lg text-white border-white hover:bg-white hover:text-primary">
+              <button className="w-full py-3 rounded-xl border border-white/60 text-white text-lg hover:bg-white hover:text-primary transition">
                 Daftar Baru
               </button>
             </SignUpButton>
 
           </div>
 
-          <p className="text-white/60 text-sm mt-12">
-            Ribuan orang sudah saling percaya di Nebeng.id
+          {/* Footer kecil */}
+          <p className="text-white/50 text-xs mt-10">
+            Pengiriman personal, tanpa transit
           </p>
-        </SignedOut>
-      </div>
+
+        </div>
+      </SignedOut>
     </div>
   )
 }

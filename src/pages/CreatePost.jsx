@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { supabase } from '../lib/supabaseClient'
 import { uploadPostImage } from '../lib/uploadPostImage'
+import FloatingInput from '../components/FloatingInput'
+import FloatingTextarea from '../components/FloatingTextarea'
+import FloatingSelect from '../components/FloatingSelect'
 
 export default function CreatePost() {
   const { user } = useUser()
@@ -76,7 +79,6 @@ export default function CreatePost() {
 
       if (error) throw error
 
-      alert('Post berhasil dibuat!')
       navigate('/')
     } catch (err) {
       console.error(err)
@@ -86,41 +88,131 @@ export default function CreatePost() {
     }
   }
 
-  return (
-    <form onSubmit={handleSubmit} className="p-4 space-y-4 max-w-md mx-auto">
-      <h1 className="text-lg font-semibold">Buat Post Jastip</h1>
+ return (
+    <div className="min-h-screen bg-linear-to-br from-primary to-secondary flex justify-center px-4 py-10">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl p-6 space-y-6"
+      >
+        <h1 className="text-xl font-bold text-white text-center">
+          Buat Post Jastip
+        </h1>
 
-      <select name="type" value={form.type} onChange={handleChange} className="input w-full">
-        <option value="titip">Mau Titip</option>
-        <option value="bawa">Bisa Bawa</option>
-      </select>
+        {/* TYPE */}
+        <FloatingSelect
+  label="Mau apa?"
+  name="type"
+  value={form.type}
+  onChange={handleChange}
+  required
+>
+  <option value="" disabled hidden>
+    Pilih
+  </option>
+  <option value="titip">Nitip</option>
+  <option value="bawa">Bawa Titipan</option>
+</FloatingSelect>
 
-      <input name="from_city" value={form.from_city} onChange={handleChange} placeholder="Dari Kota" className="input w-full" />
-      <input name="to_city" value={form.to_city} onChange={handleChange} placeholder="Ke Kota" className="input w-full" />
-      <input type="date" name="travel_date" value={form.travel_date} onChange={handleChange} className="input w-full" />
 
-      <textarea name="item_description" value={form.item_description} onChange={handleChange} placeholder="Deskripsi Barang" className="textarea w-full" />
-      <input type="number" name="price" value={form.price} onChange={handleChange} placeholder="Harga Barang" className="input w-full" />
-      <input type="number" name="fee" value={form.fee} onChange={handleChange} placeholder="Fee Jastip" className="input w-full" />
-      <textarea name="description" value={form.description} onChange={handleChange} placeholder="Catatan Tambahan" className="textarea w-full" />
+        {/* FROM CITY */}
+        <FloatingInput
+          name="from_city"
+          value={form.from_city}
+          onChange={handleChange}
+          label="Dari"
+          required
+        />
 
-      {/* Upload foto */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Foto Barang (opsional)</label>
-        <input type="file" accept="image/*" onChange={handleFileChange} className="input w-full" />
+        {/* TO CITY */}
+        <FloatingInput
+          name="to_city"
+          value={form.to_city}
+          onChange={handleChange}
+          label="Ke"
+          required
+        />
 
-        {previewUrl && (
-          <img
-            src={previewUrl}
-            alt="Preview"
-            className="rounded-lg max-h-72 object-contain shadow"
+        {/* DATE */}
+        <FloatingInput
+          type="date"
+          placeholder=""
+          name="travel_date"
+          value={form.travel_date}
+          onChange={handleChange}
+          label="Tanggal Perjalanan"
+          required
+        />
+
+        {/* ITEM DESC */}
+        <FloatingTextarea
+          name="item_description"
+          value={form.item_description}
+          onChange={handleChange}
+          label="Deskripsi Barang"
+          required
+        />
+
+        {/* PRICE */}
+        <FloatingInput
+          type="number"
+          name="price"
+          value={form.price}
+          onChange={handleChange}
+          label="Perkiraan Harga Barang"
+          required
+        />
+
+        {/* FEE */}
+        <FloatingInput
+          type="number"
+          name="fee"
+          value={form.fee}
+          onChange={handleChange}
+          label="Tawarkan Ongkos Jastip"
+          required
+        />
+
+        {/* NOTE */}
+        <FloatingTextarea
+          name="description"
+          value={form.description}
+          onChange={handleChange}
+          label="Catatan Tambahan"
+          required
+        />
+
+        {/* UPLOAD FOTO */}
+        <div className="space-y-2">
+          <label className="text-sm text-white/80">
+            Gambar
+          </label>
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            required
+            className="w-full rounded-xl border border-white/30 bg-transparent text-white file:bg-white file:text-primary file:rounded-lg file:border-0 file:px-4 file:py-2"
           />
-        )}
-      </div>
 
-      <button type="submit" disabled={uploading} className="btn btn-primary w-full">
-        {uploading ? 'Menyimpan...' : 'Buat Post'}
-      </button>
-    </form>
+          {previewUrl && (
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="rounded-2xl max-h-72 object-contain shadow-lg"
+            />
+          )}
+        </div>
+
+        {/* SUBMIT */}
+        <button
+          type="submit"
+          disabled={uploading}
+          className="w-full py-3 rounded-xl bg-black text-white text-lg font-semibold hover:scale-[1.02] active:scale-95 transition"
+        >
+          {uploading ? 'Menyimpan...' : 'Buat Post'}
+        </button>
+      </form>
+    </div>
   )
 }

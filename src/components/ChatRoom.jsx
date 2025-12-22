@@ -81,7 +81,7 @@ export default function ChatRoom() {
     fetchPostInfo();
   }, [conversationId]);
 
-  // Fetch messages + realtime
+  // Fetch messages dan setup realtime
   useEffect(() => {
     if (!conversationId) return;
 
@@ -99,8 +99,11 @@ export default function ChatRoom() {
 
     fetchMessages();
 
+    // Nama channel AMAN: hanya huruf, angka, underscore
+    const safeChannelName = `chat_${conversationId.replace(/-/g, '_')}`;
+
     const channel = supabase
-      .channel(`chat:${conversationId}`)
+      .channel(safeChannelName)
       .on(
         'postgres_changes',
         {
@@ -110,49 +113,48 @@ export default function ChatRoom() {
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
+          console.log('Pesan baru masuk:', payload.new);
           setMessages((prev) => [...prev, payload.new]);
           setTimeout(scrollToBottom, 100);
         }
       )
-      .subscribe();
+      .subscribe((status, error) => {
+        console.log('Realtime status:', status);
+        if (error) {
+          console.error('Realtime error:', error);
+        }
+        if (status === 'SUBSCRIBED') {
+          console.log('Realtime connected! Sync messages...');
+          fetchMessages(); // refresh sekali saat connect
+        }
+      });
 
-    return () => supabase.removeChannel(channel);
+    return () => {
+      console.log('Cleaning up realtime channel...');
+      supabase.removeChannel(channel);
+    };
   }, [conversationId]);
 
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
 
-    const tempMessage = {
-      id: `temp-${Date.now()}`,
-      content: newMessage.trim(),
-      created_at: new Date().toISOString(),
+    const content = newMessage.trim();
+    setNewMessage(''); // kosongkan input dulu biar UX cepat
+
+    const { error } = await supabase.from('messages').insert({
+      conversation_id: conversationId,
       sender_id: currentUserId,
-    };
-
-    setMessages((prev) => [...prev, tempMessage]);
-    setNewMessage('');
-    setTimeout(scrollToBottom, 100);
-
-    const { data: newMsg, error } = await supabase
-      .from('messages')
-      .insert({
-        conversation_id: conversationId,
-        sender_id: currentUserId,
-        content: newMessage.trim(),
-      })
-      .select()
-      .single();
+      content: content,
+    });
 
     if (error) {
-      console.error('Gagal kirim:', error);
-      alert('Pesan gagal terkirim');
-      setMessages((prev) => prev.filter((msg) => msg.id !== tempMessage.id));
-    } else {
-      setMessages((prev) =>
-        prev.map((msg) => (msg.id === tempMessage.id ? newMsg : msg))
-      );
+      console.error('Gagal kirim pesan:', error);
+      alert('Pesan gagal terkirim. Coba lagi.');
+      // Kembalikan input kalau gagal
+      setNewMessage(content);
     }
+    // Tidak perlu tambah apa-apa ke state — realtime akan handle munculnya pesan
   };
 
   if (!conversationId) {

@@ -9,7 +9,7 @@ import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Home from './pages/Home'
 import CreatePost from './pages/CreatePost'
-import Chat from './pages/Chat'
+import ChatInbox from './pages/Chat'
 import ChatRoom from './components/ChatRoom'
 
 import Profile from './pages/Profile'
@@ -33,7 +33,7 @@ function App() {
               <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/create" element={<CreatePost />} />
-                <Route path="/chat" element={<Chat />} />
+                <Route path="/chat" element={<ChatInbox />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/transaksi" element={<Transaksi />} />
                 <Route path="*" element={<Navigate to="/" replace />} />

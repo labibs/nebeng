@@ -135,6 +135,34 @@ export default function ChatRoom() {
     };
   }, [conversationId]);
 
+  // Mark pesan dari lawan sebagai terbaca saat buka room
+  useEffect(() => {
+    if (!conversationId || !currentUserId) return;
+
+    const markAsRead = async () => {
+      // Update semua pesan dari lawan (sender_id != currentUserId) jadi is_read = true
+      const { error } = await supabase
+        .from('messages')
+        .update({ is_read: true })
+        .eq('conversation_id', conversationId)
+        .neq('sender_id', currentUserId)
+        .eq('is_read', false); // hanya yang belum dibaca
+
+      if (error) {
+        console.error('Error marking messages as read:', error);
+      } else {
+        // Update state lokal biar UI langsung berubah tanpa refresh
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.sender_id !== currentUserId ? { ...msg, is_read: true } : msg
+          )
+        );
+      }
+    };
+
+    markAsRead();
+  }, [conversationId, currentUserId]);
+
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
@@ -333,8 +361,25 @@ export default function ChatRoom() {
                   {msg.content}
                 </div>
                 {msg.sender_id === currentUserId && (
-                  <div className="chat-footer opacity-70 text-xs mt-1">Terkirim</div>
-                )}
+                <div className={`chat-footer text-xs mt-1 flex items-center gap-1 ${msg.is_read ? 'text-blue-500' : 'opacity-70'}`}>
+                  {msg.is_read ? (
+                    <>
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 10l4 4L16 6" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        <path d="M8 10l4 4L20 6" stroke="currentColor" strokeWidth="2" fill="none"/>
+                      </svg>
+                      <span>Terbaca</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 10l4 4L16 6" stroke="currentColor" strokeWidth="2" fill="none"/>
+                      </svg>
+                      <span>Terkirim</span>
+                    </>
+                  )}
+                </div>
+              )}
               </div>
             ))}
             <div ref={messagesEndRef} />

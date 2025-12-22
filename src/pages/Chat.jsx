@@ -190,7 +190,18 @@ export default function ChatInbox() {
                 <div className="flex justify-between items-baseline">
                   <h3 className="font-semibold text-base truncate">{conv.opponent.name}</h3>
                   <time className="text-xs text-base-content/60">
-                    {formatDistanceToNow(new Date(conv.lastTime), { addSuffix: true, locale: localeId })}
+                    {(() => {
+                      const diffInSeconds = Math.floor((Date.now() - new Date(conv.lastTime)) / 1000);
+
+                      if (diffInSeconds < 60) {
+                        return 'Baru saja';
+                      }
+
+                      return formatDistanceToNow(new Date(conv.lastTime), {
+                        addSuffix: true,
+                        locale: localeId,
+                      });
+                    })()}
                   </time>
                 </div>
                 <p className="text-sm text-base-content/70 truncate mt-1">

@@ -110,7 +110,7 @@ export default function BottomNav() {
           {/* Chat Icon dengan Badge Unread */}
           <NavItem to="/chat" icon={MessageCircle} activePath={location.pathname}>
             {totalUnread > 0 && (
-              <div className="absolute -top-1 -right-1">
+              <div className="absolute -top-2 -right-3">
                 <div className="badge badge-error badge-xs text-white font-bold">
                   {totalUnread > 99 ? '99+' : totalUnread}
                 </div>

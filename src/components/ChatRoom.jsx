@@ -88,7 +88,7 @@ export default function ChatRoom() {
     const fetchMessages = async () => {
       const { data } = await supabase
         .from('messages')
-        .select('id, content, created_at, sender_id')
+        .select('id, content, created_at, sender_id, is_read')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
@@ -155,13 +155,20 @@ export default function ChatRoom() {
         setMessages((prev) =>
           prev.map((msg) =>
             msg.sender_id !== currentUserId ? { ...msg, is_read: true } : msg
+        
           )
+          
         );
+        
       }
     };
 
+    
+
     markAsRead();
   }, [conversationId, currentUserId]);
+
+  
 
   const sendMessage = async (e) => {
     e.preventDefault();

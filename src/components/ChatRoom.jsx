@@ -138,7 +138,7 @@ export default function ChatRoom() {
           );
         }
       )
-      
+
       .subscribe((status, error) => {
         console.log('Realtime status:', status);
         if (error) {
@@ -183,8 +183,6 @@ export default function ChatRoom() {
         
       }
     };
-
-    
 
     markAsRead();
   }, [conversationId, currentUserId]);

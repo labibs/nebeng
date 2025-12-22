@@ -170,15 +170,33 @@ export default function ChatRoom() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
+
         <div className="flex-1 flex items-center gap-3">
+          {/* Avatar dengan Skeleton Loading */}
           <div className="avatar online">
-            <div className="w-12 rounded-full ring ring-emerald-500 ring-offset-2">
-              <img src={recipient.imageUrl} alt={recipient.name} />
+            <div className="w-12 rounded-full ring ring-emerald-500 ring-offset-base-100 ring-offset-2">
+              {recipient.imageUrl ? (
+                <img src={recipient.imageUrl} alt={recipient.name} />
+              ) : (
+                // Skeleton saat loading
+                <div className="bg-base-300 animate-pulse w-full h-full rounded-full" />
+              )}
             </div>
           </div>
+
+          {/* Nama dengan Skeleton */}
           <div>
-            <h2 className="font-bold text-lg">{recipient.name}</h2>
-            <p className="text-sm opacity-70">Online</p>
+            {recipient.name !== 'Loading...' ? (
+              <>
+                <h2 className="font-bold text-lg">{recipient.name}</h2>
+                <p className="text-sm opacity-70">Online</p>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <div className="h-5 bg-base-300 rounded w-32 animate-pulse" />
+                <div className="h-4 bg-base-300 rounded w-20 animate-pulse" />
+              </div>
+            )}
           </div>
         </div>
       </div>

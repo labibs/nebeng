@@ -118,6 +118,27 @@ export default function ChatRoom() {
           setTimeout(scrollToBottom, 100);
         }
       )
+      // TAMBAH INI: listener untuk UPDATE is_read
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          console.log('Pesan dibaca (update is_read):', payload.new);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === payload.new.id
+                ? { ...msg, is_read: payload.new.is_read }
+                : msg
+            )
+          );
+        }
+      )
+      
       .subscribe((status, error) => {
         console.log('Realtime status:', status);
         if (error) {

@@ -312,10 +312,10 @@ export default function Home() {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`
-                      px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 capitalize
+                      px-6 py-2.5 rounded-full text-xs font-semibold transition-all duration-300 capitalize
                       ${activeTab === tab.id
                         ? 'bg-white text-gray-900 shadow-md'
-                        : 'text-white/80 hover:text-white hover:bg-white/10'
+                        : 'text-gray-300 hover:text-black hover:bg-white/10'
                       }
                     `}
                   >

@@ -84,7 +84,7 @@ export default function BottomNav() {
   return (
     <div
       className={`
-        fixed inset-x-0 bottom-4 z-50 flex justify-center
+        fixed inset-x-0 bottom-1 z-50 flex justify-center
         transition-all duration-300
         ${hidden ? 'translate-y-24 opacity-0' : 'translate-y-0 opacity-100'}
       `}

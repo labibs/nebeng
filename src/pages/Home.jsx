@@ -4,6 +4,13 @@ import { useClerk } from '@clerk/clerk-react'
 import { supabase } from '../lib/supabaseClient'
 import PostCard from '../components/PostCard'
 import PostCardSkeleton from '../components/PostCardSkeleton'
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Pagination, Navigation, Mousewheel, Keyboard } from 'swiper/modules';
+
+// Import CSS Swiper
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 
 export default function Home() {
   const { user, isLoaded } = useUser()
@@ -319,22 +326,33 @@ export default function Home() {
         </div>
       )}
 
-      <main className="pt-4 pb-32 px-4 max-w-2xl mx-auto">
+      <main className="h-screen w-full overflow-hidden bg-black">
   {loading ? (
-    <div className="space-y-6">
-      {[...Array(4)].map((_, i) => (
-        <PostCardSkeleton key={i} />
-      ))}
+    <div className="flex h-full items-center justify-center">
+      <span className="loading loading-spinner loading-lg text-white"></span>
     </div>
   ) : filteredPosts.length > 0 ? (
-    <div className="space-y-6">
+    <Swiper
+      direction="vertical"
+      slidesPerView={1}
+      spaceBetween={0}
+      mousewheel={{ forceToAxis: true }}
+      keyboard={true}
+      pagination={{ clickable: true }}
+      modules={[Pagination, Mousewheel, Keyboard]}
+      className="h-full w-full"
+      speed={600}
+      allowTouchMove={true}
+    >
       {filteredPosts.map((post) => (
-        <PostCard key={post.id} post={post} />
+        <SwiperSlide key={post.id}>
+          <PostCard post={post} />
+        </SwiperSlide>
       ))}
-    </div>
+    </Swiper>
   ) : (
-    <div className="text-center py-16">
-      <p className="text-xl text-base-content/60">
+    <div className="flex h-full items-center justify-center">
+      <p className="text-xl text-white/60">
         {searchQuery ? 'Tidak ada post yang cocok' : 'Belum ada posts'}
       </p>
     </div>

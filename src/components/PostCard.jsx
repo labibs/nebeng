@@ -155,7 +155,7 @@ export default function PostCard({ post }) {
     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
     {/* Glass Card (sesuai gambar) */}
-<div className="absolute inset-x-0 bottom-28 z-20 px-4">
+<div className="absolute inset-x-0 bottom-31 z-20 px-4" onClick={() => setOpen(!open)}>
   <div className="rounded-2xl p-5 backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl">
     {/* Header dengan Avatar */}
     <div className="flex items-center gap-3 mb-0">
@@ -172,7 +172,7 @@ export default function PostCard({ post }) {
     <div className="flex items-center gap-2">
       
     </div>
-      <button className="text-white/80 hover:text-white" onClick={() => setOpen(!open)}>
+      <button className="text-white/80 hover:text-white" >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
         </svg>

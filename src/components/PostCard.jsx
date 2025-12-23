@@ -113,7 +113,7 @@ export default function PostCard({ post }) {
   <div className="relative w-full h-screen overflow-hidden bg-black">
     {/* Sticky Tab Section - Fully Transparent & Overlay on Image */}
   <section className="sticky top-0 z-40 pointer-events-none">
-    <div className="px-6 pt-6 pb-2 pointer-events-auto">
+    <div className="px-2 pt-5 pb-2 pointer-events-auto">
       <div className="flex justify-center">
         <div
   className="
@@ -122,7 +122,7 @@ export default function PostCard({ post }) {
     backdrop-blur-md
     border border-white/30
     rounded-full
-    px-2 py-2
+    px-1 py-1
     shadow-2xl
   "
 >
@@ -158,7 +158,7 @@ export default function PostCard({ post }) {
 <div className="absolute inset-x-0 bottom-35 z-20 px-4">
   <div className="rounded-2xl p-5 backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl">
     {/* Header dengan Avatar */}
-    <div className="flex items-center gap-3 mb-4">
+    <div className="flex items-center gap-3 mb-0">
       <div className="avatar">
         <div className="w-10 h-10 rounded-full ring-2 ring-white/50 ring-offset-2 ring-offset-black/20">
           <img src={userAvatar} alt={username} className="object-cover" />
@@ -172,15 +172,21 @@ export default function PostCard({ post }) {
     <div className="flex items-center gap-2">
       
     </div>
-      <button className="text-white/80 hover:text-white">
+      <button className="text-white/80 hover:text-white" onClick={() => setOpen(!open)}>
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
         </svg>
       </button>
     </div>
 
-   {/* Informasi Rute - Style Boarding Pass Emirates */}
-<div className="relative my-8 overflow-hidden rounded-2xl bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 p-6 shadow-2xl mb-0">
+   
+
+    
+
+    {/* Collapsible Detail (dipercantik) */}
+    <div className={`transition-all duration-500 overflow-hidden ${open ? 'max-h-120 opacity-100 mt-3' : 'max-h-0 opacity-0'}`}>
+      {/* Informasi Rute - Style Boarding Pass Emirates */}
+<div className="relative my-0 overflow-hidden rounded-2xl bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 p-6 shadow-2xl mb-2">
 
   {/* Header: Airline / Badge Type (opsional, bisa dihilangkan kalau nggak perlu) */}
   <div className="flex items-center justify-between mb-2">
@@ -231,42 +237,7 @@ export default function PostCard({ post }) {
       </div> */}
 
       {/* Fee di bawah */}
-      <div className="mt-3 mb-0 text-center">
-        
-        {/* Toggle Detail (lebih menonjol) */}
-    <button
-  onClick={() => setOpen(!open)}
-  className="
-    w-full py-2 mt-2 mb-0
-    text-white/90 hover:text-white
-    text-sm font-semibold
-     rounded-lg
-    transition
-    flex items-center justify-center gap-2
-  "
->
-  <span>{open ? 'Sembunyikan' : 'Lihat detail'}</span>
-
-  <svg
-    className={`
-      w-4 h-4
-      transition-transform duration-300 ease-in-out
-      ${open ? 'rotate-180' : 'rotate-0'}
-    `}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M19 9l-7 7-7-7"
-    />
-  </svg>
-</button>
-
-      </div>
+      
     </div>
 
     {/* Kanan: Arrival */}
@@ -282,11 +253,7 @@ export default function PostCard({ post }) {
   </div>
 
 </div>
-
-    
-
-    {/* Collapsible Detail (dipercantik) */}
-    <div className={`transition-all duration-500 overflow-hidden ${open ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'}`}>
+      
       {/* Deskripsi */}
       {post.description && (
         <div className="mb-4">
@@ -321,7 +288,7 @@ export default function PostCard({ post }) {
       )}
 
       {/* Metode Pembayaran (opsional) */}
-      <div className="mb-3">
+      <div className="mb-0">
         {/* Horizontal Actions (disesuaikan dengan gambar) */}
     <div className="flex justify-around items-center mt-4 pt-4 border-t border-white/20">
       {/* Like */}

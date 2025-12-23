@@ -11,6 +11,7 @@ import { Pagination, Navigation, Mousewheel, Keyboard } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
+import Profile from './Profile'
 
 export default function Home() {
   const { user, isLoaded } = useUser()
@@ -24,6 +25,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isSyncingUser, setIsSyncingUser] = useState(false)
   const [isTopHeaderVisible, setIsTopHeaderVisible] = useState(true)
+  const [feeRange, setFeeRange] = useState([0, 500000]) // default: 0 - 500rb
 
   // Scroll handler untuk top header
   useEffect(() => {
@@ -126,15 +128,14 @@ export default function Home() {
 
   // Filter posts berdasarkan tab dan search
   const filteredPosts = posts.filter(post => {
-    // Filter by tab
-    if (activeTab !== 'semua') {
-      const targetType = activeTab === 'titip' ? 'titip' : 'bawa'
-      if (post.type !== targetType) return false
-    }
-    
-    // Filter by search query
-    if (!searchQuery.trim()) return true
-    
+  // Filter by tab
+  if (activeTab !== 'semua') {
+    const targetType = activeTab === 'titip' ? 'titip' : 'bawa'
+    if (post.type !== targetType) return false
+  }
+
+  // Filter by search query
+  if (searchQuery.trim()) {
     const query = searchQuery.toLowerCase()
     const searchFields = [
       post.from_city,
@@ -142,11 +143,18 @@ export default function Home() {
       post.item_description,
       post.description
     ]
-    
-    return searchFields.some(field => 
-      field?.toLowerCase().includes(query)
-    )
-  })
+    if (!searchFields.some(field => field?.toLowerCase().includes(query))) {
+      return false
+    }
+  }
+
+  // Filter by fee range
+  if (post.fee < feeRange[0] || post.fee > feeRange[1]) {
+    return false
+  }
+
+  return true
+})
 
   // Search handlers
   const handleSearchKeyDown = (e) => {
@@ -182,7 +190,7 @@ export default function Home() {
         }`}
       >
         
-        <div className="bg-base-100/80 backdrop-blur-md border-b border-base-300 shadow-lg">
+        <div className="backdrop-blur-xl shadow-lg">
           <div className="navbar px-5 py-4">
             {/* Logo */}
             <div className="flex-1">
@@ -205,54 +213,35 @@ export default function Home() {
               </button>
 
               {/* User profile dropdown */}
-              {isLoaded ? (
-                user ? (
-                  <div className="dropdown dropdown-end">
-                    <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-                      <div className="w-11 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                        <img 
-                          src={user.imageUrl} 
-                          alt={user.fullName || 'User'} 
-                          className="object-cover" 
-                        />
-                      </div>
-                    </label>
-                    <ul 
-                      tabIndex={0} 
-                      className="menu menu-sm dropdown-content mt-4 z-[1] p-3 shadow-xl bg-base-100/95 backdrop-blur-md rounded-2xl w-56 border border-base-300"
-                    >
-                      <li className="menu-title px-3 py-2">
-                        <span className="font-semibold">
-                          {user.fullName || user.username || 'User'}
-                        </span>
-                      </li>
-                      <div className="divider my-1" />
-                      
-                      {userMenuItems.map((item) => (
-                        <li key={item.label}>
-                          <a 
-                            href={item.href} 
-                            className="py-3 hover:bg-base-200 rounded-lg"
-                          >
-                            {item.label}
-                          </a>
-                        </li>
-                      ))}
-                      
-                      <li>
-                        <button 
-                          onClick={() => signOut()} 
-                          className="py-3 text-error hover:bg-error/10 rounded-lg"
-                        >
-                          Keluar
-                        </button>
-                      </li>
-                    </ul>
-                  </div>
-                ) : null
-              ) : (
-                <div className="skeleton w-11 h-11 rounded-full" />
-              )}
+{isLoaded ? (
+  user ? (
+    <div className="dropdown dropdown-end">
+      {/* Trigger: Avatar Button */}
+      <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+        <div className="w-11 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+          <img
+            src={user.imageUrl}
+            alt={user.fullName || 'User'}
+            className="object-cover"
+          />
+        </div>
+      </label>
+
+      {/* Dropdown Content */}
+      <div
+        tabIndex={0}
+        className="dropdown-content mt-4 z-[1] w-72 rounded-2xl shadow-xl border border-base-300 bg-base-100/95 backdrop-blur-md overflow-hidden"
+      >
+        {/* Arrow / Tail */}
+        <div className="absolute -top-2 right-4 w-4 h-4 bg-base-100/95 backdrop-blur-md border-t border-l border-base-300 rotate-45" />
+          {/* Komponen Profile yang sudah berisi header, info, dll */}
+          <Profile />
+      </div>
+    </div>
+  ) : null
+) : (
+  <div className="skeleton w-11 h-8 rounded-full" />
+)}
             </div>
           </div>
         </div>
@@ -260,48 +249,132 @@ export default function Home() {
 
       {/* Spacer untuk fixed header */}
       <div className="h-15" />
-
-      
-      {/* Search Modal */}
-      {searchOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center pt-24 px-4">
-          <div className="w-full max-w-xl">
-            <div className="bg-base-100/90 backdrop-blur-xl rounded-3xl shadow-2xl p-6 border border-base-300">
-              <div className="flex items-center gap-4">
-                <div className="flex-1 relative">
-                  <svg 
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-base-content/50" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  <input
-                    type="text"
-                    className="input input-lg w-full pl-12 bg-base-200/50 focus:bg-base-200 focus:outline-none"
-                    placeholder="Cari kota, barang, atau deskripsi..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={handleSearchKeyDown}
-                    autoFocus
-                  />
-                </div>
-                <button
-                  onClick={closeSearch}
-                  className="btn btn-ghost btn-circle btn-lg"
-                  aria-label="Close search"
+{/* Search Modal */}
+{searchOpen && (
+  <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex flex-col">
+    {/* Header + Input Search */}
+    <div className="pt-20 px-4 pb-4">
+      <div className="max-w-2xl mx-auto w-full">
+        <div className="bg-base-100/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-base-300 overflow-hidden">
+          <div className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="flex-1 relative">
+                {/* Icon Lup - Selalu di depan dengan pointer-events-none */}
+                <svg
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-base-content/70 pointer-events-none z-10"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+
+                {/* Input */}
+                <input
+                  type="text"
+                  placeholder="Cari kota, barang, atau deskripsi..."
+                  className="
+                    input input-lg w-full 
+                    pl-14 pr-6 
+                    bg-base-200/60 
+                    focus:bg-base-200/80 
+                    focus:outline-none 
+                    border-0 
+                    transition-all duration-200
+                    placeholder:text-base-content/50
+                  "
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  autoFocus
+                />
+              </div>
+              <button
+                onClick={closeSearch}
+                className="btn btn-ghost btn-circle btn-lg"
+                aria-label="Tutup pencarian"
+              >
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Tabs + Filter Fee - Sticky */}
+          <div className="sticky top-0 z-10 bg-base-100/95 backdrop-blur-xl border-t border-base-300 px-3 py-4">
+            {/* Tabs */}
+            <div className="flex justify-center mb-5">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-2 py-2 shadow-xl">
+                {tabOptions.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 capitalize
+                      ${activeTab === tab.id
+                        ? 'bg-white text-gray-900 shadow-md'
+                        : 'text-white/80 hover:text-white hover:bg-white/10'
+                      }
+                    `}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Filter Fee - Slider Rentang Harga */}
+            <div className="space-y-3 pt-2 px-4 pb-2"> {/* beri sedikit padding atas agar tidak nempel ke tab */}
+              <div className="flex justify-between text-sm font-medium text-base-content/80">
+                <span>Ongkos Fee</span>
+                <span>
+                  Rp {feeRange[0].toLocaleString()} - Rp {feeRange[1].toLocaleString()}
+                </span>
+              </div>
+
+              {/* Slider */}
+              <div className="relative py-4"> {/* py-4 untuk memberi ruang vertikal atas-bawah slider */}
+                <input
+                  type="range"
+                  min="0"
+                  max="1000000"
+                  step="10000"
+                  value={feeRange[1]}
+                  onChange={(e) => setFeeRange([feeRange[0], Number(e.target.value)])}
+                  className="absolute w-full h-3 bg-base-300 rounded-lg appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(feeRange[1] / 1000000) * 100}%, #e5e7eb ${(feeRange[1] / 1000000) * 100}%, #e5e7eb 100%)`,
+                  }}
+                />
+                <input
+                  type="range"
+                  min="0"
+                  max="1000000"
+                  step="10000"
+                  value={feeRange[0]}
+                  onChange={(e) => setFeeRange([Number(e.target.value), feeRange[1]])}
+                  className="absolute w-full h-3 bg-transparent rounded-lg appearance-none cursor-pointer pointer-events-none"
+                  style={{ zIndex: feeRange[0] > 900000 ? 5 : 3 }}
+                />
+              </div>
+
+              {/* Label bawah - sekarang lebih ke bawah dan rapi */}
+              <div className="flex justify-between text-xs text-base-content/60 mt-3">
+                <span>Rp 0</span>
+                <span>Rp 1.000.000+</span>
               </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
+    </div>
 
+    {/* Area kosong untuk scroll hasil (opsional jika ada list di bawah) */}
+    <div className="flex-1" onClick={closeSearch} />
+  </div>
+)}
       <main className="h-screen w-full overflow-hidden bg-black">
   
 

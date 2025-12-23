@@ -14,6 +14,7 @@ import ChatRoom from './components/ChatRoom'
 
 import Profile from './pages/Profile'
 import Transaksi from './pages/Transaksi'
+import Market from './pages/Market'
 import BottomNav from './components/BottomNav'
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
                 <Route path="/chat" element={<ChatInbox />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/transaksi" element={<Transaksi />} />
+                <Route path="/market" element={<Market />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
               <Route element={<ChatLayout />}>

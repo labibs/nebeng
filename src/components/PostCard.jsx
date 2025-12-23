@@ -111,41 +111,7 @@ export default function PostCard({ post }) {
 
   return (
   <div className="relative w-full h-screen overflow-hidden bg-black">
-    {/* Sticky Tab Section - Fully Transparent & Overlay on Image */}
-  <section className="sticky top-0 z-40 pointer-events-none">
-    <div className="px-2 pt-5 pb-2 pointer-events-auto">
-      <div className="flex justify-center">
-        <div
-  className="
-    inline-flex items-center gap-2
-    bg-transparent
-    backdrop-blur-md
-    border border-white/30
-    rounded-full
-    px-1 py-1
-    shadow-2xl
-  "
->
-
-          {tabOptions.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`
-                px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 capitalize
-                ${activeTab === tab.id
-                  ? 'bg-white text-gray-900 shadow-lg'
-                  : 'text-white/70 hover:text-white hover:bg-white/10'
-                }
-              `}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  </section>
+    
     {/* Background Image */}
     <img
       src={itemPhoto}
@@ -166,7 +132,7 @@ export default function PostCard({ post }) {
       </div>
       <div className="flex-1">
         <h3 className="text-base font-bold text-white drop-shadow">{username}</h3>
-        <p className="text-xs text-white/70">{displayDate} {isTitip ? 'Mau nitip' : 'Bisa bawa'} dari {post.from_city?.slice(0, 8).toUpperCase() || '—'} ke {post.to_city?.slice(0, 8).toUpperCase() || '—'}</p>
+        <p className="text-xs text-white/70">{!open ? `${displayDate} ${isTitip ? 'Mau nitip' : 'Bisa bawa'} dari ${post.from_city?.slice(0, 8).toUpperCase() || '—'} ke ${post.to_city?.slice(0, 8).toUpperCase() || '—'}` : `${displayDate}`}</p>
       </div>
       {/* Badge Tipe */}
     <div className="flex items-center gap-2">
@@ -178,10 +144,6 @@ export default function PostCard({ post }) {
         </svg>
       </button>
     </div>
-
-   
-
-    
 
     {/* Collapsible Detail (dipercantik) */}
     <div className={`transition-all duration-500 overflow-hidden ${open ? 'max-h-120 opacity-100 mt-3' : 'max-h-0 opacity-0'}`}>
@@ -221,7 +183,7 @@ export default function PostCard({ post }) {
     </div>
 
     {/* Tengah: Arrow Line + Status */}
-    <div className="flex flex-col items-center mt-5">
+    <div className="flex flex-col items-center mt-1">
       {/* Garis dengan pesawat */}
       <div className="relative w-full h-1 bg-white/30 rounded-full my-0">
         <div className="absolute inset-0 flex items-center justify-center">
@@ -254,45 +216,65 @@ export default function PostCard({ post }) {
 
 </div>
       
-      {/* Deskripsi */}
-      {post.description && (
-        <div className="mb-4">
-          <p className="text-xs text-white/70 mb-1">Deskripsi</p>
-          <p className="text-sm text-white/90 leading-relaxed bg-white/10 rounded-lg p-3">
-            {post.description}
-          </p>
-        </div>
-      )}
+      {/* Wrapper Scrollable untuk Deskripsi + Detail + Harga */}
+<div className="mb-4 max-h-55 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent pr-2">
+  {/* Deskripsi */}
+  {post.description && (
+    <div className="mb-4">
+      <p className="text-xs text-white/70 mb-1">Deskripsi</p>
+      <div className="bg-white/10 rounded-lg p-3">
+        <p className="text-sm text-white/90 leading-relaxed">
+          {post.description}
+        </p>
+      </div>
+    </div>
+  )}
 
-      {/* Detail Barang */}
-      {post.item_description && (
-        <div className="mb-4">
-          <p className="text-xs text-white/70 mb-1">Detail Barang</p>
-          <div className="bg-white/15 rounded-lg px-4 py-3">
-            <p className="text-sm text-white/90">
-              {post.item_description}
-            </p>
-          </div>
-        </div>
-      )}
+  {/* Detail Barang */}
+  {post.item_description && (
+    <div className="mb-4">
+      <p className="text-xs text-white/70 mb-1">Detail Barang</p>
+      <div className="bg-white/15 rounded-lg px-4 py-3">
+        <p className="text-sm text-white/90 leading-relaxed">
+          {post.item_description}
+        </p>
+      </div>
+    </div>
+  )}
 
-      {post.price && (
-        <div className="mb-4">
-          <p className="text-xs text-white/70 mb-1">Perkiraan Harga Barang</p>
-          <div className="bg-white/15 rounded-lg px-4 py-3">
-            <p className="text-sm text-white/90">
-              Rp{post.price.toLocaleString('id-ID')}
-            </p>
-          </div>
-        </div>
-      )}
+  {/* Perkiraan Harga Barang */}
+  {post.price && (
+    <div className="mb-4">
+      <p className="text-xs text-white/70 mb-1">Perkiraan Harga Barang</p>
+      <div className="bg-white/15 rounded-lg px-4 py-3">
+        <p className="text-sm text-white/90">
+          Rp{post.price.toLocaleString('id-ID')}
+        </p>
+      </div>
+    </div>
+  )}
+</div>
+{/* Akhir Wrapper Scrollable */}
 
       {/* Metode Pembayaran (opsional) */}
       <div className="mb-0">
-        {/* Horizontal Actions (disesuaikan dengan gambar) */}
-    <div className="flex justify-around items-center mt-4 pt-4 border-t border-white/20">
+        {/* Horizontal Actions - Scrollable dengan Indikator Dot di Atas */}
+{/* Horizontal Actions - Scrollable dengan Indikator Dot di Tengah */}
+<div className="relative mt-4 pt-4 border-t border-white/20">
+  {/* Indikator Dot - Selalu di tengah horizontal area actions */}
+  <div className="absolute left-1/2 top-0 -translate-x-1/2 pointer-events-none z-10">
+    <div className="flex items-center gap-1.5 animate-pulse">
+      <div className="w-2 h-2 bg-white/70 rounded-full shadow-md" />
+      <div className="w-2 h-2 bg-white/50 rounded-full shadow-md" />
+      <div className="w-2 h-2 bg-white/30 rounded-full shadow-md" />
+    </div>
+  </div>
+
+  {/* Scrollable Container */}
+  <div className="overflow-x-auto scrollbar-hide">
+    <div className="flex justify-around items-center gap-6 px-6 py-2 min-w-max">
       {/* Like */}
-      <button className="flex flex-col items-center gap-1.5">
+      <button className="flex flex-col items-center gap-1.5 min-w-[60px]">
         <div className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition">
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-1.164 0-2.097.943-2.097 2.095v2.81M7 20H4a2 2 0 01-2-2v-9a2 2 0 012-2h3" />
@@ -302,9 +284,21 @@ export default function PostCard({ post }) {
       </button>
 
       {/* Komentar */}
-      <button className="flex flex-col items-center gap-1.5"
-      onClick={handleChatDeal} 
-        disabled={loadingChat}>
+      <button className="flex flex-col items-center gap-1.5 min-w-[60px]">
+        <div className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition">
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+          </svg>
+        </div>
+        <span className="text-xs text-white/80 font-medium">Komentar</span>
+      </button>
+
+      {/* Chat */}
+      <button 
+        onClick={handleChatDeal} 
+        disabled={loadingChat}
+        className="flex flex-col items-center gap-1.5 min-w-[60px]"
+      >
         <div className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition">
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -313,18 +307,41 @@ export default function PostCard({ post }) {
         <span className="text-xs text-white/80 font-medium">Chat</span>
       </button>
 
-      {/* Kerjasama / Deal - Lebih menonjol */}
-      <button className="flex flex-col items-center gap-1.5 transform hover:scale-105 transition">
-        <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-lg">
-          <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      {/* Deal - Menonjol */}
+      <button className="flex flex-col items-center gap-1.5 transform hover:scale-110 transition min-w-[70px]">
+        <div className="p-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full shadow-xl ring-4 ring-emerald-500/30">
+          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
         </div>
-        <span className="text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text">Deal</span>
+        <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">
+          Deal
+        </span>
+      </button>
+
+      {/* Repost */}
+      <button className="flex flex-col items-center gap-1.5 min-w-[60px]">
+        <div className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition">
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16l8-8 8 8V4a2 2 0 00-2-2H6a2 2 0 00-2 2z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12l4 4m-4-4l-4 4" />
+          </svg>
+        </div>
+        <span className="text-xs text-white/80 font-medium">Repost</span>
+      </button>
+
+      {/* Simpan */}
+      <button className="flex flex-col items-center gap-1.5 min-w-[60px]">
+        <div className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition">
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-4-7 4V5z" />
+          </svg>
+        </div>
+        <span className="text-xs text-white/80 font-medium">Simpan</span>
       </button>
 
       {/* Share */}
-      <button className="flex flex-col items-center gap-1.5">
+      <button className="flex flex-col items-center gap-1.5 min-w-[60px]">
         <div className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition">
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -333,6 +350,11 @@ export default function PostCard({ post }) {
         <span className="text-xs text-white/80 font-medium">Share</span>
       </button>
     </div>
+  </div>
+
+  {/* Optional: Gradient fade kanan untuk hint lebih halus */}
+  <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+</div>
       </div>
     </div>
 

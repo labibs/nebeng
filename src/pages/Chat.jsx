@@ -156,68 +156,82 @@ export default function ChatInbox() {
   };
 
   return (
-    <div className="min-h-screen bg-base-200">
+    <div className="min-h-screen bg-linear-to-br from-primary to-secondary">
       <div className="sticky top-0 z-10 navbar bg-base-100 shadow-md">
         <div className="flex-1">
-          <h1 className="ml-4 text-xl font-bold">Pesan</h1>
-        </div>
+              <h3 className="text-2xl font-extrabold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Chat
+              </h3>
+            </div>
       </div>
 
-      <div className="divide-y divide-base-300">
-        {loading ? (
-          <div className="flex justify-center py-10">
-            <span className="loading loading-spinner loading-lg"></span>
-          </div>
-        ) : conversations.length === 0 ? (
-          <div className="p-10 text-center text-base-content/60">
-            <p className="text-lg">Belum ada obrolan</p>
-            <p className="mt-2">Mulai chat dari post yang kamu minati!</p>
-          </div>
-        ) : (
-          conversations.map((conv) => (
-            <button
-              key={conv.conversationId}
-              onClick={() => openChat(conv.conversationId, conv.opponent)}
-              className="w-full flex items-center gap-4 p-4 hover:bg-base-100 transition"
-            >
+      <div className="bg-base-200/50">
+  {loading ? (
+    <div className="flex justify-center py-16">
+      <span className="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  ) : conversations.length === 0 ? (
+    <div className="p-12 text-center text-base-content/60">
+      <p className="text-lg font-medium">Belum ada obrolan</p>
+      <p className="mt-3 text-sm">Mulai chat dari post yang kamu minati!</p>
+    </div>
+  ) : (
+    <div>
+      {conversations.map((conv, index) => (
+        <div key={conv.conversationId}>
+          <button
+            onClick={() => openChat(conv.conversationId, conv.opponent)}
+            className="w-full flex items-center gap-4 p-4 hover:bg-base-100/70 transition-all duration-200 text-left"
+          >
+            <div className="relative">
               <div className="avatar online">
                 <div className="w-12 rounded-full ring ring-emerald-500 ring-offset-base-100 ring-offset-2">
-                  <img src={conv.opponent.avatar_url} alt={conv.opponent.name} />
+                  <img 
+                    src={conv.opponent.avatar_url || '/default-avatar.png'} 
+                    alt={conv.opponent.name} 
+                    className="object-cover"
+                  />
                 </div>
               </div>
+            </div>
 
-              <div className="flex-1 text-left min-w-0">
-                <div className="flex justify-between items-baseline">
-                  <h3 className="font-semibold text-base truncate">{conv.opponent.name}</h3>
-                  <time className="text-xs text-base-content/60">
-                    {(() => {
-                      const diffInSeconds = Math.floor((Date.now() - new Date(conv.lastTime)) / 1000);
-
-                      if (diffInSeconds < 60) {
-                        return 'Baru saja';
-                      }
-
-                      return formatDistanceToNow(new Date(conv.lastTime), {
-                        addSuffix: true,
-                        locale: localeId,
-                      });
-                    })()}
-                  </time>
-                </div>
-                <p className="text-sm text-base-content/70 truncate mt-1">
-                  {conv.lastMessage}
-                </p>
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-baseline mb-1">
+                <h3 className="font-semibold text-base truncate pr-2">
+                  {conv.opponent.name}
+                </h3>
+                <time className="text-xs text-base-content/60 flex-shrink-0">
+                  {(() => {
+                    const diffInSeconds = Math.floor((Date.now() - new Date(conv.lastTime)) / 1000);
+                    if (diffInSeconds < 60) return 'Baru saja';
+                    return formatDistanceToNow(new Date(conv.lastTime), {
+                      addSuffix: true,
+                      locale: localeId,
+                    });
+                  })()}
+                </time>
               </div>
+              <p className="text-sm text-base-content/70 truncate">
+                {conv.lastMessage || 'Mulai obrolan...'}
+              </p>
+            </div>
 
-              {conv.unreadCount > 0 && (
-                <div className="badge badge-primary badge-sm">
-                  {conv.unreadCount > 99 ? '99+' : conv.unreadCount}
-                </div>
-              )}
-            </button>
-          ))
-        )}
-      </div>
+            {conv.unreadCount > 0 && (
+              <div className="badge badge-primary badge-sm font-bold min-w-6">
+                {conv.unreadCount > 99 ? '99+' : conv.unreadCount}
+              </div>
+            )}
+          </button>
+
+          {/* Garis pemisah tipis cantik di bawah setiap chat (kecuali yang terakhir) */}
+          {index < conversations.length - 1 && (
+            <hr className="border-0 h-px bg-gradient-to-r from-transparent via-base-300/50 to-transparent mx-4" />
+          )}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
     </div>
   );
 }

@@ -135,20 +135,7 @@ export default function PostCard({ post }) {
 <div className="relative -mt-20 px-4 pb-6">
   <div className="rounded-3xl p-5 backdrop-blur-xl bg-white/40 border border-white/50 shadow-2xl">
 
-    {/* Header */}
-    <div className="flex items-center gap-4 mb-4">
-      <div className="avatar">
-        <div className="w-14 h-14 rounded-full ring ring-emerald-300 ring-offset-2 ring-offset-white/60">
-          <img src={userAvatar} alt={username} className="object-cover" />
-        </div>
-      </div>
-      <div>
-        <h3 className="text-lg font-bold text-emerald-800">
-          {username}
-        </h3>
-        <p className="text-sm text-emerald-600">{displayDate}</p>
-      </div>
-    </div>
+    {/* Header: Avatar + Nama + Tanggal */} <div className="flex items-center gap-4 mb-4"> <div className="avatar"> <div className="w-14 h-14 rounded-full ring ring-white ring-offset-base-100 ring-offset-2"> <img src={userAvatar} alt={username} className="object-cover" /> </div> </div> <div> <h3 className="text-lg font-bold text-white drop-shadow-md"> {username} </h3> <p className="text-sm text-white/80">{displayDate}</p> </div> </div>
 
     {/* Rute */}
     <div className="flex items-center justify-center gap-4 my-5">

@@ -217,56 +217,60 @@ export default function PostCard({ post }) {
 </div>
       
       {/* Wrapper Scrollable untuk Deskripsi + Detail + Harga */}
-<div className="
-  mb-4 
-  max-h-40                  {/* Batas maksimal tinggi */}
-  overflow-y-auto           {/* Scroll vertikal otomatis */}
-  scrollbar-thin 
-  scrollbar-thumb-white/20 
-  scrollbar-track-transparent
-  pr-2                      {/* Ruang untuk scrollbar */}
-  
-  {/* Fix scrolling di mobile */}
-  -webkit-overflow-scrolling-touch  {/* Penting untuk iOS Safari */}
-  overscroll-behavior-y-contain     {/* Mencegah bounce ke parent */}
-  touch-action-pan-y                {/* Pastikan touch scrolling aktif */}
-">
+<div
+  className="
+    mb-4
+    max-h-40
+    overflow-y-auto
+    overscroll-contain
+    scrollbar-thin
+    scrollbar-thumb-white/20
+    scrollbar-track-transparent
+    pr-2
+    touch-auto
+  "
+  style={{ WebkitOverflowScrolling: 'touch' }}
+>
   {/* Deskripsi */}
   {post.description && (
-    <div className="mb-5 last:mb-0"> {/* last:mb-0 agar tidak ada jarak berlebih di bawah */}
+    <section className="mb-5 last:mb-0">
       <p className="text-xs text-white/70 mb-1.5">Deskripsi</p>
       <div className="bg-white/10 rounded-xl p-4">
         <p className="text-sm text-white/90 leading-relaxed">
           {post.description}
         </p>
       </div>
-    </div>
+    </section>
   )}
 
   {/* Detail Barang */}
   {post.item_description && (
-    <div className="mb-5 last:mb-0">
+    <section className="mb-5 last:mb-0">
       <p className="text-xs text-white/70 mb-1.5">Detail Barang</p>
-      <div className="bg-white/15 rounded-xl px-4 py-4">
+      <div className="bg-white/15 rounded-xl p-4">
         <p className="text-sm text-white/90 leading-relaxed">
           {post.item_description}
         </p>
       </div>
-    </div>
+    </section>
   )}
 
   {/* Perkiraan Harga Barang */}
   {post.price && (
-    <div className="mb-5 last:mb-0">
-      <p className="text-xs text-white/70 mb-1.5">Perkiraan Harga Barang</p>
-      <div className="bg-white/15 rounded-xl px-4 py-4">
+    <section className="mb-5 last:mb-0">
+      <p className="text-xs text-white/70 mb-1.5">
+        Perkiraan Harga Barang
+      </p>
+      <div className="bg-white/15 rounded-xl p-4">
         <p className="text-sm font-semibold text-white/95">
           Rp{post.price.toLocaleString('id-ID')}
         </p>
       </div>
-    </div>
+    </section>
   )}
 </div>
+
+
 {/* Akhir Wrapper Scrollable */}
 
       {/* Metode Pembayaran (opsional) */}

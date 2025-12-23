@@ -163,7 +163,7 @@ export default function PostCard({ post }) {
 
           {/* Deskripsi */}
           {post.description && (
-            <p className="text-sm text-white/90 mb-3 leading-relaxed">
+            <p className="text-sm text-emerald-300 mb-3 leading-relaxed">
               {post.description}
             </p>
           )}
@@ -171,14 +171,14 @@ export default function PostCard({ post }) {
           {/* Barang */}
           {post.item_description && (
             <div className="bg-white/40 rounded-2xl px-4 py-3 mb-4">
-              <p className="text-sm font-medium text-white">
+              <p className="text-sm font-medium text-emerald-300">
                 <span className="font-bold">Barang:</span> {post.item_description}
               </p>
             </div>
           )}
 
           {/* Price & Fee */}
-          <div className="flex justify-between items-center mb-6 text-white">
+          <div className="flex justify-between items-center mb-6 text-emerald-300">
             {post.price > 0 && (
               <p className="text-sm">
                 Harga <span className="font-bold">Rp{post.price.toLocaleString('id-ID')}</span>

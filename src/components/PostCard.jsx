@@ -155,7 +155,7 @@ export default function PostCard({ post }) {
     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
     {/* Glass Card (sesuai gambar) */}
-<div className="absolute inset-x-0 bottom-35 z-20 px-4">
+<div className="absolute inset-x-0 bottom-25 z-20 px-4">
   <div className="rounded-2xl p-5 backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl">
     {/* Header dengan Avatar */}
     <div className="flex items-center gap-3 mb-0">

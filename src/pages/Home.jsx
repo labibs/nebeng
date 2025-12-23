@@ -261,31 +261,7 @@ export default function Home() {
       {/* Spacer untuk fixed header */}
       <div className="h-15" />
 
-      {/* Sticky Tab Section - Scrolls with content */}
-      <section className="sticky top-n4 z-30 bg-base-100/80 backdrop-transparent border-none shadow-sm">
-        <div className="px-6 pb-1 pt-4">
-          <div className="flex justify-center">
-            <div className="bg-base-200/60 backdrop-blur-sm rounded-full p-1 shadow-inner inline-flex">
-              {tabOptions.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`
-                    px-6 py-2 rounded-full text-xs font-medium transition-all duration-200 capitalize
-                    ${activeTab === tab.id
-                      ? 'bg-white text-primary shadow-md'
-                      : 'text-base-content/60 hover:text-base-content'
-                    }
-                  `}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
+      
       {/* Search Modal */}
       {searchOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center pt-24 px-4">
@@ -327,6 +303,9 @@ export default function Home() {
       )}
 
       <main className="h-screen w-full overflow-hidden bg-black">
+  
+
+  {/* Content */}
   {loading ? (
     <div className="flex h-full items-center justify-center">
       <span className="loading loading-spinner loading-lg text-white"></span>

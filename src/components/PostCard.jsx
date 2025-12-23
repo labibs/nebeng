@@ -10,6 +10,14 @@ export default function PostCard({ post }) {
   const { user: clerkUser, isSignedIn } = useUser()
   const [open, setOpen] = useState(false)
   const [loadingChat, setLoadingChat] = useState(false)
+  const [activeTab, setActiveTab] = useState('semua')
+
+  // Tab options
+  const tabOptions = [
+    { id: 'semua', label: 'Semua' },
+    { id: 'titip', label: 'Mau Titip' },
+    { id: 'bawa', label: 'Bisa Bawa' }
+  ]
 
   const currentUserId = clerkUser?.id
 
@@ -103,6 +111,41 @@ export default function PostCard({ post }) {
 
   return (
   <div className="relative w-full h-screen overflow-hidden bg-black">
+    {/* Sticky Tab Section - Fully Transparent & Overlay on Image */}
+  <section className="sticky top-0 z-40 pointer-events-none">
+    <div className="px-6 pt-6 pb-2 pointer-events-auto">
+      <div className="flex justify-center">
+        <div
+  className="
+    inline-flex items-center gap-2
+    bg-transparent
+    backdrop-blur-md
+    border border-white/30
+    rounded-full
+    px-2 py-2
+    shadow-2xl
+  "
+>
+
+          {tabOptions.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`
+                px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 capitalize
+                ${activeTab === tab.id
+                  ? 'bg-white text-gray-900 shadow-lg'
+                  : 'text-white/70 hover:text-white hover:bg-white/10'
+                }
+              `}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
     {/* Background Image */}
     <img
       src={itemPhoto}
@@ -112,7 +155,7 @@ export default function PostCard({ post }) {
     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
     {/* Glass Card (sesuai gambar) */}
-<div className="absolute inset-x-0 bottom-47 z-20 px-4">
+<div className="absolute inset-x-0 bottom-35 z-20 px-4">
   <div className="rounded-2xl p-5 backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl">
     {/* Header dengan Avatar */}
     <div className="flex items-center gap-3 mb-4">
@@ -136,59 +179,111 @@ export default function PostCard({ post }) {
       </button>
     </div>
 
-    {/* Rute (lebih kecil seperti di gambar) */}
-    <div className="flex items-center justify-center gap-4 my-4">
-      <span className="text-lg font-bold text-white drop-shadow">
-        {post.from_city || '—'}
-      </span>
-      <svg className="w-8 h-8 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+   {/* Informasi Rute - Style Boarding Pass Emirates */}
+<div className="relative my-8 overflow-hidden rounded-2xl bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 p-6 shadow-2xl mb-0">
+
+  {/* Header: Airline / Badge Type (opsional, bisa dihilangkan kalau nggak perlu) */}
+  <div className="flex items-center justify-between mb-2">
+    <div className="flex items-center gap-2">
+      <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 1C5.935 1 1 4.134 1 8v8c0 3.866 4.935 7 11 7s11-3.134 11-7V8c0-3.866-4.935-7-11-7zm9 15c0 2.757-4.038 5-9 5s-9-2.243-9-5v-1.35C4.986 16.11 8.25 17 12 17s7.014-.89 9-2.35V16zm0-5c0 2.757-4.038 5-9 5s-9-2.243-9-5V9.65C4.986 11.11 8.25 12 12 12s7.014-.89 9-2.35V11zm0-5c0 2.757-4.038 5-9 5S3 8.757 3 6s4.038-5 9-5 9 2.243 9 5z"/>
       </svg>
-      <span className="text-lg font-bold text-white drop-shadow">
-        {post.to_city || '—'}
-      </span>
+
+      <span className="text-white font-bold text-lg tracking-wider">
+          Rp{post.fee.toLocaleString('id-ID')}
+        </span>
+    </div>
+    <span className={`badge badge-lg font-bold text-white border-white/50 text-sm ${
+      isTitip ? 'bg-info/30' : 'bg-secondary/30'
+    }`}>
+      {isTitip ? 'MAU TITIP' : 'BISA BAWA'}
+    </span>
+  </div>
+
+  {/* Main Route Info */}
+  <div className="grid grid-cols-3 items-center text-white">
+
+    {/* Kiri: Departure */}
+    <div className="text-left">
+      <div className="text-lg font-black leading-none">
+        {post.from_city?.slice(0, 8).toUpperCase() || '—'}
+      </div>
+      <div className="text-md font-semibold mt-1">
+        Asal
+      </div>
+      
     </div>
 
-    {/* Informasi Harga & Fee (seperti di gambar) */}
-    <div className="flex justify-between items-center my-4 text-white">
-      {post.price > 0 && (
-        <div className="text-left">
-          <div className={`badge ${isTitip ? 'badge-primary' : 'badge-secondary'} badge-lg font-bold px-6 py-4 text-lg`}>
-        {isTitip ? 'Mau Titip' : 'Bisa Bawa'}
-      </div>
-          
+    {/* Tengah: Arrow Line + Status */}
+    <div className="flex flex-col items-center mt-5">
+      {/* Garis dengan pesawat */}
+      <div className="relative w-full h-1 bg-white/30 rounded-full my-0">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <svg className="w-8 h-8 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M2 12h4l3-8h6l3 8h4v2h-4l-3 8h-6l-3-8H2v-2z"/>
+          </svg>
         </div>
-      )}
-      <div className="text-center">
-        
       </div>
-      <div className="text-right">
-        <p className="text-xs text-white/70">Biaya Antar</p>
-        <p className="text-lg font-bold">Rp{post.fee.toLocaleString('id-ID')}</p>
+
+      {/* Status "Left X time" - bisa diganti logic real-time nanti */}
+      {/* <div className="badge badge-lg bg-success text-white border-none px-4 py-3 font-bold">
+        Aktif Sekarang
+      </div> */}
+
+      {/* Fee di bawah */}
+      <div className="mt-3 mb-0 text-center">
+        
+        {/* Toggle Detail (lebih menonjol) */}
+    <button
+  onClick={() => setOpen(!open)}
+  className="
+    w-full py-2 mt-2 mb-0
+    text-white/90 hover:text-white
+    text-sm font-semibold
+     rounded-lg
+    transition
+    flex items-center justify-center gap-2
+  "
+>
+  <span>{open ? 'Sembunyikan' : 'Lihat detail'}</span>
+
+  <svg
+    className={`
+      w-4 h-4
+      transition-transform duration-300 ease-in-out
+      ${open ? 'rotate-180' : 'rotate-0'}
+    `}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M19 9l-7 7-7-7"
+    />
+  </svg>
+</button>
+
       </div>
     </div>
 
-    {/* Toggle Detail (lebih menonjol) */}
-    <button
-      onClick={() => setOpen(!open)}
-      className="w-full py-2 mt-2 mb-1 text-white/90 hover:text-white text-sm font-semibold bg-white/10 rounded-lg transition flex items-center justify-center gap-1"
-    >
-      {open ? (
-        <>
-          <span>Sembunyikan Detail</span>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-          </svg>
-        </>
-      ) : (
-        <>
-          <span>Lihat Detail</span>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </>
-      )}
-    </button>
+    {/* Kanan: Arrival */}
+    <div className="text-right">
+      <div className="text-lg font-black leading-none">
+        {post.to_city?.slice(0, 8).toUpperCase() || '—'}
+      </div>
+      <div className="text-md font-semibold mt-1">
+        Tujuan
+      </div>
+      
+    </div>
+  </div>
+
+</div>
+
+    
 
     {/* Collapsible Detail (dipercantik) */}
     <div className={`transition-all duration-500 overflow-hidden ${open ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'}`}>

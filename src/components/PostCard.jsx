@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabaseClient'
 export default function PostCard({ post }) {
   const navigate = useNavigate()
   const { user: clerkUser, isSignedIn } = useUser();
+  const [open, setOpen] = useState(false)
   const currentUserId = clerkUser?.id // ID user yang sedang login (dari Clerk)
 
   const [loadingChat, setLoadingChat] = useState(false)
@@ -131,81 +132,103 @@ export default function PostCard({ post }) {
       </div>
 
       {/* Floating Glass Card */}
-      <div className="relative -mt-20 px-4 pb-6">
-        <div className="rounded-3xl p-5 backdrop-blur-xl bg-white/30 border border-white/40 shadow-2xl">
-          {/* Header: Avatar + Nama + Tanggal */}
-          <div className="flex items-center gap-4 mb-4">
-            <div className="avatar">
-              <div className="w-14 h-14 rounded-full ring ring-white ring-offset-base-100 ring-offset-2">
-                <img src={userAvatar} alt={username} className="object-cover" />
-              </div>
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-white drop-shadow-md">
-                {username}
-              </h3>
-              <p className="text-sm text-white/80">{displayDate}</p>
-            </div>
-          </div>
+<div className="relative -mt-20 px-4 pb-6">
+  <div className="rounded-3xl p-5 backdrop-blur-xl bg-white/40 border border-white/50 shadow-2xl">
 
-          {/* Rute */}
-          <div className="flex items-center justify-center gap-4 my-5">
-            <span className="text-xl font-bold text-emerald-300 drop-shadow-lg">
-              {post.from_city || '—'}
-            </span>
-            <svg className="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-            <span className="text-xl font-bold text-emerald-300 drop-shadow-lg">
-              {post.to_city || '—'}
-            </span>
-          </div>
-
-          {/* Deskripsi */}
-          {post.description && (
-            <p className="text-sm text-emerald-300 mb-3 leading-relaxed">
-              {post.description}
-            </p>
-          )}
-
-          {/* Barang */}
-          {post.item_description && (
-            <div className="bg-white/40 rounded-2xl px-4 py-3 mb-4">
-              <p className="text-sm font-medium text-emerald-300">
-                <span className="font-bold">Barang:</span> {post.item_description}
-              </p>
-            </div>
-          )}
-
-          {/* Price & Fee */}
-          <div className="flex justify-between items-center mb-6 text-emerald-300">
-            {post.price > 0 && (
-              <p className="text-sm">
-                Harga <span className="font-bold">Rp{post.price.toLocaleString('id-ID')}</span>
-              </p>
-            )}
-            <p className="text-lg font-bold text-emerald-300">
-              Fee Rp{post.fee.toLocaleString('id-ID')}
-            </p>
-          </div>
-
-          {/* CTA Button */}
-          <button
-            onClick={handleChatDeal}
-            disabled={loadingChat}
-            className="
-              w-full py-4 rounded-full text-base font-bold text-white
-              bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-600
-              shadow-[0_0_30px_rgba(16,185,129,0.9)]
-              hover:scale-105 active:scale-95
-              transition-all duration-300
-              disabled:opacity-70 disabled:cursor-not-allowed
-            "
-          >
-            {loadingChat ? 'Membuka chat...' : 'Chat & Deal'}
-          </button>
+    {/* Header */}
+    <div className="flex items-center gap-4 mb-4">
+      <div className="avatar">
+        <div className="w-14 h-14 rounded-full ring ring-emerald-300 ring-offset-2 ring-offset-white/60">
+          <img src={userAvatar} alt={username} className="object-cover" />
         </div>
       </div>
+      <div>
+        <h3 className="text-lg font-bold text-emerald-800">
+          {username}
+        </h3>
+        <p className="text-sm text-emerald-600">{displayDate}</p>
+      </div>
+    </div>
+
+    {/* Rute */}
+    <div className="flex items-center justify-center gap-4 my-5">
+      <span className="text-xl font-bold text-emerald-700">
+        {post.from_city || '—'}
+      </span>
+      <svg
+        className="w-8 h-8 text-emerald-500"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+      </svg>
+      <span className="text-xl font-bold text-emerald-700">
+        {post.to_city || '—'}
+      </span>
+    </div>
+
+    {/* Toggle */}
+    <button
+      onClick={() => setOpen(!open)}
+      className="w-full mb-4 text-sm font-semibold text-emerald-700 hover:text-emerald-900 transition"
+    >
+      {open ? 'Tutup Detail ▲' : 'Lihat Detail ▼'}
+    </button>
+
+    {/* Collapsible Content */}
+    <div
+      className={`transition-all duration-300 overflow-hidden ${
+        open ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+      }`}
+    >
+      {/* Deskripsi */}
+      {post.description && (
+        <p className="text-sm text-emerald-700 mb-3 leading-relaxed">
+          {post.description}
+        </p>
+      )}
+
+      {/* Barang */}
+      {post.item_description && (
+        <div className="bg-emerald-50/70 rounded-2xl px-4 py-3 mb-4">
+          <p className="text-sm font-medium text-emerald-700">
+            <span className="font-bold">Barang:</span> {post.item_description}
+          </p>
+        </div>
+      )}
+
+      {/* Price & Fee */}
+      <div className="flex justify-between items-center mb-6 text-emerald-700">
+        {post.price > 0 && (
+          <p className="text-sm">
+            Harga <span className="font-bold">Rp{post.price.toLocaleString('id-ID')}</span>
+          </p>
+        )}
+        <p className="text-lg font-bold text-emerald-800">
+          Fee Rp{post.fee.toLocaleString('id-ID')}
+        </p>
+      </div>
+
+      {/* CTA */}
+      <button
+        onClick={handleChatDeal}
+        disabled={loadingChat}
+        className="
+          w-full py-4 rounded-full text-base font-bold text-white
+          bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600
+          shadow-[0_0_20px_rgba(16,185,129,0.6)]
+          hover:scale-105 active:scale-95
+          transition-all duration-300
+          disabled:opacity-70 disabled:cursor-not-allowed
+        "
+      >
+        {loadingChat ? 'Membuka chat...' : 'Chat & Deal'}
+      </button>
+    </div>
+  </div>
+</div>
+
     </div>
   )
 }

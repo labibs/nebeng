@@ -166,7 +166,7 @@ export default function PostCard({ post }) {
       </div>
       <div className="flex-1">
         <h3 className="text-base font-bold text-white drop-shadow">{username}</h3>
-        <p className="text-xs text-white/70">{displayDate}</p>
+        <p className="text-xs text-white/70">{displayDate} {isTitip ? 'Mau nitip' : 'Bisa bawa'} dari {post.from_city?.slice(0, 8).toUpperCase() || '—'} ke {post.to_city?.slice(0, 8).toUpperCase() || '—'}</p>
       </div>
       {/* Badge Tipe */}
     <div className="flex items-center gap-2">

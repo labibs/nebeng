@@ -236,22 +236,22 @@ export default function PostCard({ post }) {
     </div>
 
     {/* Tengah: Arrow Line + Status */}
-    <div className="flex flex-col items-center mt-1">
-      {/* Garis dengan pesawat */}
-      <div className="relative w-full h-1 bg-white/30 rounded-full my-0">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <ArmadaIcon type={post.armada} />
-        </div>
+    <div className="flex flex-col items-center mt-4">
+
+  {/* Wrapper posisi */}
+  <div className="relative w-full">
+
+      {/* Icon di atas garis */}
+      <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/1 mb-1">
+        <ArmadaIcon type={post.armada} />
       </div>
 
-      {/* Status "Left X time" - bisa diganti logic real-time nanti */}
-      {/* <div className="badge badge-lg bg-success text-white border-none px-4 py-3 font-bold">
-        Aktif Sekarang
-      </div> */}
+      {/* Garis di bawah icon */}
+      <div className="w-full h-1 bg-white/30 rounded-full" />
 
-      {/* Fee di bawah */}
-      
     </div>
+  </div>
+
 
     {/* Kanan: Arrival */}
     <div className="text-right">

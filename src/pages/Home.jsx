@@ -383,7 +383,94 @@ const filteredPosts = posts.filter(post => {
               </div>
             </div>
 
-            {/* Filter Fee */}
+            
+            {/* Filter Tanggal Keberangkatan */}
+<div className="space-y-2 px-2 pb-4 pt-0">
+  <p className="text-sm font-medium text-base-content/80 text-center">
+    Tanggal Keberangkatan
+  </p>
+
+  {/* Container pill - lebar mengikuti konten utama, bukan full screen */}
+  <div className="flex justify-center mb-5">
+    <div className="
+      inline-flex items-center gap-2
+      px-2 py-2 
+      bg-white/10 backdrop-blur-md 
+      border border-white/20 
+      rounded-full 
+      shadow-xl
+      overflow-x-auto scrollbar-hide
+      min-w-full /* penting: agar tidak menyusut lebih kecil dari parent */
+    ">
+      {/* Pill Items - bisa scroll horizontal kalau tidak muat */}
+      {[
+        { id: 'all', label: 'Semua Tanggal' },
+        { id: 'today', label: 'Hari Ini' },
+        { id: 'tomorrow', label: 'Besok' },
+        { id: 'thisWeek', label: 'Minggu Ini' },
+        { id: 'thisMonth', label: 'Bulan Ini' },
+        { 
+          id: 'custom', 
+          label: customDate 
+            ? new Date(customDate).toLocaleDateString('id-ID', { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long' 
+              }) 
+            : 'Pilih Tanggal'
+        },
+      ].map((option) => (
+        <button
+          key={option.id}
+          onClick={() => {
+            if (option.id === 'custom') {
+              setDateFilterMode('custom')
+            } else {
+              setDateFilterMode(option.id)
+              if (option.id !== 'custom') setCustomDate('')
+            }
+          }}
+          className={`
+            px-6 py-2.5 rounded-full text-xs font-semibold transition-all duration-300 
+            whitespace-nowrap flex-shrink-0
+            ${(dateFilterMode === option.id || (option.id === 'custom' && dateFilterMode === 'custom'))
+              ? 'bg-white text-gray-900 shadow-lg'  /* aktif: putih penuh + shadow lebih tebal */
+              : 'text-gray-300 hover:text-white hover:bg-white/10'
+            }
+          `}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  </div>
+  
+  {/* Custom Date Picker */}
+  <div className="flex items-center gap-3">
+    <button
+      onClick={() => setDateFilterMode('custom')}
+      className={`
+        flex-1 px-4 py-3 rounded-xl text-sm font-medium text-left transition-all
+        ${dateFilterMode === 'custom'
+          ? 'bg-primary text-white shadow-md'
+          : 'bg-base-200/60 text-base-content/70 hover:bg-base-200'
+        }
+      `}
+    >{customDate ? 'Hari ' + new Date(customDate).toLocaleDateString('id-ID', { weekday: 'long' }) : 'Pilih Tanggal'}
+      
+    </button>
+
+    {dateFilterMode === 'custom' && (
+      <input
+        type="date"
+        value={customDate}
+        onChange={(e) => setCustomDate(e.target.value)}
+        className="input input-bordered input-md w-37 bg-base-200/60"
+      />
+    )}
+  </div>
+</div>
+{/* Filter Fee */}
             <div className="space-y-3 px-4">
               <div className="flex justify-between text-sm font-medium text-base-content/80">
                 <span>Ongkos Fee</span>
@@ -422,62 +509,6 @@ const filteredPosts = posts.filter(post => {
                 <span>Rp 1.000.000+</span>
               </div>
             </div>
-            {/* Filter Tanggal Keberangkatan */}
-<div className="space-y-4 px-4 pb-4 pt-6">
-  <p className="text-sm font-medium text-base-content/80">Tanggal Keberangkatan</p>
-
-  {/* Shortcut Buttons */}
-  <div className="grid grid-cols-2 gap-3">
-    {[
-      { id: 'all', label: 'Semua Tanggal' },
-      { id: 'today', label: 'Hari Ini' },
-      { id: 'tomorrow', label: 'Besok' },
-      { id: 'thisWeek', label: 'Minggu Ini' },
-    ].map((option) => (
-      <button
-        key={option.id}
-        onClick={() => {
-          setDateFilterMode(option.id)
-          if (option.id !== 'custom') setCustomDate('')
-        }}
-        className={`
-          px-4 py-2.5 rounded-xl text-sm font-medium transition-all
-          ${dateFilterMode === option.id
-            ? 'bg-primary text-white shadow-md'
-            : 'bg-base-200/60 text-base-content/70 hover:bg-base-200'
-          }
-        `}
-      >
-        {option.label}
-      </button>
-    ))}
-  </div>
-
-  {/* Custom Date Picker */}
-  <div className="flex items-center gap-3">
-    <button
-      onClick={() => setDateFilterMode('custom')}
-      className={`
-        flex-1 px-4 py-3 rounded-xl text-sm font-medium text-left transition-all
-        ${dateFilterMode === 'custom'
-          ? 'bg-primary text-white shadow-md'
-          : 'bg-base-200/60 text-base-content/70 hover:bg-base-200'
-        }
-      `}
-    >{customDate ? 'Hari ' + new Date(customDate).toLocaleDateString('id-ID', { weekday: 'long' }) : 'Pilih Tanggal'}
-      
-    </button>
-
-    {dateFilterMode === 'custom' && (
-      <input
-        type="date"
-        value={customDate}
-        onChange={(e) => setCustomDate(e.target.value)}
-        className="input input-bordered input-md w-37 bg-base-200/60"
-      />
-    )}
-  </div>
-</div>
           </div>
         </div>
       </div>

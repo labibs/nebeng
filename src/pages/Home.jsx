@@ -6,6 +6,7 @@ import PostCard from '../components/PostCard'
 import PostCardSkeleton from '../components/PostCardSkeleton'
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Navigation, Mousewheel, Keyboard } from 'swiper/modules';
+import { Bike, Car, Bus, Train, Plane } from 'lucide-react'
 
 // Import CSS Swiper
 import 'swiper/css';
@@ -31,6 +32,7 @@ export default function Home() {
   const touchStartY = useRef(0);
   const [dateFilterMode, setDateFilterMode] = useState('all') // 'all', 'today', 'tomorrow', 'thisWeek', 'thisMonth', 'custom'
   const [customDate, setCustomDate] = useState('') // format YYYY-MM-DD
+  const [armadaFilter, setArmadaFilter] = useState('all')
 
   useEffect(() => {
     const handleScroll = () => {
@@ -183,6 +185,11 @@ const filteredPosts = posts.filter(post => {
   // Filter by fee range
   if (post.fee < feeRange[0] || post.fee > feeRange[1]) return false
 
+  // Filter by armada
+  if (armadaFilter !== 'all') {
+    if (post.armada !== armadaFilter) return false
+  }
+
   // Filter by travel_date
   if (!post.travel_date) return false // jika tidak ada tanggal, skip (opsional)
 
@@ -231,6 +238,11 @@ const filteredPosts = posts.filter(post => {
   const closeSearch = () => {
     setSearchOpen(false)
     setSearchQuery('')
+    setActiveTab('semua')
+    setFeeRange([0, 500000]) // atau [0, 1000000] sesuai default awal kamu
+    setDateFilterMode('all')
+    setCustomDate('')
+    setArmadaFilter('all')
   }
 
   // Tab options
@@ -383,12 +395,59 @@ const filteredPosts = posts.filter(post => {
               </div>
             </div>
 
-            
+       {/* Filter Armada */}
+<div className="space-y-2 px-2 pb-0 pt-0">
+  {/* <p className="text-sm font-medium text-base-content/80 text-center">
+    Armada
+  </p> */}
+
+  {/* Pill dengan Icon - Horizontal Scrollable */}
+  <div className="flex justify-center mb-5">
+    <div className="
+      inline-flex items-center gap-2 
+      px-2 py-2 
+      bg-white/10 backdrop-blur-md 
+      border border-white/20 
+      rounded-full 
+      shadow-xl
+      overflow-x-auto scrollbar-hide
+      min-w-full
+    ">
+      {[
+        { id: 'all', label: 'Semua Armada', icon: null },
+        { id: 'motor', label: 'Motor', icon: Bike },
+        { id: 'mobil', label: 'Mobil', icon: Car },
+        { id: 'bus', label: 'Bus', icon: Bus },
+        { id: 'kereta', label: 'Kereta', icon: Train },
+      ].map((option) => {
+        const Icon = option.icon
+        return (
+          <button
+            key={option.id}
+            onClick={() => setArmadaFilter(option.id)}
+            className={`
+              px-6 py-2.5 rounded-full text-xs font-semibold transition-all duration-300 
+              whitespace-nowrap flex-shrink-0 flex items-center gap-2
+              ${armadaFilter === option.id
+                ? 'bg-white text-gray-900 shadow-lg'
+                : 'text-gray-300 hover:text-white hover:bg-white/10'
+              }
+            `}
+          >
+            {Icon && <Icon className="w-4 h-4" />}
+            {option.label}
+          </button>
+        )
+      })}
+    </div>
+  </div>
+</div>
+     
             {/* Filter Tanggal Keberangkatan */}
 <div className="space-y-2 px-2 pb-4 pt-0">
-  <p className="text-sm font-medium text-base-content/80 text-center">
+  {/* <p className="text-sm font-medium text-base-content/80 text-center">
     Tanggal Keberangkatan
-  </p>
+  </p> */}
 
   {/* Container pill - lebar mengikuti konten utama, bukan full screen */}
   <div className="flex justify-center mb-5">
@@ -408,7 +467,6 @@ const filteredPosts = posts.filter(post => {
         { id: 'today', label: 'Hari Ini' },
         { id: 'tomorrow', label: 'Besok' },
         { id: 'thisWeek', label: 'Minggu Ini' },
-        { id: 'thisMonth', label: 'Bulan Ini' },
         { 
           id: 'custom', 
           label: customDate 
@@ -470,6 +528,8 @@ const filteredPosts = posts.filter(post => {
     )}
   </div>
 </div>
+
+
 {/* Filter Fee */}
             <div className="space-y-3 px-4">
               <div className="flex justify-between text-sm font-medium text-base-content/80">
@@ -527,7 +587,7 @@ const filteredPosts = posts.filter(post => {
     </div>
 
     {/* Area kosong di atas tombol untuk tap-to-close (opsional) */}
-    <div className="flex-1" onClick={closeSearch} />
+    {/* <div className="flex-1" onClick={closeSearch} /> */}
   </div>
 )}
       <main className="h-screen w-full overflow-hidden bg-black">

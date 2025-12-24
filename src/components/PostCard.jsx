@@ -368,11 +368,20 @@ export default function PostCard({ post }) {
       {/* Repost */}
       <button className="flex flex-col items-center gap-1.5 min-w-[60px]">
         <div className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition">
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582M4 20v-5h-.582M20 9h-5v-.582M20 15h-5v.582" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12a3 3 0 106 0 3 3 0 00-6 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
+          <svg
+  className="w-6 h-6 text-white"
+  fill="none"
+  stroke="currentColor"
+  viewBox="0 0 24 24"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <path
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth={2}
+    d="M17 1l4 4-4 4M3 11v-2a6 6 0 016-6h8M7 23l-4-4 4-4m14-2v2a6 6 0 01-6 6H7"
+  />
+</svg>
         </div>
         <span className="text-xs text-white/80 font-medium">Repost</span>
       </button>

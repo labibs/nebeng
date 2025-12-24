@@ -31,8 +31,13 @@ export default function PostCard({ post }) {
 
   const formatDate = (dateString) => {
     if (!dateString) return ''
+
     try {
-      return format(new Date(dateString), 'd MMM yyyy', { locale: localeId })
+      return format(
+        new Date(dateString),
+        'EEEE, d MMM yyyy',
+        { locale: localeId } // pastikan bernilai locale Indonesia
+      )
     } catch {
       return ''
     }
@@ -40,7 +45,11 @@ export default function PostCard({ post }) {
 
   const displayDate = post.travel_date
     ? formatDate(post.travel_date)
-    : formatDate(post.created_at)
+    : ''
+
+  const createDate = post.created_at
+    ? formatDate(post.created_at)
+    : ''
 
   const itemPhoto =
     post.item_photo ||
@@ -132,7 +141,7 @@ export default function PostCard({ post }) {
       </div>
       <div className="flex-1">
         <h3 className="text-base font-bold text-white drop-shadow">{username}</h3>
-        <p className="text-xs text-white/70">{!open ? `${displayDate} ${isTitip ? 'Mau nitip' : 'Bisa bawa'} dari ${post.from_city?.slice(0, 8).toUpperCase() || '—'} ke ${post.to_city?.slice(0, 8).toUpperCase() || '—'}` : `${displayDate}`}</p>
+        <p className="text-xs text-white/70 italic">{!open ? ` ${isTitip ? 'Mau nitip' : 'Bisa bawa'} dari ${post.from_city?.slice(0, 8).toUpperCase() || '—'} ke ${post.to_city?.slice(0, 8).toUpperCase()|| '—'}, berangkat hari ${displayDate}` : `${createDate}`}</p>
       </div>
       {/* Badge Tipe */}
     <div className="flex items-center gap-2">
@@ -218,6 +227,9 @@ export default function PostCard({ post }) {
       
     </div>
   </div>
+  <p className="mt-4 text-sm text-white/80 italic text-center">
+    Berangkat pada {displayDate}
+  </p>
 
 </div>
       
@@ -245,10 +257,10 @@ export default function PostCard({ post }) {
           border border-white/10
         "
       >
-        <p className="text-xs text-white/60 mb-3 uppercase tracking-wider">
+        {/* <p className="text-xs text-white/60 mb-3 uppercase tracking-wider">
           Deskripsi
-        </p>
-        <p className="text-sm text-white/90 leading-relaxed">
+        </p> */}
+        <p className="text-sm text-white/90 leading-relaxed italic">
           {post.description}
         </p>
       </section>
@@ -267,7 +279,7 @@ export default function PostCard({ post }) {
         <p className="text-xs text-white/60 mb-3 uppercase tracking-wider">
           Detail Barang
         </p>
-        <p className="text-sm text-white/90 leading-relaxed">
+        <p className="text-sm text-white/90 leading-relaxed italic">
           {post.item_description}
         </p>
       </section>
@@ -284,9 +296,9 @@ export default function PostCard({ post }) {
         "
       >
         <p className="text-xs text-white/60 mb-3 uppercase tracking-wider">
-          Perkiraan Harga
+          {isTitip ? 'Perkiraan Harga Barang' : 'Harga Barang Maximum'}
         </p>
-        <p className="text-lg font-bold text-white">
+        <p className="text-lg font-bold text-white italic">
           Rp{post.price.toLocaleString('id-ID')}
         </p>
       </section>

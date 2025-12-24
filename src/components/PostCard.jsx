@@ -5,6 +5,7 @@ import { useUser } from '@clerk/clerk-react'
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import LazyImage from './LazyImage'
+import { Bike, Car, Bus, Train } from "lucide-react";
 
 export default function PostCard({ post }) {
   const navigate = useNavigate()
@@ -144,6 +145,18 @@ export default function PostCard({ post }) {
     }
   }
 
+  const icons = {
+    motor: Bike,
+    mobil: Car,
+    bus: Bus,
+    kereta: Train,
+  };
+
+  const ArmadaIcon = ({ type }) => {
+    const Icon = icons[type] ?? Bike;
+    return <Icon className="w-7 h-7 text-white drop-shadow-lg" />;
+  };
+
   return (
   <div className="relative w-full h-screen overflow-hidden bg-black">
     
@@ -227,9 +240,7 @@ export default function PostCard({ post }) {
       {/* Garis dengan pesawat */}
       <div className="relative w-full h-1 bg-white/30 rounded-full my-0">
         <div className="absolute inset-0 flex items-center justify-center">
-          <svg className="w-8 h-8 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M2 12h4l3-8h6l3 8h4v2h-4l-3 8h-6l-3-8H2v-2z"/>
-          </svg>
+          <ArmadaIcon type={post.armada} />
         </div>
       </div>
 

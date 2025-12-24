@@ -196,7 +196,8 @@ export default function Home() {
   // Search handlers
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter') {
-      setSearchOpen(false)
+      e.preventDefault(); // Biar tidak submit form atau trigger lain
+      setSearchOpen(false); // Enter = terapkan filter & tutup modal
     }
   }
 
@@ -282,16 +283,17 @@ export default function Home() {
       {/* Spacer untuk fixed header */}
       
 {/* Search Modal */}
+{/* Search Modal */}
 {searchOpen && (
   <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex flex-col">
-    {/* Header + Input Search */}
-    <div className="pt-20 px-4 pb-4">
+    {/* Header + Input + Tabs + Filter */}
+    <div className="px-4 pt-20 pb-4 overflow-y-auto">
       <div className="max-w-2xl mx-auto w-full">
         <div className="bg-base-100/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-base-300 overflow-hidden">
+          {/* Input Search */}
           <div className="p-6">
             <div className="flex items-center gap-4">
               <div className="flex-1 relative">
-                {/* Icon Lup - Selalu di depan dengan pointer-events-none */}
                 <svg
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-base-content/70 pointer-events-none z-10"
                   fill="none"
@@ -302,17 +304,13 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
 
-                {/* Input */}
                 <input
                   type="text"
                   placeholder="Cari kota, barang, atau deskripsi..."
                   className="
-                    input input-lg w-full 
-                    pl-14 pr-6 
-                    bg-base-200/60 
-                    focus:bg-base-200/80 
-                    focus:outline-none 
-                    border-0 
+                    input input-lg w-full pl-14 pr-6 
+                    bg-base-200/60 focus:bg-base-200/80 
+                    focus:outline-none border-0 
                     transition-all duration-200
                     placeholder:text-base-content/50
                   "
@@ -322,6 +320,7 @@ export default function Home() {
                   autoFocus
                 />
               </div>
+
               <button
                 onClick={closeSearch}
                 className="btn btn-ghost btn-circle btn-lg"
@@ -334,7 +333,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Tabs + Filter Fee - Sticky */}
+          {/* Tabs + Filter Fee - Sticky di dalam card */}
           <div className="sticky top-0 z-10 bg-base-100/95 backdrop-blur-xl border-t border-base-300 px-3 py-4">
             {/* Tabs */}
             <div className="flex justify-center mb-5">
@@ -357,8 +356,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Filter Fee - Slider Rentang Harga */}
-            <div className="space-y-3 pt-2 px-4 pb-2"> {/* beri sedikit padding atas agar tidak nempel ke tab */}
+            {/* Filter Fee */}
+            <div className="space-y-3 px-4">
               <div className="flex justify-between text-sm font-medium text-base-content/80">
                 <span>Ongkos Fee</span>
                 <span>
@@ -366,8 +365,7 @@ export default function Home() {
                 </span>
               </div>
 
-              {/* Slider */}
-              <div className="relative py-4"> {/* py-4 untuk memberi ruang vertikal atas-bawah slider */}
+              <div className="relative py-4">
                 <input
                   type="range"
                   min="0"
@@ -392,8 +390,7 @@ export default function Home() {
                 />
               </div>
 
-              {/* Label bawah - sekarang lebih ke bawah dan rapi */}
-              <div className="flex justify-between text-xs text-base-content/60 mt-3">
+              <div className="flex justify-between text-xs text-base-content/60">
                 <span>Rp 0</span>
                 <span>Rp 1.000.000+</span>
               </div>
@@ -403,7 +400,19 @@ export default function Home() {
       </div>
     </div>
 
-    {/* Area kosong untuk scroll hasil (opsional jika ada list di bawah) */}
+    {/* Tombol Terapkan Pencarian - Fixed di Bawah */}
+    <div className="px-4 pb-6">
+      <div className="max-w-2xl mx-auto w-full">
+        <button
+          onClick={() => setSearchOpen(false)} // Langsung terapkan & tutup
+          className="btn btn-primary btn-lg w-full rounded-2xl shadow-lg"
+        >
+          Terapkan Pencarian
+        </button>
+      </div>
+    </div>
+
+    {/* Area kosong di atas tombol untuk tap-to-close (opsional) */}
     <div className="flex-1" onClick={closeSearch} />
   </div>
 )}

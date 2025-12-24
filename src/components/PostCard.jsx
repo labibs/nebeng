@@ -121,7 +121,7 @@ export default function PostCard({ post }) {
     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
     {/* Glass Card (sesuai gambar) */}
-<div className="absolute inset-x-0 bottom-30 z-20 px-4" onClick={() => setOpen(!open)}>
+<div className="absolute inset-x-0 bottom-27 z-20 px-4" onClick={() => setOpen(!open)}>
   <div className="rounded-2xl p-5 backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl">
     {/* Header dengan Avatar */}
     <div className="flex items-center gap-3 mb-0">
@@ -216,60 +216,85 @@ export default function PostCard({ post }) {
 
 </div>
       
-      {/* Wrapper Scrollable untuk Deskripsi + Detail + Harga */}
-<div
-  className="
-    mb-4
-    max-h-40
-    overflow-y-auto
-    overscroll-contain
-    scrollbar-thin
-    scrollbar-thumb-white/20
-    scrollbar-track-transparent
-    pr-2
-    touch-auto
-  "
-  style={{ WebkitOverflowScrolling: 'touch' }}
->
-  {/* Deskripsi */}
-  {post.description && (
-    <section className="mb-5 last:mb-0">
-      <p className="text-xs text-white/70 mb-1.5">Deskripsi</p>
-      <div className="bg-white/10 rounded-xl p-4">
+      {/* Wrapper Horizontal Scroll untuk Deskripsi + Detail + Harga */}
+<div className="mb-6 -mx-4 px-4"> {/* -mx-4 px-4 biar full bleed ke tepi layar */}
+  <div
+    className="
+      flex gap-4
+      overflow-x-auto overflow-y-hidden
+      pb-0
+      pt-2
+      scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent
+      snap-x snap-mandatory
+      touch-pan-x
+    "
+    style={{ WebkitOverflowScrolling: 'touch' }}
+  >
+    {/* Deskripsi */}
+    {post.description && (
+      <section
+        className="
+          flex-shrink-0 w-80
+          snap-start
+          bg-white/10 rounded-2xl p-5
+          border border-white/10
+        "
+      >
+        <p className="text-xs text-white/60 mb-3 uppercase tracking-wider">
+          Deskripsi
+        </p>
         <p className="text-sm text-white/90 leading-relaxed">
           {post.description}
         </p>
-      </div>
-    </section>
-  )}
+      </section>
+    )}
 
-  {/* Detail Barang */}
-  {post.item_description && (
-    <section className="mb-5 last:mb-0">
-      <p className="text-xs text-white/70 mb-1.5">Detail Barang</p>
-      <div className="bg-white/15 rounded-xl p-4">
+    {/* Detail Barang */}
+    {post.item_description && (
+      <section
+        className="
+          flex-shrink-0 w-80
+          snap-start
+          bg-white/15 rounded-2xl p-5
+          border border-white/10
+        "
+      >
+        <p className="text-xs text-white/60 mb-3 uppercase tracking-wider">
+          Detail Barang
+        </p>
         <p className="text-sm text-white/90 leading-relaxed">
           {post.item_description}
         </p>
-      </div>
-    </section>
-  )}
+      </section>
+    )}
 
-  {/* Perkiraan Harga Barang */}
-  {post.price && (
-    <section className="mb-5 last:mb-0">
-      <p className="text-xs text-white/70 mb-1.5">
-        Perkiraan Harga Barang
-      </p>
-      <div className="bg-white/15 rounded-xl p-4">
-        <p className="text-sm font-semibold text-white/95">
+    {/* Perkiraan Harga Barang */}
+    {post.price && (
+      <section
+        className="
+          flex-shrink-0 w-80
+          snap-start
+          bg-white/15 rounded-2xl p-5
+          border border-white/10
+        "
+      >
+        <p className="text-xs text-white/60 mb-3 uppercase tracking-wider">
+          Perkiraan Harga
+        </p>
+        <p className="text-lg font-bold text-white">
           Rp{post.price.toLocaleString('id-ID')}
         </p>
-      </div>
-    </section>
-  )}
-</div>
+      </section>
+    )}
 
+    {/* Jika tidak ada satupun data, tampilkan placeholder kosong agar tidak aneh */}
+    {!post.description && !post.item_description && !post.price && (
+      <div className="w-80 flex-shrink-0">
+        <p className="text-white/50 text-sm">Tidak ada detail tambahan</p>
+      </div>
+    )}
+  </div>
+</div>
 
 {/* Akhir Wrapper Scrollable */}
 

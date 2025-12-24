@@ -1,9 +1,10 @@
-import { format } from 'date-fns'
+import { format, differenceInMinutes, differenceInHours, differenceInDays } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import LazyImage from './LazyImage'
 
 export default function PostCard({ post }) {
   const navigate = useNavigate()
@@ -43,13 +44,38 @@ export default function PostCard({ post }) {
     }
   }
 
+  const formatSmartDate = (dateString) => {
+    if (!dateString) return ''
+
+    try {
+      const date = new Date(dateString)
+      const now = new Date()
+
+      const minutes = differenceInMinutes(now, date)
+      if (minutes < 1) return 'baru saja'
+      if (minutes < 60) return `${minutes} menit yang lalu`
+
+      const hours = differenceInHours(now, date)
+      if (hours < 24) return `${hours} jam yang lalu`
+
+      const days = differenceInDays(now, date)
+      if (days < 5) return `${days} hari yang lalu`
+
+      // fallback format normal (pakai hari + tanggal)
+      return format(date, 'EEEE, d MMM yyyy', { locale: localeId })
+
+    } catch {
+      return ''
+    }
+  }
+
   const displayDate = post.travel_date
     ? formatDate(post.travel_date)
     : ''
 
   const createDate = post.created_at
-    ? formatDate(post.created_at)
-    : ''
+  ? formatSmartDate(post.created_at)
+  : ''
 
   const itemPhoto =
     post.item_photo ||
@@ -122,7 +148,7 @@ export default function PostCard({ post }) {
   <div className="relative w-full h-screen overflow-hidden bg-black">
     
     {/* Background Image */}
-    <img
+    <LazyImage
       src={itemPhoto}
       alt="Item"
       className="absolute inset-0 w-full h-full object-cover"

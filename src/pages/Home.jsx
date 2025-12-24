@@ -319,13 +319,13 @@ const filteredPosts = posts.filter(post => {
         <div className="bg-base-100/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-base-300 overflow-hidden">
           {/* Input Search */}
           <div className="p-6">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
               <div className="flex-1 relative">
                 <svg
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-base-content/70 pointer-events-none z-10"
                   fill="none"
                   stroke="currentColor"
-                  viewBox="0 0 24 24"
+                  viewBox="0 0  "
                   strokeWidth={2}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -333,9 +333,9 @@ const filteredPosts = posts.filter(post => {
 
                 <input
                   type="text"
-                  placeholder="Cari kota, barang, atau deskripsi..."
+                  placeholder="Cari kota, barang & postingan..."
                   className="
-                    input input-lg w-full pl-14 pr-6 
+                    input input-md w-full pl-14 pr-2 
                     bg-base-200/60 focus:bg-base-200/80 
                     focus:outline-none border-0 
                     transition-all duration-200
@@ -353,7 +353,7 @@ const filteredPosts = posts.filter(post => {
                 className="btn btn-ghost btn-circle btn-lg"
                 aria-label="Tutup pencarian"
               >
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0  16">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>

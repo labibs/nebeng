@@ -222,17 +222,17 @@ export default function Home() {
     <div className="min-h-screen bg-base-200">
       {/* Fixed Top Header - Logo + Search + Profile */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-in-out ${
-          isTopHeaderVisible ? 'translate-y-0' : '-translate-y-full'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-500 ease-out ${
+    isTopHeaderVisible ? 'translate-y-0' : '-translate-y-full'
+  }`}
       >
-        <div className="backdrop-blur-xl shadow-lg">
-          <div className="navbar px-5 py-4 bg-base-100/80">
+        
+          <div className="navbar px-5 py-4">
             {/* Logo */}
             <div className="flex-1">
-              <h3 className="text-3xl font-extrabold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Nebeng
-              </h3>
+              <h3 className="text-3xl font-extrabold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent drop-shadow-lg">
+        Nebeng
+      </h3>
             </div>
 
             {/* Right side actions */}
@@ -276,11 +276,11 @@ export default function Home() {
               )}
             </div>
           </div>
-        </div>
+        
       </header>
 
       {/* Spacer untuk fixed header */}
-      <div className="h-15" />
+      
 {/* Search Modal */}
 {searchOpen && (
   <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex flex-col">

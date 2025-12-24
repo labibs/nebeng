@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 
-export default function LazyImage({ src, alt = "", className = "" }) {
+export default function LazyImageFancy({ src, alt = "", className = "" }) {
   const [loaded, setLoaded] = useState(false);
   const [visible, setVisible] = useState(false);
-  const imgRef = useRef(null);
+  const ref = useRef(null);
 
   useEffect(() => {
-    if (!imgRef.current) return;
+    if (!ref.current) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -15,39 +15,44 @@ export default function LazyImage({ src, alt = "", className = "" }) {
           observer.disconnect();
         }
       },
-      { rootMargin: "150px" } // mulai load sebelum terlihat penuh
+      { rootMargin: "200px" } // load sedikit lebih awal
     );
 
-    observer.observe(imgRef.current);
+    observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
 
   return (
-    <div ref={imgRef} className="relative w-full h-full">
+    <div ref={ref} className="relative w-full h-full overflow-hidden">
 
-      {/* Skeleton */}
+      {/* Skeleton shimmer */}
       {!loaded && (
-        <div className="
-          absolute inset-0
-          bg-gray-300/30 dark:bg-white/10
-          animate-pulse rounded-xl
-        " />
+        <div
+          className="
+            absolute inset-0 rounded-xl
+            bg-gradient-to-r from-gray-300/40 via-gray-200/30 to-gray-300/40
+            dark:from-white/10 dark:via-white/5 dark:to-white/10
+            animate-pulse
+          "
+        />
       )}
 
-      {/* Image (baru render jika visible) */}
       {visible && (
         <img
           src={src}
           alt={alt}
           loading="lazy"
-          className={`
-            absolute inset-0 w-full h-full object-cover
-            transition-opacity duration-500
-            ${loaded ? "opacity-100" : "opacity-0"}
-            ${className}
-          `}
           onLoad={() => setLoaded(true)}
           onError={() => setLoaded(true)}
+          className={`
+            absolute inset-0 w-full h-full object-cover
+            transition-all duration-700 ease-out
+            ${loaded
+              ? "opacity-100 blur-0 scale-100"
+              : "opacity-0 blur-md scale-105"
+            }
+            ${className}
+          `}
         />
       )}
     </div>

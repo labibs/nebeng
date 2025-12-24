@@ -29,6 +29,8 @@ export default function Home() {
   const [prevScrollPos, setPrevScrollPos] = useState(0);
   const prevScrollY = useRef(0);
   const touchStartY = useRef(0);
+  const [dateFilterMode, setDateFilterMode] = useState('all') // 'all', 'today', 'tomorrow', 'thisWeek', 'thisMonth', 'custom'
+  const [customDate, setCustomDate] = useState('') // format YYYY-MM-DD
 
   useEffect(() => {
     const handleScroll = () => {
@@ -163,8 +165,8 @@ export default function Home() {
     return () => supabase.removeChannel(channel)
   }, [fetchPosts])
 
-  // Filter posts berdasarkan tab dan search
-  const filteredPosts = posts.filter(post => {
+  // Filter posts berdasarkan tab, search, fee, dan tanggal
+const filteredPosts = posts.filter(post => {
   // Filter by tab
   if (activeTab !== 'semua') {
     const targetType = activeTab === 'titip' ? 'titip' : 'bawa'
@@ -174,23 +176,48 @@ export default function Home() {
   // Filter by search query
   if (searchQuery.trim()) {
     const query = searchQuery.toLowerCase()
-    const searchFields = [
-      post.from_city,
-      post.to_city,
-      post.item_description,
-      post.description
-    ]
-    if (!searchFields.some(field => field?.toLowerCase().includes(query))) {
-      return false
-    }
+    const searchFields = [post.from_city, post.to_city, post.item_description, post.description]
+    if (!searchFields.some(field => field?.toLowerCase().includes(query))) return false
   }
 
   // Filter by fee range
-  if (post.fee < feeRange[0] || post.fee > feeRange[1]) {
-    return false
-  }
+  if (post.fee < feeRange[0] || post.fee > feeRange[1]) return false
 
-  return true
+  // Filter by travel_date
+  if (!post.travel_date) return false // jika tidak ada tanggal, skip (opsional)
+
+  const postDate = new Date(post.travel_date)
+  if (isNaN(postDate)) return false // skip jika tanggal invalid
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  const startOfWeek = new Date(today)
+  startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)) // Senin minggu ini
+
+  const endOfWeek = new Date(startOfWeek)
+  endOfWeek.setDate(startOfWeek.getDate() + 6)
+
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+
+  switch (dateFilterMode) {
+    case 'today':
+      return postDate.toDateString() === today.toDateString()
+    case 'tomorrow':
+      return postDate.toDateString() === tomorrow.toDateString()
+    case 'thisWeek':
+      return postDate >= startOfWeek && postDate <= endOfWeek
+    case 'custom':
+      if (!customDate) return true
+      return postDate.toDateString() === new Date(customDate).toDateString()
+    case 'all':
+    default:
+      return true
+  }
 })
 
   // Search handlers
@@ -395,6 +422,62 @@ export default function Home() {
                 <span>Rp 1.000.000+</span>
               </div>
             </div>
+            {/* Filter Tanggal Keberangkatan */}
+<div className="space-y-4 px-4 pb-4 border-t border-base-300 pt-6">
+  <p className="text-sm font-medium text-base-content/80">Tanggal Keberangkatan</p>
+
+  {/* Shortcut Buttons */}
+  <div className="grid grid-cols-2 gap-3">
+    {[
+      { id: 'all', label: 'Semua Tanggal' },
+      { id: 'today', label: 'Hari Ini' },
+      { id: 'tomorrow', label: 'Besok' },
+      { id: 'thisWeek', label: 'Minggu Ini' },
+    ].map((option) => (
+      <button
+        key={option.id}
+        onClick={() => {
+          setDateFilterMode(option.id)
+          if (option.id !== 'custom') setCustomDate('')
+        }}
+        className={`
+          px-4 py-2.5 rounded-xl text-sm font-medium transition-all
+          ${dateFilterMode === option.id
+            ? 'bg-primary text-white shadow-md'
+            : 'bg-base-200/60 text-base-content/70 hover:bg-base-200'
+          }
+        `}
+      >
+        {option.label}
+      </button>
+    ))}
+  </div>
+
+  {/* Custom Date Picker */}
+  <div className="flex items-center gap-3">
+    <button
+      onClick={() => setDateFilterMode('custom')}
+      className={`
+        flex-1 px-4 py-3 rounded-xl text-sm font-medium text-left transition-all
+        ${dateFilterMode === 'custom'
+          ? 'bg-primary text-white shadow-md'
+          : 'bg-base-200/60 text-base-content/70 hover:bg-base-200'
+        }
+      `}
+    >
+      {customDate ? new Date(customDate).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Pilih Tanggal'}
+    </button>
+
+    {dateFilterMode === 'custom' && (
+      <input
+        type="date"
+        value={customDate}
+        onChange={(e) => setCustomDate(e.target.value)}
+        className="input input-bordered input-md w-32 bg-base-200/60"
+      />
+    )}
+  </div>
+</div>
           </div>
         </div>
       </div>

@@ -314,7 +314,7 @@ const filteredPosts = posts.filter(post => {
 {searchOpen && (
   <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex flex-col">
     {/* Header + Input + Tabs + Filter */}
-    <div className="px-4 pt-10 pb-4 overflow-y-auto">
+    <div className="px-4 pt-6 pb-4 overflow-y-auto">
       <div className="max-w-2xl mx-auto w-full">
         <div className="bg-base-100/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-base-300 overflow-hidden">
           {/* Input Search */}

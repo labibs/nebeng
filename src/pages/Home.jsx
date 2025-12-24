@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { useClerk } from '@clerk/clerk-react'
 import { supabase } from '../lib/supabaseClient'
@@ -24,28 +24,65 @@ export default function Home() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSyncingUser, setIsSyncingUser] = useState(false)
-  const [isTopHeaderVisible, setIsTopHeaderVisible] = useState(true)
   const [feeRange, setFeeRange] = useState([0, 500000]) // default: 0 - 500rb
+  const [isTopHeaderVisible, setIsTopHeaderVisible] = useState(true);
+  const [prevScrollPos, setPrevScrollPos] = useState(0);
+  const prevScrollY = useRef(0);
+  const touchStartY = useRef(0);
 
-  // Scroll handler untuk top header
   useEffect(() => {
-    let lastScrollY = window.scrollY
-    
     const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsTopHeaderVisible(false)
-      } else if (currentScrollY < lastScrollY) {
-        setIsTopHeaderVisible(true)
+      const currentScrollY = window.scrollY;
+
+      // Selalu tampilkan kalau sudah di paling atas
+      if (currentScrollY <= 10) { // 10px tolerance
+        setIsTopHeaderVisible(true);
+        prevScrollY.current = currentScrollY;
+        return;
       }
-      
-      lastScrollY = currentScrollY
-    }
-    
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+
+      // Hide kalau scroll down, show kalau scroll up
+      if (currentScrollY > prevScrollY.current + 10) { // threshold 10px biar tidak terlalu sensitif
+        setIsTopHeaderVisible(false);
+      } else if (currentScrollY < prevScrollY.current - 10) {
+        setIsTopHeaderVisible(true);
+      }
+
+      prevScrollY.current = currentScrollY;
+    };
+
+    // Touch events untuk mobile swipe (lebih responsif)
+    const handleTouchStart = (e) => {
+      touchStartY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e) => {
+      if (!touchStartY.current) return;
+
+      const currentTouchY = e.touches[0].clientY;
+      const deltaY = touchStartY.current - currentTouchY; // positif = swipe down
+
+      // Kalau swipe down cukup jauh, langsung hide
+      if (deltaY > 30) {
+        setIsTopHeaderVisible(false);
+      } 
+      // Kalau swipe up cukup jauh, show
+      else if (deltaY < -30) {
+        setIsTopHeaderVisible(true);
+      }
+    };
+
+    // Pasang listener
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, []);
 
   // Fetch posts
   const fetchPosts = useCallback(async () => {
@@ -184,25 +221,24 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-base-200">
       {/* Fixed Top Header - Logo + Search + Profile */}
-      <header 
-        className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-in-out ${
           isTopHeaderVisible ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
-        
         <div className="backdrop-blur-xl shadow-lg">
-          <div className="navbar px-5 py-4">
+          <div className="navbar px-5 py-4 bg-base-100/80">
             {/* Logo */}
             <div className="flex-1">
-              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <h3 className="text-3xl font-extrabold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 Nebeng
-              </h1>
+              </h3>
             </div>
 
             {/* Right side actions */}
             <div className="flex items-center gap-4">
               {/* Search button */}
-              <button 
+              <button
                 onClick={() => setSearchOpen(true)}
                 className="btn btn-ghost btn-circle"
                 aria-label="Search"
@@ -213,35 +249,31 @@ export default function Home() {
               </button>
 
               {/* User profile dropdown */}
-{isLoaded ? (
-  user ? (
-    <div className="dropdown dropdown-end">
-      {/* Trigger: Avatar Button */}
-      <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-        <div className="w-11 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-          <img
-            src={user.imageUrl}
-            alt={user.fullName || 'User'}
-            className="object-cover"
-          />
-        </div>
-      </label>
+              {isLoaded ? (
+                user ? (
+                  <div className="dropdown dropdown-end">
+                    <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+                      <div className="w-11 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                        <img
+                          src={user.imageUrl}
+                          alt={user.fullName || 'User'}
+                          className="object-cover"
+                        />
+                      </div>
+                    </label>
 
-      {/* Dropdown Content */}
-      <div
-        tabIndex={0}
-        className="dropdown-content mt-4 z-[1] w-72 rounded-2xl shadow-xl border border-base-300 bg-base-100/95 backdrop-blur-md overflow-hidden"
-      >
-        {/* Arrow / Tail */}
-        <div className="absolute -top-2 right-4 w-4 h-4 bg-base-100/95 backdrop-blur-md border-t border-l border-base-300 rotate-45" />
-          {/* Komponen Profile yang sudah berisi header, info, dll */}
-          <Profile />
-      </div>
-    </div>
-  ) : null
-) : (
-  <div className="skeleton w-11 h-8 rounded-full" />
-)}
+                    <div
+                      tabIndex={0}
+                      className="dropdown-content mt-4 z-[1] w-72 rounded-2xl shadow-xl border border-base-300 bg-base-100/95 backdrop-blur-md overflow-hidden"
+                    >
+                      <div className="absolute -top-2 right-4 w-4 h-4 bg-base-100/95 backdrop-blur-md border-t border-l border-base-300 rotate-45" />
+                      <Profile />
+                    </div>
+                  </div>
+                ) : null
+              ) : (
+                <div className="skeleton w-11 h-11 rounded-full" />
+              )}
             </div>
           </div>
         </div>

@@ -121,7 +121,7 @@ export default function PostCard({ post }) {
     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
     {/* Glass Card (sesuai gambar) */}
-<div className="absolute inset-x-0 bottom-25 z-20 px-4" onClick={() => setOpen(!open)}>
+<div className="absolute inset-x-0 bottom-20 z-20 px-4" onClick={() => setOpen(!open)}>
   <div className="rounded-2xl p-5 backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl">
     {/* Header dengan Avatar */}
     <div className="flex items-center gap-3 mb-0">
@@ -139,9 +139,14 @@ export default function PostCard({ post }) {
       
     </div>
       <button className="text-white/80 hover:text-white" >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+      {!open ?
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 13l-7 7-7-7m14-8l-7 7-7-7" />
+        </svg> :
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 11l7-7 7 7m-14 8l7-7 7 7" />
         </svg>
+      }
       </button>
     </div>
 
@@ -302,7 +307,7 @@ export default function PostCard({ post }) {
       <div className="mb-0">
         {/* Horizontal Actions - Scrollable dengan Indikator Dot di Atas */}
 {/* Horizontal Actions - Scrollable dengan Indikator Dot di Tengah */}
-<div className="relative mt-4 pt-4 border-t border-white/20">
+<div className="relative mt-6 pt-4 border-t border-white/20">
   {/* Indikator Dot - Selalu di tengah horizontal area actions */}
   <div className="absolute left-1/2 top-0 -translate-x-1/2 pointer-events-none z-10">
     <div className="flex items-center gap-1.5 animate-pulse">

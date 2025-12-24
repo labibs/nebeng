@@ -464,7 +464,7 @@ const filteredPosts = posts.filter(post => {
           : 'bg-base-200/60 text-base-content/70 hover:bg-base-200'
         }
       `}
-    >{customDate ? new Date(customDate).toLocaleDateString('id-ID', { weekday: 'long' }) : 'Pilih Tanggal'}
+    >{customDate ? 'Hari ' + new Date(customDate).toLocaleDateString('id-ID', { weekday: 'long' }) : 'Pilih Tanggal'}
       
     </button>
 
@@ -473,7 +473,7 @@ const filteredPosts = posts.filter(post => {
         type="date"
         value={customDate}
         onChange={(e) => setCustomDate(e.target.value)}
-        className="input input-bordered input-md w-36 bg-base-200/60"
+        className="input input-bordered input-md w-37 bg-base-200/60"
       />
     )}
   </div>

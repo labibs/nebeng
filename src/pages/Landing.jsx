@@ -133,7 +133,7 @@ export default function Landing() {
           </SignInButton>
 
           <SignUpButton mode="modal">
-            <button className="group w-full flex items-center justify-center gap-3 px-8 py-4 rounded-xl border-3 border-white/70 dark:border-white/50 bg-white/10 dark:bg-white/5 backdrop-blur-md text-white text-lg font-bold shadow-xl hover:bg-white/20 dark:hover:bg-white/15 hover:scale-105 active:scale-95 transition-all">
+            <button className="group w-full flex items-center justify-center gap-3 px-8 py-4 rounded-xl border-3 border-base-content/70 bg-white/10 dark:bg-white/5 backdrop-blur-md text-base-content dark:text-white text-lg font-bold shadow-xl hover:bg-white/30 dark:hover:bg-white/15 hover:border-base-content hover:scale-105 active:scale-95 transition-all">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 group-hover:scale-110 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
               </svg>

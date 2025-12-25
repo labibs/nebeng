@@ -252,9 +252,16 @@ export default function ChatInbox() {
                 )}
               </button>
 
-              {/* garis bawah — simple + elegant */}
-              <div className="h-px bg-white/20 mx-4
-                  mask-linear-to-r from-transparent via-white/70 to-transparent" />
+              {/* garis bawah adaptif */}
+                <div
+                  className="
+                    h-px mx-4
+                    bg-base-content/20
+                    mask-linear-to-r
+                    from-transparent via-base-content/60 to-transparent
+                  "
+                />
+
             </div>
           ))}
         </div>

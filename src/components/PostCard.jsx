@@ -410,7 +410,7 @@ export default function PostCard({ post }) {
             <p className="text-sm text-white/70 mt-2">
               {post.location.address
                 ? post.location.address.length > 40
-                  ? `${post.location.address.substring(0, 50)}...`
+                  ? `${post.location.address.substring(0, 65)}...`
                   : post.location.address
                 : "—"
               }
@@ -447,7 +447,7 @@ export default function PostCard({ post }) {
         </p> */}
 
         {/* Mini Map Interaktif dengan react-leaflet */}
-        <div className="relative w-full h-24 rounded-xl overflow-hidden border border-white/20">
+        <div className="relative w-full h-26 rounded-xl overflow-hidden border border-white/20">
           <MapContainer
             center={[post.location.lat, post.location.lng]}
             zoom={15}

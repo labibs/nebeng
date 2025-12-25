@@ -95,7 +95,7 @@ export default function FloatingLocationInput({
       {/* Modal */}
       {showMap && (
         <dialog className="modal modal-open">
-          <div className="modal-box w-full max-w-3xl">
+          <div className="modal-box w-95 max-w-3xl">
             <h3 className="font-bold text-lg mb-3">{label}</h3>
 
             <div className="h-[360px] rounded-2xl overflow-hidden border">

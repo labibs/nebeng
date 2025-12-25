@@ -208,7 +208,7 @@ export default function CreatePost() {
           name="description"
           value={form.description}
           onChange={handleChange}
-          label="Catatan Tambahan"
+          label="Catatan Tambahan / Isi Postingan"
           required
         />
 

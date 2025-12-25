@@ -373,7 +373,7 @@ export default function ChatRoom() {
                   : 'chat-bubble-neutral'
               }`}
             >
-              {msg.content} {msg.message_type}
+              {msg.content} 
             </div>
           )}
 

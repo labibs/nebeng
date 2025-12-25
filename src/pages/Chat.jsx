@@ -10,9 +10,59 @@ export default function ChatInbox() {
   const navigate = useNavigate();
   const { user } = useUser();
   const currentUserId = user?.id;
+  const currentClerkId = user?.clerk_id;
 
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [showUserPicker, setShowUserPicker] = useState(false);
+  const [userList, setUserList] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
+  const loadUsers = async () => {
+    setLoadingUsers(true);
+
+    const { data } = await supabase
+      .from("users")
+      .select("id, name, avatar_url, clerk_id")
+      .order("name", { ascending: true });
+
+    setUserList(data || []);
+    setLoadingUsers(false);
+  };
+
+  const startChatWith = async (selectedUser) => {
+    setShowUserPicker(false);
+
+    console.log('Memulai chat dengan:', selectedUser);
+
+    let conversationId;
+
+    // cek apakah sudah ada conversation berdua
+    const { data: participants } = await supabase
+      .from("conversation_participants")
+      .select("conversation_id")
+      .in("user_id", [currentClerkId, selectedUser.clerk_id]);
+
+    if (participants && participants.length >= 2) {
+      conversationId = participants[0].conversation_id;
+    } else {
+      const { data: newConv } = await supabase
+        .from("conversations")
+        .insert({})
+        .select("id")
+        .single();
+
+      conversationId = newConv.id;
+
+      await supabase.from("conversation_participants").insert([
+        { conversation_id: conversationId, user_id: currentUserId },
+        { conversation_id: conversationId, user_id: selectedUser.clerk_id },
+      ]);
+    }
+
+    navigate(`/chat/${conversationId}`);
+  };
 
   const fetchConversations = async () => {
     if (!currentUserId) return;
@@ -107,6 +157,10 @@ export default function ChatInbox() {
     setLoading(false);
   };
 
+  useEffect(() => {
+    if (showUserPicker) loadUsers();
+  }, [showUserPicker]);
+
   // Initial load + realtime
   useEffect(() => {
     if (!currentUserId) return;
@@ -165,7 +219,61 @@ export default function ChatInbox() {
           Chat
         </h3>
       </div>
+
+      {/* tombol tambah chat */}
+      <div className="flex-none">
+        <button
+          onClick={() => setShowUserPicker(true)}
+          className="btn btn-circle btn-sm bg-primary/10 border border-primary/30 hover:bg-primary/20"
+        >
+          <span className="text-xl text-primary font-bold">+</span>
+        </button>
+      </div>
     </div>
+
+    {showUserPicker && (
+      <dialog className="modal modal-open">
+        <div className="modal-box bg-base-100/90 backdrop-blur-xl">
+          
+          <h3 className="font-bold text-lg mb-3">Pilih Kontak</h3>
+
+          {loadingUsers ? (
+            <div className="space-y-3">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="skeleton w-10 h-10 rounded-full" />
+                  <div className="skeleton h-4 w-40" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="max-h-80 overflow-y-auto">
+              {userList.map(user => (
+                <button
+                  key={user.id}
+                  onClick={() => startChatWith(user)}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-base-200/70 transition"
+                >
+                  <div className="avatar">
+                    <div className="w-10 rounded-full">
+                      <img src={user.avatar_url || "/default-avatar.png"} />
+                    </div>
+                  </div>
+
+                  <span className="text-sm font-medium truncate">{user.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="modal-action">
+            <button className="btn btn-ghost" onClick={() => setShowUserPicker(false)}>
+              Tutup
+            </button>
+          </div>
+        </div>
+      </dialog>
+    )}
 
     <div className="bg-transparent">
       {loading ? (

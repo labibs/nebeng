@@ -349,7 +349,7 @@ export default function ChatInbox() {
           </button>
 
           {/* Input Search – posisi lebih baik & terlihat jelas */}
-          <div className={`absolute right-0 top-12 w-64 transition-all duration-300 ease-in-out ${
+          <div className={`absolute right-10 -top-1 w-54 transition-all duration-300 ease-in-out ${
             isSearchOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2 pointer-events-none'
           }`}>
             <input
@@ -487,6 +487,15 @@ export default function ChatInbox() {
                   </div>
                 )}
               </button>
+              {/* garis bawah adaptif */}
+                <div
+                  className="
+                    h-px mx-4
+                    bg-base-content/20
+                    mask-linear-to-r
+                    from-transparent via-base-content/60 to-transparent
+                  "
+                />
             </div>
           ))}
         </div>

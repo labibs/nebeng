@@ -553,32 +553,11 @@ export default function Home() {
       max={MAX}
       step={STEP}
       value={feeRange}
-      onChange={(value) => setFeeRange(value)}
-      trackStyle={[{ backgroundColor: 'hsl(var(--p))', height: '8px' }]}
-      railStyle={{ 
-        backgroundColor: 'hsl(var(--b3))', // bg-base-300
-        height: '8px',
-        borderRadius: '4px'
-      }}
-      handleStyle={[
-        { 
-          backgroundColor: 'white', 
-          borderColor: 'hsl(var(--p))', 
-          borderWidth: '3px',
-          height: '20px',
-          width: '20px',
-          marginTop: '-6px'
-        },
-        { 
-          backgroundColor: 'white', 
-          borderColor: 'hsl(var(--p))', 
-          borderWidth: '3px',
-          height: '20px',
-          width: '20px',
-          marginTop: '-6px'
-        }
-      ]}
+      onChange={setFeeRange}
+      allowCross={false}
+      className="fee-slider bold"
     />
+
   </div>
 
   <div className="flex justify-between text-xs text-base-content/60">
@@ -586,6 +565,7 @@ export default function Home() {
     <span>Rp 1.000.000+</span>
   </div>
 </div>
+
 
           </div>
         </div>

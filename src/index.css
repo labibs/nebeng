@@ -15,6 +15,23 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+/* Leaflet CSS */
+/* Ubah warna teks search bar jadi hitam */
+.leaflet-control-geosearch form input {
+  color: #000 !important;
+}
+
+/* Placeholder hitam */
+.leaflet-control-geosearch form input::placeholder {
+  color: #000 !important;
+  opacity: .7;
+}
+
+/* Hasil dropdown → teks hitam */
+.leaflet-control-geosearch .results > * {
+  color: #000 !important;
+}
+
 
 
 

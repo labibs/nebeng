@@ -4,6 +4,7 @@ import App from './App.jsx'
 import { useRegisterSW } from 'virtual:pwa-register/react' // Virtual module dari plugin
 import './index.css'
 import { ClerkProvider } from '@clerk/clerk-react'
+import "leaflet/dist/leaflet.css";
 
 function SWUpdatePrompt() {
   const {

@@ -377,8 +377,89 @@ export default function PostCard({ post }) {
       </section>
     )}
 
+    {/* Lokasi - Alamat */}
+    {post.location && post.location.lat && post.location.lng && (
+      <section
+        className="
+          flex-shrink-0 w-80
+          snap-start
+          bg-white/15 rounded-2xl p-5
+          border border-white/10
+          flex flex-col justify-between
+        "
+      >
+        <div>
+          {/* <p className="text-xs text-white/60 mb-3 uppercase tracking-wider">
+            ALAMAT LENGKAP
+          </p> */}
+          <p className="text-lg font-bold text-white">
+            {post.location.name || "Lokasi Titipan"}
+          </p>
+          {post.location.address && (
+            <p className="text-sm text-white/70 mt-2">
+              {post.location.address
+                ? post.location.address.length > 20
+                  ? `${post.location.address.substring(0, 50)}...`
+                  : post.location.address
+                : "—"
+              }
+            </p>
+          )}
+        </div>
+
+        {/* Link buka Google Maps */}
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${post.location.lat},${post.location.lng}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 text-xs text-white/80 hover:text-white underline text-center"
+        >
+          Buka di Google Maps →
+        </a>
+      </section>
+    )}
+
+    {/* Lokasi - Peta */}
+    {post.location && post.location.lat && post.location.lng && (
+      <section
+        className="
+          flex-shrink-0 w-80
+          snap-start
+          bg-white/15 rounded-2xl p-5
+          border border-white/10
+          overflow-hidden
+          flex flex-col gap-4
+        "
+      >
+        {/* <p className="text-xs text-white/60 uppercase tracking-wider">
+          Peta Lokasi
+        </p> */}
+
+        <div className="relative w-full h-14 rounded-xl overflow-hidden border border-white/20">
+          {/* Google Static Maps - no API key needed untuk usage normal */}
+          <img
+            src={`https://maps.googleapis.com/maps/api/staticmap?
+              center=${post.location.lat},${post.location.lng}
+              &zoom=15
+              &size=600x400
+              &scale=2
+              &markers=color:red%7C${post.location.lat},${post.location.lng}
+              &maptype=roadmap`.replace(/\s+/g, '')}
+            alt="Peta lokasi"
+            className="w-full h-full object-cover"
+          />
+          {/* Gradient overlay biar marker kelihatan jelas */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+        </div>
+
+        <p className="text-xs text-white/70 text-center">
+          {post.location.lat.toFixed(6)}, {post.location.lng.toFixed(6)}
+        </p>
+      </section>
+    )}
+
     {/* Jika tidak ada satupun data, tampilkan placeholder kosong agar tidak aneh */}
-    {!post.description && !post.item_description && !post.price && (
+    {!post.description && !post.item_description && !post.price && !post.location && (
       <div className="w-80 flex-shrink-0">
         <p className="text-white/50 text-sm">Tidak ada detail tambahan</p>
       </div>

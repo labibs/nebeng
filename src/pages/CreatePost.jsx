@@ -6,6 +6,7 @@ import { uploadPostImage } from '../lib/uploadPostImage'
 import FloatingInput from '../components/FloatingInput'
 import FloatingTextarea from '../components/FloatingTextarea'
 import FloatingSelect from '../components/FloatingSelect'
+import FloatingLocationInput from "../components/FloatingLocationInput";
 
 export default function CreatePost() {
   const { user } = useUser()
@@ -13,6 +14,7 @@ export default function CreatePost() {
 
   const [form, setForm] = useState({
     type: 'titip',
+    armada: 'motor',
     from_city: '',
     to_city: '',
     travel_date: '',
@@ -26,6 +28,12 @@ export default function CreatePost() {
   const [file, setFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [location, setLocation] = useState({
+    name: "",
+    address: "",
+    lat: null,
+    lng: null
+  });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -61,12 +69,16 @@ export default function CreatePost() {
 
       if (userError) throw userError
 
+      console.log("Location yang akan disimpan:", location);
+
       // Insert post
       const { error } = await supabase.from('posts').insert({
         user_id: userRow.id,
         type: form.type,
+        armada: form.armada,
         from_city: form.from_city,
         to_city: form.to_city,
+        location: location,
         travel_date: form.travel_date,
         item_description: form.item_description,
         price: Number(form.price) || null,
@@ -92,7 +104,7 @@ export default function CreatePost() {
     <div className="min-h-screen bg-linear-to-br from-primary to-secondary flex justify-center px-4 py-10">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl p-6 space-y-6"
+        className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl p-6 space-y-6 mb-10"
       >
         <h1 className="text-xl font-bold text-white text-center">
           Buat Post Jastip
@@ -100,19 +112,18 @@ export default function CreatePost() {
 
         {/* TYPE */}
         <FloatingSelect
-  label="Mau apa?"
-  name="type"
-  value={form.type}
-  onChange={handleChange}
-  required
->
-  <option value="" disabled hidden>
-    Pilih
-  </option>
-  <option value="titip">Nitip</option>
-  <option value="bawa">Bawa Titipan</option>
-</FloatingSelect>
-
+          label="Mau apa?"
+          name="type"
+          value={form.type}
+          onChange={handleChange}
+          required
+        >
+          <option value="" disabled hidden>
+            Pilih
+          </option>
+          <option value="titip">Nitip</option>
+          <option value="bawa">Bawa Titipan</option>
+        </FloatingSelect>
 
         {/* FROM CITY */}
         <FloatingInput
@@ -141,6 +152,26 @@ export default function CreatePost() {
           onChange={handleChange}
           label="Tanggal Perjalanan"
           required
+        />
+
+        <FloatingSelect
+          label="Jenis Armada"
+          name="armada"
+          value={form.armada}
+          onChange={handleChange}
+          required
+        >
+          <option value="motor">Motor</option>
+          <option value="mobil">Mobil</option>
+          <option value="bus">Bus</option>
+          <option value="kereta">Kereta</option>
+        </FloatingSelect>
+
+        <FloatingLocationInput
+          label="Lokasi"
+          name="location"
+          value={location}
+          onChange={setLocation}
         />
 
         {/* ITEM DESC */}

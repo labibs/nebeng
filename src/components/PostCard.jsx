@@ -6,6 +6,17 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import LazyImage from './LazyImage'
 import { Bike, Car, Bus, Train } from "lucide-react";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix icon marker biar muncul (penting!)
+import L from "leaflet";
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
 
 export default function PostCard({ post }) {
   const navigate = useNavigate()
@@ -398,7 +409,7 @@ export default function PostCard({ post }) {
           {post.location.address && (
             <p className="text-sm text-white/70 mt-2">
               {post.location.address
-                ? post.location.address.length > 20
+                ? post.location.address.length > 40
                   ? `${post.location.address.substring(0, 50)}...`
                   : post.location.address
                 : "—"
@@ -419,7 +430,7 @@ export default function PostCard({ post }) {
       </section>
     )}
 
-    {/* Lokasi - Peta */}
+    {/* Lokasi - Peta (dengan Leaflet) */}
     {post.location && post.location.lat && post.location.lng && (
       <section
         className="
@@ -435,26 +446,32 @@ export default function PostCard({ post }) {
           Peta Lokasi
         </p> */}
 
-        <div className="relative w-full h-14 rounded-xl overflow-hidden border border-white/20">
-          {/* Google Static Maps - no API key needed untuk usage normal */}
-          <img
-            src={`https://maps.googleapis.com/maps/api/staticmap?
-              center=${post.location.lat},${post.location.lng}
-              &zoom=15
-              &size=600x400
-              &scale=2
-              &markers=color:red%7C${post.location.lat},${post.location.lng}
-              &maptype=roadmap`.replace(/\s+/g, '')}
-            alt="Peta lokasi"
-            className="w-full h-full object-cover"
-          />
-          {/* Gradient overlay biar marker kelihatan jelas */}
+        {/* Mini Map Interaktif dengan react-leaflet */}
+        <div className="relative w-full h-24 rounded-xl overflow-hidden border border-white/20">
+          <MapContainer
+            center={[post.location.lat, post.location.lng]}
+            zoom={15}
+            scrollWheelZoom={false} // biar ga ganggu scroll horizontal
+            zoomControl={false}     // hilangkan tombol zoom biar lebih clean
+            dragging={true}         // boleh drag kalau mau
+            touchZoom={true}
+            doubleClickZoom={false}
+            style={{ height: "100%", width: "100%" }}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+            />
+            <Marker position={[post.location.lat, post.location.lng]} />
+          </MapContainer>
+
+          {/* Gradient overlay optional */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
         </div>
 
-        <p className="text-xs text-white/70 text-center">
+        {/* <p className="text-xs text-white/70 text-center">
           {post.location.lat.toFixed(6)}, {post.location.lng.toFixed(6)}
-        </p>
+        </p> */}
       </section>
     )}
 

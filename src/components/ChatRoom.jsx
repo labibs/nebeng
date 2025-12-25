@@ -361,7 +361,7 @@ export default function ChatRoom() {
 
               <hr className="my-2" />
               <p className="text-xs text-center text-base-content/60 mt-2">
-                Saya tertarik dengan penawaran ini
+                {msg.content || 'saya tertarik dengan penawaran ini.'}
               </p>
             </div>
           ) : (

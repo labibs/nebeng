@@ -128,7 +128,7 @@ export default function PostCard({ post }) {
         if (!existingMessage) {
           await supabase.from('messages').insert({
             conversation_id: conversationId,
-            content: 'card untuk post id' + post.id,
+            content: 'Saya tertarik dengan penawaran ini.',
             message_type: 'post_card',
             sender_id: currentUserId,
             post_id: post.id,

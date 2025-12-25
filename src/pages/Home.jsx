@@ -279,9 +279,9 @@ export default function Home() {
           <div className="navbar px-5 py-4">
             {/* Logo */}
             <div className="flex-1">
-              <h3 className="text-3xl font-extrabold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent drop-shadow-lg">
-        Nebeng
-      </h3>
+              <h3 className="text-5xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#81c784] to-[#66bb6a] dark:from-[#a7f3d0] dark:to-[#86efac] mb-6 tracking-tight">
+          Nebeng
+        </h3>
             </div>
 
             {/* Right side actions */}

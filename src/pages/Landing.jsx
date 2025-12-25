@@ -2,9 +2,9 @@ import {
   SignInButton,
   SignUpButton,
   SignedIn,
-  SignedOut
-} from '@clerk/clerk-react'
-import { Navigate } from 'react-router-dom'
+  SignedOut,
+} from '@clerk/clerk-react';
+import { Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
 export default function Landing() {
@@ -15,36 +15,36 @@ export default function Landing() {
       title: "Pengiriman Langsung Tanpa Transit",
       desc: "Barang dibawa langsung oleh traveller terverifikasi.\nLebih cepat, tanpa ribet gudang atau sorting.",
       emoji: "✈️",
-      gradient: "from-black/70 to-black/50",
-      img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1200&q=80" // pesawat / airport
+      gradient: "from-black/70 via-black/60 to-transparent",
+      img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1600&q=80",
     },
     {
       title: "Liburan Tetap Cuan",
       desc: "Bawa paket saat travelling,\ndapat fee menarik tanpa ganggu rencana liburanmu.",
       emoji: "💰",
-      gradient: "from-green-700/70 to-emerald-600/70",
-      img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80" // pantai / liburan
+      gradient: "from-green-900/70 via-emerald-800/60 to-transparent",
+      img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80",
     },
     {
       title: "100% Aman dengan Escrow",
       desc: "Uang ditahan platform sampai barang sampai di tangan penerima.\nTraveller & pengirim sama-sama tenang.",
       emoji: "🔒",
-      gradient: "from-blue-700/70 to-indigo-700/70",
-      img: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&q=80" // keamanan / trust
+      gradient: "from-blue-900/70 via-indigo-800/60 to-transparent",
+      img: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&q=80",
     },
     {
       title: "Hemat Hingga 70% Biaya Kirim",
       desc: "Lebih murah dari ekspedisi biasa,\nkarena nebeng bagasi traveller yang memang sudah berangkat.",
       emoji: "💸",
-      gradient: "from-teal-700/70 to-cyan-700/70",
-      img: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1200&q=80" // paket / delivery
+      gradient: "from-teal-900/70 via-cyan-800/60 to-transparent",
+      img: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1600&q=80",
     },
     {
       title: "Bangun Komunitas Traveller Solid",
       desc: "Titip barang ke sesama traveller,\nsaling bantu dan ciptakan koneksi baru di jalan.",
       emoji: "🤝",
-      gradient: "from-purple-700/70 to-pink-700/70",
-      img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=80" // komunitas / teman jalan
+      gradient: "from-purple-900/70 via-pink-800/60 to-transparent",
+      img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80",
     },
   ];
 
@@ -53,111 +53,101 @@ export default function Landing() {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 6000);
-
     return () => clearInterval(interval);
-  }, [slides.length]);
+  }, []);
 
-  // Klik dot manual
-  const goToSlide = (index) => {
-    setCurrentSlide(index);
-  };
+  const goToSlide = (index) => setCurrentSlide(index);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e8f5e9] via-[#f0f8f1] to-[#d9f0e0] dark:from-[#1e293b] dark:via-[#0f172a] dark:to-[#1e293b] text-base-content flex flex-col flex items-center bg-base-200 flex items-center justify-center px-6">
-      
-      <SignedIn>
-        <Navigate to="/dashboard" replace />
-      </SignedIn>
+  <>
+    <SignedIn>
+      <Navigate to="/dashboard" replace />
+    </SignedIn>
 
-      <SignedOut>
-        <div className="w-full max-w-md rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl p-10 text-center">
+    <SignedOut>
+      <div className="min-h-screen bg-gradient-to-br from-[#e8f5e9] via-[#f0f8f1] to-[#d9f0e0] dark:from-[#0f172a] dark:via-[#1e293b] dark:to-[#334155] flex flex-col items-center justify-center px-6 py-8 overflow-hidden">
 
-          {/* Brand */}
-          <h1 className="text-5xl font-extrabold text-white mb-3 tracking-tight">
-            Nebeng
-          </h1>
+        {/* Brand Name – lebih kecil di mobile */}
+        <h1 className="text-5xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#81c784] to-[#66bb6a] dark:from-[#a7f3d0] dark:to-[#86efac] mb-6 tracking-tight">
+          Nebeng
+        </h1>
 
-          {/* Carousel Container */}
-      <div className="relative w-full h-96 md:h-[560px] overflow-hidden rounded-2xl shadow-2xl mb-12">
-        <div className="relative w-full h-full">
-          {slides.map((slide, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                index === currentSlide ? 'opacity-100' : 'opacity-0'
-              }`}
-            >
-              {/* Background Image */}
-              <img
-                src={slide.img}
-                alt={slide.title}
-                className="w-full h-full object-cover"
-              />
-
-              {/* Overlay Gradient + Content */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient} flex items-center justify-center px-8`}>
-                <div className="text-center max-w-3xl">
-                  <div className="text-6xl md:text-7xl mb-8">{slide.emoji}</div>
-                  <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
+        {/* Carousel – tinggi dikurangi untuk mobile */}
+        <div className="relative w-full h-64 sm:h-80 md:h-96 overflow-hidden rounded-2xl shadow-2xl mb-6">
+          <div className="relative w-full h-full">
+            {slides.map((slide, index) => (
+              <div
+                key={index}
+                className={`absolute inset-0 transition-opacity duration-1500 ease-in-out ${
+                  index === currentSlide ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <img
+                  src={slide.img}
+                  alt={slide.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient} flex flex-col items-center justify-center px-6`}>
+                  <div className="text-5xl sm:text-6xl mb-4">{slide.emoji}</div>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 text-center leading-tight drop-shadow-lg">
                     {slide.title}
-                  </h3>
-                  <p className="text-white/90 text-lg md:text-xl leading-relaxed whitespace-pre-line">
+                  </h2>
+                  <p className="text-base sm:text-lg text-white/90 text-center max-w-xl leading-relaxed whitespace-pre-line drop-shadow">
                     {slide.desc}
                   </p>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Indicator Dots */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === currentSlide
-                  ? 'bg-white w-8'
-                  : 'bg-white/50 hover:bg-white/80'
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Trust Message di Bawah Carousel */}
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl px-8 py-2 text-center max-w-2xl mx-auto mb-8 shadow-lg -top-8 relative">
-        <p className="text-white text-lg font-semibold">
-          💎 Uang ditahan aman sampai barang sampai di tangan penerima
-        </p>
-      </div>
-
-          {/* CTA */}
-          <div className="flex flex-col gap-4">
-
-            <SignInButton mode="modal">
-              <button className="w-full py-3 rounded-xl bg-black text-white text-lg font-semibold shadow-lg hover:scale-[1.02] active:scale-95 transition">
-                Masuk
-              </button>
-            </SignInButton>
-
-            <SignUpButton mode="modal">
-              <button className="w-full py-3 rounded-xl border border-white/60 text-white text-lg hover:bg-white hover:text-primary transition">
-                Daftar Baru
-              </button>
-            </SignUpButton>
-
+            ))}
           </div>
 
-          {/* Footer kecil */}
-          <p className="text-white/50 text-xs mt-10">
-            Pengiriman personal & Bebas transit
-          </p>
-
+          {/* Dots – lebih kecil & rapat */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`transition-all duration-500 rounded-full ${
+                  index === currentSlide
+                    ? 'bg-white w-8 h-2'
+                    : 'bg-white/50 w-2 h-2 hover:bg-white/80'
+                }`}
+              />
+            ))}
+          </div>
         </div>
-      </SignedOut>
-    </div>
-  )
+
+        {/* Trust Message – lebih kecil & ringkas */}
+        <p className="text-lg sm:text-xl font-medium text-base-content/90 dark:text-white/90 text-center mb-8 px-4">
+          💎 Uang ditahan aman hingga barang sampai
+        </p>
+
+        {/* CTA Buttons – satu baris, icon, ukuran pas */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md">
+          <SignInButton mode="modal">
+            <button className="group w-full flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white text-lg font-bold shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 group-hover:translate-x-1 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              </svg>
+              Masuk
+            </button>
+          </SignInButton>
+
+          <SignUpButton mode="modal">
+            <button className="group w-full flex items-center justify-center gap-3 px-8 py-4 rounded-xl border-3 border-white/70 dark:border-white/50 bg-white/10 dark:bg-white/5 backdrop-blur-md text-white text-lg font-bold shadow-xl hover:bg-white/20 dark:hover:bg-white/15 hover:scale-105 active:scale-95 transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 group-hover:scale-110 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              Daftar Baru
+            </button>
+          </SignUpButton>
+        </div>
+
+        {/* Footer tagline kecil */}
+        <p className="mt-8 text-sm sm:text-base text-base-content/60 dark:text-white/50 text-center">
+          Pengiriman personal • Bebas transit • Saling bantu
+        </p>
+      </div>
+    </SignedOut>
+  </>
+);
 }

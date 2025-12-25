@@ -237,7 +237,7 @@ export default function ChatInbox() {
           </button>
 
           {/* Input muncul saat diklik atau hover */}
-          <div className={`absolute right-12 -top-1 w-64 transition-all duration-300 ease-in-out ${
+          <div className={`absolute right-12 -top-1 w-54 transition-all duration-300 ease-in-out ${
             isSearchOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
           }`}>
             <input

@@ -101,7 +101,7 @@ export default function CreatePost() {
   }
 
  return (
-    <div className="min-h-screen bg-linear-to-br from-primary to-secondary flex justify-center px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-[#e8f5e9] via-[#f0f8f1] to-[#d9f0e0] dark:from-[#1e293b] dark:via-[#0f172a] dark:to-[#1e293b] text-base-content flex flex-col flex items-center bg-base-200 flex justify-center px-4 py-10">
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl p-6 space-y-6 mb-10"

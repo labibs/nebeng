@@ -7,6 +7,8 @@ import PostCardSkeleton from '../components/PostCardSkeleton'
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Navigation, Mousewheel, Keyboard } from 'swiper/modules';
 import { Bike, Car, Bus, Train, Plane } from 'lucide-react'
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
 
 // Import CSS Swiper
 import 'swiper/css';
@@ -167,65 +169,72 @@ export default function Home() {
     return () => supabase.removeChannel(channel)
   }, [fetchPosts])
 
-  // Filter posts berdasarkan tab, search, fee, dan tanggal
-const filteredPosts = posts.filter(post => {
-  // Filter by tab
-  if (activeTab !== 'semua') {
-    const targetType = activeTab === 'titip' ? 'titip' : 'bawa'
-    if (post.type !== targetType) return false
-  }
+  const filteredPosts = posts.filter(post => {
 
-  // Filter by search query
-  if (searchQuery.trim()) {
-    const query = searchQuery.toLowerCase()
-    const searchFields = [post.from_city, post.to_city, post.item_description, post.description]
-    if (!searchFields.some(field => field?.toLowerCase().includes(query))) return false
-  }
+    // Tab filter
+    if (activeTab !== 'semua') {
+      const target = activeTab === 'titip' ? 'titip' : 'bawa'
+      if (post.type !== target) return false
+    }
 
-  // Filter by fee range
-  if (post.fee < feeRange[0] || post.fee > feeRange[1]) return false
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      const fields = [
+        post.from_city,
+        post.to_city,
+        post.item_description,
+        post.description
+      ]
 
-  // Filter by armada
-  if (armadaFilter !== 'all') {
-    if (post.armada !== armadaFilter) return false
-  }
+      if (!fields.some(f => f?.toLowerCase().includes(q))) return false
+    }
 
-  // Filter by travel_date
-  if (!post.travel_date) return false // jika tidak ada tanggal, skip (opsional)
+    // Fee filter
+    if (post.fee < feeRange[0] || post.fee > feeRange[1]) return false
 
-  const postDate = new Date(post.travel_date)
-  if (isNaN(postDate)) return false // skip jika tanggal invalid
+    // Armada filter
+    if (armadaFilter !== 'all' && post.armada !== armadaFilter) return false
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+    // Date filter
+    if (!post.travel_date) return false
 
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
+    const postDate = new Date(post.travel_date)
+    if (isNaN(postDate)) return false
 
-  const startOfWeek = new Date(today)
-  startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)) // Senin minggu ini
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
 
-  const endOfWeek = new Date(startOfWeek)
-  endOfWeek.setDate(startOfWeek.getDate() + 6)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(today.getDate() + 1)
 
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+    const startOfWeek = new Date(today)
+    startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))
 
-  switch (dateFilterMode) {
-    case 'today':
-      return postDate.toDateString() === today.toDateString()
-    case 'tomorrow':
-      return postDate.toDateString() === tomorrow.toDateString()
-    case 'thisWeek':
-      return postDate >= startOfWeek && postDate <= endOfWeek
-    case 'custom':
-      if (!customDate) return true
-      return postDate.toDateString() === new Date(customDate).toDateString()
-    case 'all':
-    default:
-      return true
-  }
-})
+    const endOfWeek = new Date(startOfWeek)
+    endOfWeek.setDate(startOfWeek.getDate() + 6)
+
+    switch (dateFilterMode) {
+      case 'today':
+        return postDate.toDateString() === today.toDateString()
+      case 'tomorrow':
+        return postDate.toDateString() === tomorrow.toDateString()
+      case 'thisWeek':
+        return postDate >= startOfWeek && postDate <= endOfWeek
+      case 'custom':
+        return customDate
+          ? postDate.toDateString() === new Date(customDate).toDateString()
+          : true
+      default:
+        return true
+    }
+  })
+
+  const MIN = 0
+  const MAX = 1000000
+  const STEP = 10000
+
+  const clamp = (v) => Math.min(MAX, Math.max(MIN, v))
 
   // Search handlers
   const handleSearchKeyDown = (e) => {
@@ -529,46 +538,55 @@ const filteredPosts = posts.filter(post => {
   </div>
 </div>
 
+<div className="space-y-3 px-4">
+  <div className="flex justify-between text-sm font-medium text-base-content/80">
+    <span>Ongkos Fee</span>
+    <span>
+      Rp {feeRange[0].toLocaleString()} — Rp {feeRange[1].toLocaleString()}
+    </span>
+  </div>
 
-{/* Filter Fee */}
-            <div className="space-y-3 px-4">
-              <div className="flex justify-between text-sm font-medium text-base-content/80">
-                <span>Ongkos Fee</span>
-                <span>
-                  Rp {feeRange[0].toLocaleString()} - Rp {feeRange[1].toLocaleString()}
-                </span>
-              </div>
+  <div className="py-4 px-2">
+    <Slider
+      range
+      min={MIN}
+      max={MAX}
+      step={STEP}
+      value={feeRange}
+      onChange={(value) => setFeeRange(value)}
+      trackStyle={[{ backgroundColor: 'hsl(var(--p))', height: '8px' }]}
+      railStyle={{ 
+        backgroundColor: 'hsl(var(--b3))', // bg-base-300
+        height: '8px',
+        borderRadius: '4px'
+      }}
+      handleStyle={[
+        { 
+          backgroundColor: 'white', 
+          borderColor: 'hsl(var(--p))', 
+          borderWidth: '3px',
+          height: '20px',
+          width: '20px',
+          marginTop: '-6px'
+        },
+        { 
+          backgroundColor: 'white', 
+          borderColor: 'hsl(var(--p))', 
+          borderWidth: '3px',
+          height: '20px',
+          width: '20px',
+          marginTop: '-6px'
+        }
+      ]}
+    />
+  </div>
 
-              <div className="relative py-4">
-                <input
-                  type="range"
-                  min="0"
-                  max="1000000"
-                  step="10000"
-                  value={feeRange[1]}
-                  onChange={(e) => setFeeRange([feeRange[0], Number(e.target.value)])}
-                  className="absolute w-full h-3 bg-base-300 rounded-lg appearance-none cursor-pointer"
-                  style={{
-                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(feeRange[1] / 1000000) * 100}%, #e5e7eb ${(feeRange[1] / 1000000) * 100}%, #e5e7eb 100%)`,
-                  }}
-                />
-                <input
-                  type="range"
-                  min="0"
-                  max="1000000"
-                  step="10000"
-                  value={feeRange[0]}
-                  onChange={(e) => setFeeRange([Number(e.target.value), feeRange[1]])}
-                  className="absolute w-full h-3 bg-transparent rounded-lg appearance-none cursor-pointer pointer-events-none"
-                  style={{ zIndex: feeRange[0] > 900000 ? 5 : 3 }}
-                />
-              </div>
+  <div className="flex justify-between text-xs text-base-content/60">
+    <span>Rp 0</span>
+    <span>Rp 1.000.000+</span>
+  </div>
+</div>
 
-              <div className="flex justify-between text-xs text-base-content/60">
-                <span>Rp 0</span>
-                <span>Rp 1.000.000+</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>

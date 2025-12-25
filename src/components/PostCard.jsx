@@ -113,7 +113,30 @@ export default function PostCard({ post }) {
 
       if (participants && participants.length >= 2) {
         conversationId = participants[0].conversation_id
+
+        // 🔎 Cek apakah sudah ada message post_card untuk post ini
+        const { data: existingMessage } = await supabase
+          .from('messages')
+          .select('id')
+          .eq('conversation_id', conversationId)
+          .eq('post_id', post.id)
+          .eq('message_type', 'post_card')
+          .limit(1)
+          .maybeSingle()
+
+        // ❌ Jika belum ada → tambahkan message post_card
+        if (!existingMessage) {
+          await supabase.from('messages').insert({
+            conversation_id: conversationId,
+            content: 'card untuk post id' + post.id,
+            message_type: 'post_card',
+            sender_id: currentUserId,
+            post_id: post.id,
+          })
+        }
+
       } else {
+        // 🔰 Conversation belum ada → buat baru
         const { data: newConv } = await supabase
           .from('conversations')
           .insert({ post_id: post.id })
@@ -127,6 +150,7 @@ export default function PostCard({ post }) {
           { conversation_id: conversationId, user_id: posterClerkId },
         ])
 
+        // ⛳ kirim post_card pertama kali
         await supabase.from('messages').insert({
           conversation_id: conversationId,
           content: null,
@@ -136,7 +160,9 @@ export default function PostCard({ post }) {
         })
       }
 
+      // ➜ Arahkan ke halaman chat
       navigate(`/chat/${conversationId}`)
+
     } catch (error) {
       console.error('Error membuka chat:', error)
       alert('Gagal membuka chat. Coba lagi ya!')

@@ -19,6 +19,9 @@ export default function ChatInbox() {
   const [userList, setUserList] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
   const loadUsers = async () => {
     setLoadingUsers(true);
 
@@ -68,7 +71,6 @@ export default function ChatInbox() {
   const fetchConversations = async () => {
     if (!currentUserId) return;
 
-    console.log('Refreshing inbox conversations...');
 
     // 1. Ambil conversation user
     const { data: participantRows } = await supabase
@@ -221,13 +223,55 @@ export default function ChatInbox() {
         </h3>
       </div>
 
-      {/* tombol tambah chat */}
-      <div className="flex-none">
+      <div className="flex-none flex items-center gap-3">
+
+        {/* Search Button + Input */}
+        <div className="relative">
+          <button
+            onClick={() => setIsSearchOpen(!isSearchOpen)}
+            className="btn btn-circle btn-sm bg-primary/10 border border-primary/30 hover:bg-primary/20"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+
+          {/* Input muncul saat diklik atau hover */}
+          <div className={`absolute right-12 -top-1 w-64 transition-all duration-300 ease-in-out ${
+            isSearchOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
+          }`}>
+            <input
+              type="text"
+              placeholder="Cari chat atau kontak..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                // Trigger refetch jika perlu real-time filter (bisa debounce)
+              }}
+              onBlur={() => setTimeout(() => setIsSearchOpen(false), 200)} // biar bisa klik di luar
+              autoFocus
+              className="input input-bordered w-full bg-base-100 shadow-lg rounded-2xl pr-10"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setIsSearchOpen(false);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Tombol tambah chat */}
         <button
           onClick={() => setShowUserPicker(true)}
-          className="btn btn-circle btn-sm bg-primary/10 border border-primary/30 hover:bg-primary/20"
+          className="btn btn-circle btn-sm bg-primary/10 border border-primary/30 hover:bg-primary/20 flex items-center justify-center"
         >
-          <span className="text-xl text-primary font-bold">+</span>
+          <span className="text-xl text-primary font-bold leading-none translate-y-[-2px]">+</span>
         </button>
       </div>
     </div>

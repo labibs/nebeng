@@ -25,6 +25,7 @@ export default function ChatInbox() {
     const { data } = await supabase
       .from("users")
       .select("id, name, avatar_url, clerk_id")
+      .neq("clerk_id", currentUserId)
       .order("name", { ascending: true });
 
     setUserList(data || []);

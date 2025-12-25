@@ -23,8 +23,6 @@ export default function PostCard({ post }) {
 
   const currentUserId = clerkUser?.id
 
-  console.log('currentUserId:', currentUserId)
-
   const poster = post.users || {}
   const username = poster.name || (post.type === 'titip' ? 'Titipers' : 'Traveler')
   const userAvatar =
@@ -92,8 +90,6 @@ export default function PostCard({ post }) {
     }
 
     const posterClerkId = post.clerk_user_id || null
-
-    console.log('posterClerkId:', posterClerkId)  
 
     if (!posterClerkId) {
       alert('Data user tidak lengkap!')

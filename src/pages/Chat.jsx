@@ -398,15 +398,9 @@ export default function ChatInbox() {
           {loadingUsers ? (
             <div className="space-y-3">
               {[1,2,3,4].map(i => (
-                <div key={i} className="flex items-center gap-3 py-3">
-                  {/* Avatar skeleton – putih soft */}
-                  <div className="skeleton w-10 h-10 rounded-full bg-white/30" />
-
-                  {/* Text skeleton – abu-abu sangat soft atau putih */}
-                  <div className="flex-1">
-                    <div className="skeleton h-4 w-48 bg-white/20 mb-2" />
-                    <div className="skeleton h-3 w-32 bg-white/10" />
-                  </div>
+                <div key={i} className="flex items-center gap-3">
+                  <div className="skeleton w-10 h-10 rounded-full" />
+                  <div className="skeleton h-4 w-40" />
                 </div>
               ))}
             </div>

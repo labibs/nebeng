@@ -21,7 +21,7 @@ export default function PostCard({ post }) {
     { id: 'bawa', label: 'Bisa Bawa' }
   ]
 
-  const currentUserId = clerkUser?.id
+  const currentUserId = clerkUser?.clerk_id
 
   const poster = post.users || {}
   const username = poster.name || (post.type === 'titip' ? 'Titipers' : 'Traveler')

@@ -21,7 +21,9 @@ export default function PostCard({ post }) {
     { id: 'bawa', label: 'Bisa Bawa' }
   ]
 
-  const currentUserId = clerkUser?.clerk_id
+  const currentUserId = clerkUser?.id
+
+  console.log('currentUserId:', currentUserId)
 
   const poster = post.users || {}
   const username = poster.name || (post.type === 'titip' ? 'Titipers' : 'Traveler')
@@ -91,6 +93,8 @@ export default function PostCard({ post }) {
 
     const posterClerkId = post.clerk_user_id || null
 
+    console.log('posterClerkId:', posterClerkId)  
+
     if (!posterClerkId) {
       alert('Data user tidak lengkap!')
       return
@@ -104,17 +108,30 @@ export default function PostCard({ post }) {
     setLoadingChat(true)
 
     try {
-      let conversationId
-
-      const { data: participants } = await supabase
+      // ambil semua conversation milik current user
+      const { data: myConvs } = await supabase
         .from('conversation_participants')
         .select('conversation_id')
-        .in('user_id', [currentUserId, posterClerkId])
+        .eq('user_id', currentUserId);
 
-      if (participants && participants.length >= 2) {
-        conversationId = participants[0].conversation_id
+      const myConvIds = (myConvs || []).map(r => r.conversation_id);
 
-        // 🔎 Cek apakah sudah ada message post_card untuk post ini
+      // cek apakah lawan chat juga ada di conversation yang sama
+      const { data: sharedConv } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', posterClerkId)
+        .in('conversation_id', myConvIds)
+        .limit(1)
+        .maybeSingle();
+
+      let conversationId;
+
+      if (sharedConv) {
+        // 👌 conversation valid & berisi dua user yg sama
+        conversationId = sharedConv.conversation_id;
+
+        // optional → cek apakah sudah ada post_card message
         const { data: existingMessage } = await supabase
           .from('messages')
           .select('id')
@@ -122,9 +139,8 @@ export default function PostCard({ post }) {
           .eq('post_id', post.id)
           .eq('message_type', 'post_card')
           .limit(1)
-          .maybeSingle()
+          .maybeSingle();
 
-        // ❌ Jika belum ada → tambahkan message post_card
         if (!existingMessage) {
           await supabase.from('messages').insert({
             conversation_id: conversationId,
@@ -132,36 +148,34 @@ export default function PostCard({ post }) {
             message_type: 'post_card',
             sender_id: currentUserId,
             post_id: post.id,
-          })
+          });
         }
 
       } else {
-        // 🔰 Conversation belum ada → buat baru
+        // 🆕 belum ada conversation berdua → buat baru
         const { data: newConv } = await supabase
           .from('conversations')
           .insert({ post_id: post.id })
           .select('id')
-          .single()
+          .single();
 
-        conversationId = newConv.id
+        conversationId = newConv.id;
 
         await supabase.from('conversation_participants').insert([
           { conversation_id: conversationId, user_id: currentUserId },
           { conversation_id: conversationId, user_id: posterClerkId },
-        ])
+        ]);
 
-        // ⛳ kirim post_card pertama kali
         await supabase.from('messages').insert({
           conversation_id: conversationId,
           content: null,
           message_type: 'post_card',
           sender_id: currentUserId,
           post_id: post.id,
-        })
+        });
       }
 
-      // ➜ Arahkan ke halaman chat
-      navigate(`/chat/${conversationId}`)
+      navigate(`/chat/${conversationId}`);
 
     } catch (error) {
       console.error('Error membuka chat:', error)

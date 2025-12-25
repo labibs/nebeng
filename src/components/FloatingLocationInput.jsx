@@ -138,7 +138,7 @@ export default function FloatingLocationInput({
                 className="btn btn-ghost"
                 onClick={() => setShowMap(false)}
               >
-                Tutup
+                Ambil
               </button>
             </div>
           </div>

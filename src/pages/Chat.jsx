@@ -38,8 +38,6 @@ export default function ChatInbox() {
   const startChatWith = async (selectedUser) => {
     setShowUserPicker(false);
 
-    console.log('Memulai chat dengan:', selectedUser);
-
     let conversationId;
 
     // cek apakah sudah ada conversation berdua
@@ -69,8 +67,9 @@ export default function ChatInbox() {
   };
 
   const fetchConversations = async () => {
-    if (!currentUserId) return;
 
+    console.log('🔄 fetchConversations dipanggil, searchQuery:', searchQuery);
+    if (!currentUserId) return;
 
     // 1. Ambil conversation user
     const { data: participantRows } = await supabase
@@ -89,7 +88,7 @@ export default function ChatInbox() {
     // 2. Ambil semua pesan relevan untuk last message + unread count
     const { data: messages } = await supabase
       .from('messages')
-      .select('id, conversation_id, content, created_at, sender_id, is_read')
+      .select('id, conversation_id, content, created_at, sender_id, is_read, post_id')
       .in('conversation_id', conversationIds)
       .order('created_at', { ascending: false });
 
@@ -103,9 +102,44 @@ export default function ChatInbox() {
     const lastMsgMap = {};
     messages.forEach(msg => {
       if (!lastMsgMap[msg.conversation_id] || new Date(msg.created_at) > new Date(lastMsgMap[msg.conversation_id].created_at)) {
-        lastMsgMap[msg.conversation_id] = msg;
+        lastMsgMap[msg.conversation_id] = {
+          content: msg.content,
+          created_at: msg.created_at,
+          post_id: msg.post_id,  // ← tambah ini
+        };
       }
     });
+
+    // Kumpulkan semua post_id unik dari last messages
+    const postIds = [...new Set(
+      Object.values(lastMsgMap)
+        .map(lm => lm.post_id)
+        .filter(id => id !== null)
+    )];
+
+    let postMap = {};
+
+    if (postIds.length > 0) {
+      console.log('🔗 Mengambil post dengan ID:', postIds);
+
+      const { data: posts, error } = await supabase
+        .from('posts')
+        .select('id, from_city, to_city, travel_date, item_description, description, armada, location, price, fee, type')
+        .in('id', postIds);
+
+      if (error) {
+        console.error('❌ Error fetch posts:', error);
+      } else {
+        console.log('✅ Berhasil ambil', posts?.length, 'post');
+        posts?.forEach(post => {
+          console.log(`   Post ${post.id}: ${post.from_city || '?'} → ${post.to_city || '?'}, "${post.item_description || post.description || 'tanpa deskripsi'}"`);
+        });
+      }
+
+  posts?.forEach(post => {
+    postMap[post.id] = post;
+  });
+}
 
     // Unread count per conversation
     const unreadCountMap = {};
@@ -151,16 +185,95 @@ export default function ChatInbox() {
         lastMessage: lastMsg ? lastMsg.content : 'Belum ada pesan',
         lastTime: lastMsg ? lastMsg.created_at : new Date(),
         unreadCount: unreadCountMap[convId] || 0,
+        relatedPost: lastMsg?.post_id ? postMap[lastMsg.post_id] : null,  // ← tambah ini
       };
     });
 
     convList.sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime));
 
-    setConversations(convList);
+    console.log('📊 Total conversations sebelum filter:', convList.length);
+
+    let filteredConvList = convList;
+
+    if (searchQuery.trim()) {
+  const lowerQuery = searchQuery.toLowerCase().trim();
+  console.log('🔍 Mulai filtering dengan query:', lowerQuery);
+
+  filteredConvList = convList.filter(conv => {
+    let found = false;
+
+    // 1. Nama lawan bicara
+    if (conv.opponent.name && conv.opponent.name.toLowerCase().includes(lowerQuery)) {
+      console.log('✅ Match NAMA:', conv.opponent.name);
+      found = true;
+    }
+
+    // 2. Isi pesan terakhir
+    if (conv.lastMessage && conv.lastMessage.toLowerCase().includes(lowerQuery)) {
+      console.log('✅ Match PESAN:', conv.lastMessage.substring(0, 50));
+      found = true;
+    }
+
+    // 3. Data POST — ini yang kita debug intensif
+    if (conv.relatedPost) {
+      const post = conv.relatedPost;
+      console.log('📌 Conversation ini punya relatedPost ID:', post.id);
+
+      // Gabungkan semua field yang ingin dicari
+      const searchableFields = [
+        post.from_city,
+        post.to_city,
+        post.item_description,
+        post.description,
+        post.armada,
+        post.location,
+        post.type,
+        post.price?.toString(),
+        post.fee?.toString(),
+      ].filter(Boolean).join(' ').toLowerCase();
+
+      console.log('🔖 Searchable text dari post:', searchableFields);
+
+      if (searchableFields.includes(lowerQuery)) {
+        console.log('✅ MATCH POST TEXT!');
+        found = true;
+      }
+
+      // Khusus travel_date
+      if (post.travel_date) {
+        const date = new Date(post.travel_date);
+        const dateStr = date.toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+        const dateShort = date.toLocaleDateString('id-ID'); // 26/12/2025
+
+        console.log('📅 Tanggal post:', dateStr, '|', dateShort);
+
+        if (dateStr.toLowerCase().includes(lowerQuery) || dateShort.includes(lowerQuery)) {
+          console.log('✅ MATCH TANGGAL!');
+          found = true;
+        }
+      }
+    } else {
+      // Kalau tidak ada relatedPost, log juga biar tahu
+      if (conv.lastMsgMap && conv.lastMsgMap.post_id) {
+        console.log('⚠️ Ada post_id di message tapi tidak ada di postMap:', conv.lastMsgMap.post_id);
+      }
+    }
+
+    return found;
+  });
+
+    console.log(`🎯 Hasil filter: ${filteredConvList.length} dari ${convList.length} conversations`);
+    }
+  
+    setConversations(filteredConvList);
     setLoading(false);
   };
-
-  useEffect(() => {
+  
+    useEffect(() => {
     if (showUserPicker) loadUsers();
   }, [showUserPicker]);
 
@@ -187,7 +300,7 @@ export default function ChatInbox() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUserId]);
+  }, [currentUserId, searchQuery]);
 
   // Force refresh saat kembali ke tab / halaman inbox
   useEffect(() => {
@@ -213,7 +326,7 @@ export default function ChatInbox() {
   };
 
   return (
-  <div className="min-h-screen bg-transparent">
+  <div className="min-h-screen bg-linear-to-br from-primary to-secondary text-white flex flex-col">
 
     {/* Navbar */}
     <div className="sticky top-0 z-10 navbar bg-base-100/70 backdrop-blur-xl shadow-sm">
@@ -285,9 +398,15 @@ export default function ChatInbox() {
           {loadingUsers ? (
             <div className="space-y-3">
               {[1,2,3,4].map(i => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="skeleton w-10 h-10 rounded-full" />
-                  <div className="skeleton h-4 w-40" />
+                <div key={i} className="flex items-center gap-3 py-3">
+                  {/* Avatar skeleton – putih soft */}
+                  <div className="skeleton w-10 h-10 rounded-full bg-white/30" />
+
+                  {/* Text skeleton – abu-abu sangat soft atau putih */}
+                  <div className="flex-1">
+                    <div className="skeleton h-4 w-48 bg-white/20 mb-2" />
+                    <div className="skeleton h-3 w-32 bg-white/10" />
+                  </div>
                 </div>
               ))}
             </div>

@@ -88,7 +88,15 @@ export default function ChatRoom() {
     const fetchMessages = async () => {
       const { data } = await supabase
         .from('messages')
-        .select('id, content, created_at, sender_id, is_read')
+        .select(`
+          id,
+          content,
+          created_at,
+          sender_id,
+          is_read,
+          message_type,
+          post:posts (*)
+        `)
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
@@ -257,161 +265,151 @@ export default function ChatRoom() {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto p-4 pb-20">
-        {loading ? (
-            <div className="space-y-6 p-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className={`chat ${i % 2 === 0 ? 'chat-end' : 'chat-start'}`}>
-                  <div className="chat-bubble bg-base-300 animate-pulse w-64 h-20 rounded-2xl" />
-                </div>
-              ))}
+<div className="flex-1 overflow-y-auto p-4 pb-20">
+  {loading ? (
+    <div className="space-y-6 p-4">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className={`chat ${i % 2 === 0 ? 'chat-end' : 'chat-start'}`}>
+          <div className="chat-bubble bg-base-300 animate-pulse w-64 h-20 rounded-2xl" />
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="space-y-6">
+      {messages.map((msg) => (
+        <div
+          key={msg.id}
+          className={`chat ${msg.sender_id === currentUserId ? 'chat-end' : 'chat-start'}`}
+        >
+          {/* Avatar */}
+          <div className="chat-image avatar">
+            <div className="w-10 rounded-full">
+              <img
+                src={msg.sender_id === currentUserId ? currentUserAvatar : recipient.imageUrl}
+                alt="avatar"
+              />
             </div>
-          ) : (
-          <div className="space-y-6">
-            {/* Card Post di sisi sender (kanan) */}
-            {postInfo && (
-              <div className="chat chat-end my-8">
-                <div className="chat-image avatar">
-                  <div className="w-10 rounded-full">
-                    <img src={currentUserAvatar} alt="avatar" />
-                  </div>
-                </div>
+          </div>
 
-                <div className="chat-bubble bg-base-100 border border-base-300 max-w-md shadow-lg">
-                  {/* Card Post Horizontal - Gambar kecil kiri, info kanan */}
-                  <div className="flex gap-4 items-start px-0 py-2">
-                    {/* Gambar Barang Kecil */}
-                    <div className="avatar">
-                      <div className="w-24 h-24 rounded-xl overflow-hidden">
-                        <img
-                          src={postInfo.item_photo || '/default-item.jpg'}
-                          alt="Barang"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
+          {/* Header (waktu) */}
+          <div className="chat-header">
+            <time className="text-xs opacity-70">
+              {(() => {
+                const messageDate = new Date(msg.created_at);
+                const today = new Date();
+                const isToday =
+                  messageDate.getDate() === today.getDate() &&
+                  messageDate.getMonth() === today.getMonth() &&
+                  messageDate.getFullYear() === today.getFullYear();
 
-                    {/* Info Post */}
-                    <div className="flex-1">
-                      {/* Badge Tipe */}
-                      <div className="mb-2 text-end">
-                        <div className="badge badge-primary badge-sm">
-                          {postInfo.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}
-                        </div>
-                      </div>
+                if (isToday) {
+                  return messageDate.toLocaleTimeString('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  });
+                } else {
+                  return messageDate.toLocaleDateString('id-ID', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  });
+                }
+              })()}
+            </time>
+          </div>
 
-                      {/* Deskripsi Barang */}
-                      {/* <h3 className="font-semibold text-base leading-tight">
-                        {postInfo.item_description || 'Barang Jastip'}
-                      </h3> */}
-
-                      {/* Rute */}
-                      <div className="flex items-center gap-2 text-sm text-base-content/80 mt-3">
-                        <span className="font-medium">{postInfo.from_city}</span>
-                        <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                        <span className="font-medium">{postInfo.to_city}</span>
-                      </div>
-
-                      {/* Harga & Fee */}
-                      <div className="flex justify-between items-end mt-3 text-sm">
-                        
-                        <p className="text-emerald-600 font-bold">
-                          Fee: Rp{postInfo.fee.toLocaleString('id-ID')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Caption kecil di bawah card */}
-                  <hr className="my-2" />
-                  <p className="text-xs text-center text-base-content/60 mt-2">
-                    Saya tertarik dengan penawaran ini
-                  </p>
-                </div>
-
-                <div className="chat-footer opacity-70 text-xs mt-1">Terkirim</div>
-              </div>
-            )}
-
-            {/* Pesan teks biasa */}
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`chat ${msg.sender_id === currentUserId ? 'chat-end' : 'chat-start'}`}
-              >
-                <div className="chat-image avatar">
-                  <div className="w-10 rounded-full">
+          {/* Bubble Content - Bedakan berdasarkan message_type */}
+          {msg.message_type === 'post_card' ? (
+            // CARD POST (hanya dari sender yang memulai chat)
+            <div className="chat-bubble bg-base-100 border border-base-300 max-w-md shadow-lg">
+              <div className="flex gap-4 items-start px-0 py-2">
+                {/* Gambar Barang Kecil */}
+                <div className="avatar">
+                  <div className="w-24 h-24 rounded-xl overflow-hidden">
                     <img
-                      src={msg.sender_id === currentUserId ? currentUserAvatar : recipient.imageUrl}
-                      alt="avatar"
+                      src={msg.post?.item_photo || '/default-item.jpg'} // asumsi post data ada di msg.post
+                      alt="Barang"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                 </div>
-                <div className="chat-header">
-                  <time className="text-xs opacity-70">
-                    {(() => {
-                      const messageDate = new Date(msg.created_at);
-                      const today = new Date();
-                      const isToday =
-                        messageDate.getDate() === today.getDate() &&
-                        messageDate.getMonth() === today.getMonth() &&
-                        messageDate.getFullYear() === today.getFullYear();
 
-                      if (isToday) {
-                        // Hari ini → hanya jam:menit
-                        return messageDate.toLocaleTimeString('id-ID', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        });
-                      } else {
-                        // Bukan hari ini → hari, tanggal bulan tahun
-                        return messageDate.toLocaleDateString('id-ID', {
-                          weekday: 'short',
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        });
-                      }
-                    })()}
-                  </time>
+                {/* Info Post */}
+                <div className="flex-1">
+                  <div className="mb-2 text-end">
+                    <div className="badge badge-primary badge-sm">
+                      {msg.post?.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm text-base-content/80 mt-3">
+                    <span className="font-medium">{msg.post?.from_city}</span>
+                    <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                    <span className="font-medium">{msg.post?.to_city}</span>
+                  </div>
+
+                  <div className="flex justify-between items-end mt-3 text-sm">
+                    <p className="text-emerald-600 font-bold">
+                      Fee: Rp{msg.post?.fee?.toLocaleString('id-ID')}
+                    </p>
+                  </div>
                 </div>
-                <div
-                  className={`chat-bubble ${
-                    msg.sender_id === currentUserId
-                      ? 'chat-bubble-primary'
-                      : 'chat-bubble-neutral'
-                  }`}
-                >
-                  {msg.content}
-                </div>
-                {msg.sender_id === currentUserId && (
-                <div className={`chat-footer text-xs mt-1 flex items-center gap-1 ${msg.is_read ? 'text-blue-500' : 'opacity-70'}`}>
-                  {msg.is_read ? (
-                    <>
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M4 10l4 4L16 6" stroke="currentColor" strokeWidth="2" fill="none"/>
-                        <path d="M8 10l4 4L20 6" stroke="currentColor" strokeWidth="2" fill="none"/>
-                      </svg>
-                      <span>Terbaca</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M4 10l4 4L16 6" stroke="currentColor" strokeWidth="2" fill="none"/>
-                      </svg>
-                      <span>Terkirim</span>
-                    </>
-                  )}
-                </div>
-              )}
               </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-        )}
-      </div>
+
+              <hr className="my-2" />
+              <p className="text-xs text-center text-base-content/60 mt-2">
+                Saya tertarik dengan penawaran ini
+              </p>
+            </div>
+          ) : (
+            // PESAN TEKS BIASA
+            <div
+              className={`chat-bubble ${
+                msg.sender_id === currentUserId
+                  ? 'chat-bubble-primary'
+                  : 'chat-bubble-neutral'
+              }`}
+            >
+              {msg.content} {msg.message_type}
+            </div>
+          )}
+
+          {/* Footer: status terkirim/terbaca - hanya untuk pesan dari current user */}
+          {msg.sender_id === currentUserId && (
+            <div
+              className={`chat-footer text-xs mt-1 flex items-center gap-1 ${
+                msg.is_read ? 'text-blue-500' : 'opacity-70'
+              }`}
+            >
+              {msg.is_read ? (
+                <>
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M4 10l4 4L16 6" stroke="currentColor" strokeWidth="2" fill="none" />
+                    <path d="M8 10l4 4L20 6" stroke="currentColor" strokeWidth="2" fill="none" />
+                  </svg>
+                  <span>Terbaca</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M4 10l4 4L16 6" stroke="currentColor" strokeWidth="2" fill="none" />
+                  </svg>
+                  <span>Terkirim</span>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* Auto scroll ke bawah */}
+      <div ref={messagesEndRef} />
+    </div>
+  )}
+</div>
 
       {/* Input Fixed */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-base-100 border-t shadow-lg">

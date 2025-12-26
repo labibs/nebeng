@@ -65,15 +65,17 @@ export default function Landing() {
     </SignedIn>
 
     <SignedOut>
-      <div className="min-h-screen bg-gradient-to-br from-[#e8f5e9] via-[#f0f8f1] to-[#d9f0e0] dark:from-[#0f172a] dark:via-[#1e293b] dark:to-[#334155] flex flex-col items-center justify-center px-6 py-8 overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-[#e8f5e9] via-[#f0f8f1] to-[#d9f0e0] dark:from-[#0f172a] dark:via-[#1e293b] dark:to-[#334155] flex flex-col items-center justify-center px-6 py-2 overflow-hidden">
 
         {/* Brand Name – lebih kecil di mobile */}
-        <h1 className="text-5xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#81c784] to-[#66bb6a] dark:from-[#a7f3d0] dark:to-[#86efac] mb-6 tracking-tight">
-          Nebeng
-        </h1>
+        <img
+          src="./nebeng.png"
+          alt="Nebeng"
+          className="w-35 h-35 object-cover mb-2"
+        />
 
         {/* Carousel – tinggi dikurangi untuk mobile */}
-        <div className="relative w-full h-64 sm:h-80 md:h-96 overflow-hidden rounded-2xl shadow-2xl mb-6">
+        <div className="relative w-full h-64 sm:h-96 md:h-96 overflow-hidden rounded-2xl shadow-2xl mb-6">
           <div className="relative w-full h-full">
             {slides.map((slide, index) => (
               <div
@@ -88,7 +90,7 @@ export default function Landing() {
                   className="w-full h-full object-cover"
                 />
                 <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient} flex flex-col items-center justify-center px-6`}>
-                  <div className="text-5xl sm:text-6xl mb-4">{slide.emoji}</div>
+                  <div className="text-4xl sm:text-5xl mb-4">{slide.emoji}</div>
                   <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 text-center leading-tight drop-shadow-lg">
                     {slide.title}
                   </h2>
@@ -121,10 +123,11 @@ export default function Landing() {
           💎 Uang ditahan aman hingga barang sampai
         </p>
 
-        {/* CTA Buttons – satu baris, icon, ukuran pas */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md">
+        {/* CTA Buttons — selalu 1 baris */}
+        <div className="flex flex-row gap-4 justify-center items-center w-full max-w-md">
+
           <SignInButton mode="modal">
-            <button className="group w-full flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white text-lg font-bold shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all">
+            <button className="group flex-1 flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white text-lg font-bold shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 group-hover:translate-x-1 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
               </svg>
@@ -133,18 +136,18 @@ export default function Landing() {
           </SignInButton>
 
           <SignUpButton mode="modal">
-            <button className="group w-full flex items-center justify-center gap-3 px-8 py-4 rounded-xl border-3 border-base-content/70 bg-white/10 dark:bg-white/5 backdrop-blur-md text-base-content dark:text-white text-lg font-bold shadow-xl hover:bg-white/30 dark:hover:bg-white/15 hover:border-base-content hover:scale-105 active:scale-95 transition-all">
+            <button className="group flex-1 flex items-center justify-center gap-3 px-8 py-4 rounded-xl border-3 border-base-content/70 bg-white/10 dark:bg-white/5 backdrop-blur-md text-base-content dark:text-white text-lg font-bold shadow-xl hover:bg-white/30 dark:hover:bg-white/15 hover:border-base-content hover:scale-105 active:scale-95 transition-all">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 group-hover:scale-110 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
               </svg>
-              Daftar Baru
+              Daftar
             </button>
           </SignUpButton>
-        </div>
 
+        </div>
         {/* Footer tagline kecil */}
         <p className="mt-8 text-sm sm:text-base text-base-content/60 dark:text-white/50 text-center">
-          Pengiriman personal • Bebas transit • Saling bantu
+          Pengiriman personal • Bebas transit 
         </p>
       </div>
     </SignedOut>

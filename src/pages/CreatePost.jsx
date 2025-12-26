@@ -6,9 +6,10 @@ import { uploadPostImage } from '../lib/uploadPostImage'
 import FloatingInput from '../components/FloatingInput'
 import FloatingTextarea from '../components/FloatingTextarea'
 import FloatingSelect from '../components/FloatingSelect'
-import FloatingLocationInput from "../components/FloatingLocationInput";
+import FloatingLocationInput from "../components/FloatingLocationInput"
 
 export default function CreatePost() {
+
   const { user } = useUser()
   const navigate = useNavigate()
 
@@ -28,12 +29,13 @@ export default function CreatePost() {
   const [file, setFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState('')
   const [uploading, setUploading] = useState(false)
+
   const [location, setLocation] = useState({
     name: "",
     address: "",
     lat: null,
     lng: null
-  });
+  })
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -55,24 +57,17 @@ export default function CreatePost() {
 
       let photoUrl = null
 
-      // Upload foto ke Supabase Storage
       if (file) {
         photoUrl = await uploadPostImage(file)
       }
 
-      // Ambil user_id dari tabel users
-      const { data: userRow, error: userError } = await supabase
+      const { data: userRow } = await supabase
         .from('users')
         .select('id')
         .eq('clerk_id', user.id)
         .single()
 
-      if (userError) throw userError
-
-      console.log("Location yang akan disimpan:", location);
-
-      // Insert post
-      const { error } = await supabase.from('posts').insert({
+      await supabase.from('posts').insert({
         user_id: userRow.id,
         type: form.type,
         armada: form.armada,
@@ -89,9 +84,8 @@ export default function CreatePost() {
         status: 'open',
       })
 
-      if (error) throw error
-
       navigate('/')
+
     } catch (err) {
       console.error(err)
       alert('Gagal membuat post')
@@ -100,13 +94,32 @@ export default function CreatePost() {
     }
   }
 
- return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e8f5e9] via-[#f0f8f1] to-[#d9f0e0] dark:from-[#1e293b] dark:via-[#0f172a] dark:to-[#1e293b] text-base-content flex flex-col flex items-center bg-base-200 flex justify-center px-4 py-10">
+  return (
+    <div
+      className="
+        min-h-screen flex items-center justify-center
+        px-4 py-10
+
+        bg-gradient-to-br
+        from-[#e8f5e9] via-[#f3faf5] to-[#d7efe3]
+        text-slate-800
+        
+        dark:from-[#020617] dark:via-[#020617] dark:to-[#020617]
+        dark:text-slate-100
+      "
+    >
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl p-6 space-y-6 mb-10"
+        className="
+          w-full max-w-md mb-10 p-6 space-y-6
+          rounded-3xl shadow-2xl border
+
+          bg-white/85 border-slate-200
+
+          dark:bg-white/10 dark:border-white/10 dark:backdrop-blur-xl
+        "
       >
-        <h1 className="text-xl font-bold text-white text-center">
+        <h1 className="text-xl font-bold text-slate-900 dark:text-white text-center">
           Buat Post Jastip
         </h1>
 
@@ -118,14 +131,11 @@ export default function CreatePost() {
           onChange={handleChange}
           required
         >
-          <option value="" disabled hidden>
-            Pilih
-          </option>
           <option value="titip">Nitip</option>
           <option value="bawa">Bawa Titipan</option>
         </FloatingSelect>
 
-        {/* FROM CITY */}
+        {/* FROM */}
         <FloatingInput
           name="from_city"
           value={form.from_city}
@@ -134,7 +144,7 @@ export default function CreatePost() {
           required
         />
 
-        {/* TO CITY */}
+        {/* TO */}
         <FloatingInput
           name="to_city"
           value={form.to_city}
@@ -146,7 +156,6 @@ export default function CreatePost() {
         {/* DATE */}
         <FloatingInput
           type="date"
-          placeholder=""
           name="travel_date"
           value={form.travel_date}
           onChange={handleChange}
@@ -154,6 +163,7 @@ export default function CreatePost() {
           required
         />
 
+        {/* ARMADA */}
         <FloatingSelect
           label="Jenis Armada"
           name="armada"
@@ -167,6 +177,7 @@ export default function CreatePost() {
           <option value="kereta">Kereta</option>
         </FloatingSelect>
 
+        {/* LOCATION */}
         <FloatingLocationInput
           label="Lokasi"
           name="location"
@@ -212,9 +223,9 @@ export default function CreatePost() {
           required
         />
 
-        {/* UPLOAD FOTO */}
+        {/* UPLOAD */}
         <div className="space-y-2">
-          <label className="text-sm text-white/80">
+          <label className="text-sm text-slate-600 dark:text-slate-300">
             Gambar
           </label>
 
@@ -223,14 +234,29 @@ export default function CreatePost() {
             accept="image/*"
             onChange={handleFileChange}
             required
-            className="w-full rounded-xl border border-white/30 bg-transparent text-white file:bg-white file:text-primary file:rounded-lg file:border-0 file:px-4 file:py-2"
+            className="
+              w-full rounded-xl border px-3 py-2
+              text-slate-800 dark:text-white
+
+              bg-white border-slate-300
+              dark:bg-white/5 dark:border-white/20
+
+              file:rounded-lg file:px-4 file:py-2 file:border-0
+              file:bg-emerald-200 file:text-emerald-900
+              dark:file:bg-emerald-400/20 dark:file:text-emerald-200
+            "
           />
 
           {previewUrl && (
             <img
               src={previewUrl}
               alt="Preview"
-              className="rounded-2xl max-h-72 object-contain shadow-lg"
+              className="
+                rounded-2xl max-h-72 object-contain
+                shadow-lg border
+                border-slate-200
+                dark:border-white/10
+              "
             />
           )}
         </div>
@@ -239,7 +265,13 @@ export default function CreatePost() {
         <button
           type="submit"
           disabled={uploading}
-          className="w-full py-3 rounded-xl bg-black text-white text-lg font-semibold hover:scale-[1.02] active:scale-95 transition"
+          className="
+            w-full py-3 rounded-xl text-lg font-semibold
+            transition hover:scale-[1.02] active:scale-95
+
+            bg-emerald-600 text-white hover:bg-emerald-700
+            dark:bg-emerald-500/80 dark:hover:bg-emerald-400
+          "
         >
           {uploading ? 'Menyimpan...' : 'Buat Post'}
         </button>

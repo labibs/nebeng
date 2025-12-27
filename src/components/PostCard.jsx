@@ -213,7 +213,7 @@ export default function PostCard({ post }) {
       alt="Item"
       className="absolute inset-0 w-full h-full object-cover"
     />
-    <div className="absolute inset-0 bg-gradient-to-b from-[#1b5e20]/30 to-transparent" />
+    {/* <div className="absolute inset-0 bg-gradient-to-b from-[#1b5e20]/30 to-transparent" /> */}
 
     {/* Glass Card (sesuai gambar) */}
 <div className="absolute inset-x-0 bottom-20 z-20 px-4" onClick={() => setOpen(!open)}>

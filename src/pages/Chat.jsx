@@ -1,7 +1,7 @@
 // src/pages/Chat.jsx
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { formatDistanceToNow } from 'date-fns';
 import { id as localeId } from 'date-fns/locale/id';
@@ -277,6 +277,15 @@ export default function ChatInbox() {
     if (showUserPicker) loadUsers();
   }, [showUserPicker]);
 
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (isSearchOpen && inputRef.current) {
+      // beri sedikit delay agar animasi/DOM siap
+      setTimeout(() => inputRef.current?.focus(), 20);
+    }
+  }, [isSearchOpen]);
+
   // Initial load + realtime
   useEffect(() => {
     if (!currentUserId) return;
@@ -343,7 +352,7 @@ export default function ChatInbox() {
             onClick={() => setIsSearchOpen(!isSearchOpen)}
             className="btn btn-circle btn-sm bg-base-200/50 dark:bg-base-700/50 border border-base-300/30 hover:bg-base-300/50 dark:hover:bg-base-600/50 flex items-center justify-center"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-base-content/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#81c784]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
@@ -353,6 +362,7 @@ export default function ChatInbox() {
             isSearchOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2 pointer-events-none'
           }`}>
             <input
+              ref={inputRef}
               type="text"
               placeholder="Cari chat, nama, atau post..."
               value={searchQuery}
@@ -380,7 +390,7 @@ export default function ChatInbox() {
           onClick={() => setShowUserPicker(true)}
           className="btn btn-circle btn-sm bg-base-200/50 dark:bg-base-700/50 border border-base-300/30 hover:bg-base-300/50 dark:hover:bg-base-600/50 flex items-center justify-center"
         >
-          <span className="text-xl font-bold text-base-content/80 leading-none">+</span>
+          <span className="text-xl font-bold text-[#81c784] leading-none">+</span>
         </button>
       </div>
     </div>

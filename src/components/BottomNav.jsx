@@ -129,7 +129,7 @@ export default function BottomNav() {
         <Link to="/create" className="absolute left-1/2 -top-3 -translate-x-1/2">
           <div
             className={`
-              w-14 h-14 rounded-full bg-blue-600
+              w-14 h-14 rounded-full bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white
               flex items-center justify-center
               shadow-[0_10px_30px_rgba(37,99,235,0.6)]
               transition-all duration-300
@@ -164,7 +164,7 @@ function NavItem({ to, icon: Icon, currentPath, children }) {
       <div className="relative p-2">
         {/* Blur background saat active */}
         {isActive && (
-          <div className="absolute inset-0 bg-blue-600 rounded-full blur-lg opacity-60 -z-10 scale-150" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white rounded-full blur-lg opacity-60 -z-10 scale-150" />
         )}
 
         <Icon
@@ -173,7 +173,7 @@ function NavItem({ to, icon: Icon, currentPath, children }) {
             transition-all duration-300
             ${isActive
               ? 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.9)]'
-              : 'text-blue-600/70'
+              : 'text-green-600/70'
             }
           `}
         />

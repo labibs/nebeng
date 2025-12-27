@@ -279,9 +279,11 @@ export default function Home() {
           <div className="navbar px-5 py-4">
             {/* Logo */}
             <div className="flex-1">
-              <h3 className="text-5xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#81c784] to-[#66bb6a] dark:from-[#a7f3d0] dark:to-[#86efac] mb-6 tracking-tight">
-          Nebeng
-        </h3>
+              <img
+          src="./pwa-64x64.png"
+          alt="Nebeng"
+          className="w-11 h-11 object-cover mb-2"
+        />
             </div>
 
             {/* Right side actions */}
@@ -289,7 +291,7 @@ export default function Home() {
               {/* Search button */}
               <button
                 onClick={() => setSearchOpen(true)}
-                className="btn btn-ghost btn-circle"
+                className="btn btn-ghost btn-circle text-green-600/70"
                 aria-label="Search"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

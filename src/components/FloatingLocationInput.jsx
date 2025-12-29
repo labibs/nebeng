@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import SearchControl from "./SearchControl";
+import AutoLocate from "./AutoLocate";
 
 export default function FloatingLocationInput({
   label = "Lokasi",
@@ -100,17 +101,19 @@ export default function FloatingLocationInput({
 
             <div className="h-[360px] rounded-2xl overflow-hidden border">
               <MapContainer
-                
                 center={
                   hasCoord(location)
                     ? [location.lat, location.lng]
-                    : [-6.2, 106.8]
+                    : [-6.2, 106.8]  // fallback kalau belum ada lokasi
                 }
                 zoom={12}
                 className="h-full w-full"
               >
                 <SearchControl onSelect={setLocation} />
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+                {/* Tambahkan ini untuk auto locate saat load */}
+                <AutoLocate onLocationFound={setLocation} />
 
                 <MapClickHandler />
 

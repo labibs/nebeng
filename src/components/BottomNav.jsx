@@ -98,7 +98,7 @@ export default function BottomNav() {
             flex items-center px-4
             rounded-full
             backdrop-blur-xl bg-white/20
-            border border-white/30
+            border text-green-600/70
             shadow-[0_8px_30px_rgba(0,0,0,0.25)]
           "
           style={{
@@ -145,7 +145,10 @@ export default function BottomNav() {
               strokeWidth={2.8}
               className={`
                 text-white transition-all duration-300
-                ${isCreateActive ? 'drop-shadow-[0_0_10px_rgba(255,255,255,0.95)]' : ''}
+                ${isActive
+                  ? 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.9)]'
+                  : 'text-green-600/70'
+                }}
               `}
             />
           </div>

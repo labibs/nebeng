@@ -350,9 +350,10 @@ export default function ChatInbox() {
         <div className="relative">
           <button
             onClick={() => setIsSearchOpen(!isSearchOpen)}
-            className="btn btn-circle btn-sm bg-base-200/50 dark:bg-base-700/50 border border-base-300/30 hover:bg-base-300/50 dark:hover:bg-base-600/50 flex items-center justify-center"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#81c784]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+           className="btn btn-ghost btn-circle text-green-600/70"
+                aria-label="Search"
+              >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>

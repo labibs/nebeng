@@ -388,7 +388,8 @@ export default function ChatRoom() {
         `
         : `
           chat-bubble-neutral
-          bg-base-200
+          bg-emerald-600
+          text-white
         `
     }
   `}

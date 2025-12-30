@@ -369,49 +369,31 @@ export default function ChatRoom() {
   {msg.content || 'saya tertarik dengan penawaran ini.'}
 </p>
 
-{/* Quick Reply Shortcuts */}
-<div className="mt-3 px-1">
-  <div
-    className="
-      flex gap-2 overflow-x-auto no-scrollbar
-      snap-x snap-mandatory
-      w-70
-      -mx-1 px-1 pb-1
-    "
-  >
-    {[
-      "Bisa nego fee / ongkos jastip?",
-      "Boleh COD / ketemuan di lokasi?",
-      "Kapan jadwal keberangkatan?",
-      "Barangnya ukuran & beratnya berapa?",
-      "Apakah aman dibawa di bagasi?",
-    ].map((text, i) => (
-      <button
-        key={i}
-        onClick={() => handleShortcut(text)}
-        className="
-          btn btn-xs rounded-full snap-start whitespace-nowrap
-          border border-base-300 bg-base-200 hover:bg-base-300
-          dark:bg-base-300/30 dark:hover:bg-base-300/50
-        "
-      >
-        {text}
-      </button>
-    ))}
-  </div>
-</div>
 
 
             </div>
           ) : (
             // PESAN TEKS BIASA
             <div
-  className={`chat-bubble ${
-    msg.sender_id === currentUserId
-      ? 'chat-bubble-primary'
-      : 'chat-bubble-neutral'
-  }`}
+  className={`
+    chat-bubble
+    ${
+      msg.sender_id === currentUserId
+        ? `
+          text-white
+          bg-gradient-to-r
+          from-[#81c784]
+          to-[#66bb6a]
+          shadow-md
+        `
+        : `
+          chat-bubble-neutral
+          bg-base-200
+        `
+    }
+  `}
 >
+  
   {/* Isi pesan */}
   {msg.content}
 
@@ -492,6 +474,38 @@ export default function ChatRoom() {
   bg-base-100/80 backdrop-blur-xl
   border-t border-base-300/60
 ">
+  {/* Quick Reply Shortcuts */}
+<div className="mt-3 px-1">
+  <div
+    className="
+      flex gap-2 overflow-x-auto no-scrollbar
+      snap-x snap-mandatory
+      w-full
+      -mx-1 px-1 pb-1
+    "
+  >
+    {[
+      "Bisa nego fee / ongkos jastip?",
+      "Boleh COD / ketemuan di lokasi?",
+      "Kapan jadwal keberangkatan?",
+      "Barangnya ukuran & beratnya berapa?",
+      "Apakah aman dibawa di bagasi?",
+    ].map((text, i) => (
+      <button
+        key={i}
+        onClick={() => handleShortcut(text)}
+        className="
+          btn btn-xs rounded-full snap-start whitespace-nowrap
+          border border-base-300 bg-base-200 hover:bg-base-300
+          dark:bg-base-300/30 dark:hover:bg-base-300/50
+        "
+      >
+        {text}
+      </button>
+    ))}
+  </div>
+</div>
+  {/* Form Input */}
   <form
     onSubmit={sendMessage}
     className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-2"
@@ -536,7 +550,7 @@ export default function ChatRoom() {
       type="submit"
       disabled={!newMessage.trim()}
       className="
-        btn btn-primary rounded-2xl px-5
+        btn bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white rounded-2xl px-5
         disabled:opacity-50 disabled:cursor-not-allowed
       "
     >

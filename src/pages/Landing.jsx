@@ -147,7 +147,7 @@ export default function Landing() {
         </div>
         {/* Footer tagline kecil */}
         <p className="mt-8 text-sm sm:text-base text-base-content/60 dark:text-white/50 text-center">
-          Pengiriman personal • Bebas transit 
+          Powered by <sakte className="id"><a href="https://sakte.id">sakte.id</a></sakte>
         </p>
       </div>
     </SignedOut>

@@ -359,7 +359,7 @@ export default function ChatInbox() {
           </button>
 
           {/* Input Search – posisi lebih baik & terlihat jelas */}
-          <div className={`absolute right-10 -top-1 w-54 transition-all duration-300 ease-in-out ${
+          <div className={`absolute right-14 -top-0 w-54 transition-all duration-300 ease-in-out ${
             isSearchOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2 pointer-events-none'
           }`}>
             <input
@@ -388,11 +388,14 @@ export default function ChatInbox() {
 
         {/* Tombol + */}
         <button
-          onClick={() => setShowUserPicker(true)}
-          className="btn btn-circle btn-sm bg-base-200/50 dark:bg-base-700/50 border border-base-300/30 hover:bg-base-300/50 dark:hover:bg-base-600/50 flex items-center justify-center"
-        >
-          <span className="text-xl font-bold text-[#81c784] leading-none">+</span>
-        </button>
+  onClick={() => setShowUserPicker(true)}
+  className="btn btn-ghost btn-circle text-green-600/70"
+>
+  <span className="text-3xl leading-none -translate-y-0.5">
+    +
+  </span>
+</button>
+
       </div>
     </div>
 

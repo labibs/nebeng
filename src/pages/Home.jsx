@@ -339,10 +339,15 @@ export default function Home() {
     {/* Header + Input + Tabs + Filter */}
     <div className="px-4 pt-6 pb-4 overflow-y-auto">
       <div className="max-w-2xl mx-auto w-full">
-        <div className="bg-base-100/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-base-300 overflow-hidden">
+        <div className="bg-gradient-to-br
+        from-[#e8f5e9] via-[#f3faf5] to-[#d7efe3]
+        text-slate-800
+        
+        dark:from-[#020617] dark:via-[#020617] dark:to-[#020617]
+        dark:text-slate-100 backdrop-blur-xl rounded-3xl shadow-2xl border border-base-300 overflow-hidden">
           {/* Input Search */}
-          <div className="p-6">
-            <div className="flex items-center gap-1">
+          <div className="p-6 bg-white/10">
+            <div className="flex items-center gap-1 ">
               <div className="flex-1 relative">
                 <svg
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-base-content/70 pointer-events-none z-10"
@@ -521,7 +526,7 @@ export default function Home() {
       className={`
         flex-1 px-4 py-3 rounded-xl text-sm font-medium text-left transition-all
         ${dateFilterMode === 'custom'
-          ? 'bg-primary text-white shadow-md'
+          ? 'bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white text-white shadow-md'
           : 'bg-base-200/60 text-base-content/70 hover:bg-base-200'
         }
       `}
@@ -579,7 +584,7 @@ export default function Home() {
       <div className="max-w-2xl mx-auto w-full">
         <button
           onClick={() => setSearchOpen(false)} // Langsung terapkan & tutup
-          className="btn btn-primary btn-lg w-full rounded-2xl shadow-lg"
+          className="btn bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white btn-lg w-full rounded-2xl shadow-lg"
         >
           Terapkan Pencarian
         </button>

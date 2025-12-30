@@ -39,7 +39,7 @@ export default function BottomNav() {
         <Link to="/create" className="absolute left-1/2 -top-3 -translate-x-1/2">
           <div
             className={`
-              w-14 h-14 rounded-full bg-gradient-to-r from-[#81c784] to-[#66bb6a]
+              w-14 h-14 rounded-full bg-linear-to-r from-[#81c784] to-[#66bb6a]
               flex items-center justify-center shadow-2xl
               transition-all duration-300 active:scale-95
               ${isCreateActive
@@ -48,7 +48,7 @@ export default function BottomNav() {
               }
             `}
           >
-            <Plus size={28} strokeWidth={3} className="text-white drop-shadow-lg" />
+            <Plus size={28} strokeWidth={3} className={`${isCreateActive ? 'text-white drop-shadow-lg' : 'text-green-600/70'}`} />
           </div>
         </Link>
       </div>

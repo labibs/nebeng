@@ -23,6 +23,10 @@ export default function ChatRoom() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const handleShortcut = (text) => {
+    setNewMessage(text);
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -360,21 +364,91 @@ export default function ChatRoom() {
               </div>
 
               <hr className="my-2" />
-              <p className="text-xs text-center text-base-content/60 mt-2">
-                {msg.content || 'saya tertarik dengan penawaran ini.'}
-              </p>
+
+<p className="text-xs text-center text-base-content/60 mt-2">
+  {msg.content || 'saya tertarik dengan penawaran ini.'}
+</p>
+
+{/* Quick Reply Shortcuts */}
+<div className="mt-3 px-1">
+  <div
+    className="
+      flex gap-2 overflow-x-auto no-scrollbar
+      snap-x snap-mandatory
+      w-70
+      -mx-1 px-1 pb-1
+    "
+  >
+    {[
+      "Bisa nego fee / ongkos jastip?",
+      "Boleh COD / ketemuan di lokasi?",
+      "Kapan jadwal keberangkatan?",
+      "Barangnya ukuran & beratnya berapa?",
+      "Apakah aman dibawa di bagasi?",
+    ].map((text, i) => (
+      <button
+        key={i}
+        onClick={() => handleShortcut(text)}
+        className="
+          btn btn-xs rounded-full snap-start whitespace-nowrap
+          border border-base-300 bg-base-200 hover:bg-base-300
+          dark:bg-base-300/30 dark:hover:bg-base-300/50
+        "
+      >
+        {text}
+      </button>
+    ))}
+  </div>
+</div>
+
+
             </div>
           ) : (
             // PESAN TEKS BIASA
             <div
-              className={`chat-bubble ${
-                msg.sender_id === currentUserId
-                  ? 'chat-bubble-primary'
-                  : 'chat-bubble-neutral'
-              }`}
-            >
-              {msg.content} 
-            </div>
+  className={`chat-bubble ${
+    msg.sender_id === currentUserId
+      ? 'chat-bubble-primary'
+      : 'chat-bubble-neutral'
+  }`}
+>
+  {/* Isi pesan */}
+  {msg.content}
+
+  {/* Shortcut — hanya tampil di pesan post / sistem / seller */}
+  {msg.post && (
+    <div className="mt-3 px-1">
+      <div
+        className="
+          flex gap-2 overflow-x-auto no-scrollbar
+          snap-x snap-mandatory
+          -mx-1 px-1 pb-1
+        "
+      >
+        {[
+          "Bisa nego fee / ongkos jastip?",
+          "Boleh COD / ketemuan di lokasi?",
+          "Kapan jadwal keberangkatan?",
+          "Barangnya ukuran & beratnya berapa?",
+          "Apakah aman dibawa di bagasi?",
+        ].map((text, i) => (
+          <button
+            key={i}
+            onClick={() => handleShortcut(text)}
+            className="
+              btn btn-xs rounded-full snap-start whitespace-nowrap
+              border border-base-300 bg-base-200 hover:bg-base-300
+              dark:bg-base-300/30 dark:hover:bg-base-300/50
+            "
+          >
+            {text}
+          </button>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
+
           )}
 
           {/* Footer: status terkirim/terbaca - hanya untuk pesan dari current user */}
@@ -412,25 +486,65 @@ export default function ChatRoom() {
 </div>
 
       {/* Input Fixed */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-base-100 border-t shadow-lg">
-        <form onSubmit={sendMessage} className="join w-full max-w-4xl mx-auto">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Ketik pesan deal..."
-            className="input input-bordered join-item w-full"
-            autoFocus
-          />
-          <button
-            type="submit"
-            disabled={!newMessage.trim()}
-            className="btn btn-primary join-item rounded-r-2xl"
-          >
-            Kirim
-          </button>
-        </form>
-      </div>
+      {/* Input Fixed */}
+<div className="
+  fixed bottom-0 left-0 right-0 z-50
+  bg-base-100/80 backdrop-blur-xl
+  border-t border-base-300/60
+">
+  <form
+    onSubmit={sendMessage}
+    className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-2"
+  >
+    {/* Input Box */}
+    <div className="
+      flex items-center gap-2
+      flex-1
+      bg-base-200 border border-base-300
+      rounded-2xl px-3
+      focus-within:ring-2 focus-within:ring-emerald-400/60
+      transition-all
+    ">
+      <svg
+        className="w-5 h-5 opacity-60"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M8 10h.01M12 10h.01M16 10h.01M9 16h6m2 5l-4-4H9a5 5 0 01-5-5V7a5 5 0 015-5h6a5 5 0 015 5v5a5 5 0 01-5 5"
+        />
+      </svg>
+
+      <input
+        type="text"
+        value={newMessage}
+        onChange={(e) => setNewMessage(e.target.value)}
+        placeholder="Tulis pesan deal atau pilih shortcut…"
+        className="
+          input input-ghost focus:outline-none
+          bg-transparent w-full text-sm
+        "
+      />
+    </div>
+
+    {/* Send Button */}
+    <button
+      type="submit"
+      disabled={!newMessage.trim()}
+      className="
+        btn btn-primary rounded-2xl px-5
+        disabled:opacity-50 disabled:cursor-not-allowed
+      "
+    >
+      Kirim
+    </button>
+  </form>
+</div>
+
     </div>
   );
 }

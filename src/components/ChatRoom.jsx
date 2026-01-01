@@ -16,8 +16,10 @@ export default function ChatRoom() {
   const [postInfo, setPostInfo] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [showDealMenu, setShowDealMenu] = useState(false);
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef(null);
+  const menuRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -199,8 +201,7 @@ export default function ChatRoom() {
     markAsRead();
   }, [conversationId, currentUserId]);
 
-  
-
+  // Kirim pesan
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
@@ -226,6 +227,13 @@ export default function ChatRoom() {
   if (!conversationId) {
     return <div className="flex h-screen items-center justify-center text-lg">Chat tidak ditemukan</div>;
   }
+
+  const applyDealTemplate = (template) => {
+    setNewMessage(template);
+    setShowDealMenu(false);
+    // Fokus kembali ke input
+    document.getElementById('message-input').focus();
+  };
 
   return (
     <div className="flex h-screen flex-col bg-base-200">
@@ -507,57 +515,142 @@ export default function ChatRoom() {
   </div>
 </div>
   {/* Form Input */}
-  <form
-    onSubmit={sendMessage}
-    className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-2"
-  >
-    {/* Input Box */}
-    <div className="
-      flex items-center gap-2
-      flex-1
-      bg-base-200 border border-base-300
-      rounded-2xl px-3
-      focus-within:ring-2 focus-within:ring-emerald-400/60
-      transition-all
-    ">
-      <svg
-        className="w-5 h-5 opacity-60"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
+      <form
+        onSubmit={sendMessage}
+        className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-2 relative"
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M8 10h.01M12 10h.01M16 10h.01M9 16h6m2 5l-4-4H9a5 5 0 01-5-5V7a5 5 0 015-5h6a5 5 0 015 5v5a5 5 0 01-5 5"
+        {/* Input Box */}
+        <div className="
+          flex items-center gap-2
+          flex-1
+          bg-base-200 border border-base-300
+          rounded-2xl px-3
+          focus-within:ring-2 focus-within:ring-emerald-400/60
+          transition-all
+        ">
+          {/* Icon Plus yang bisa diklik */}
+          <button
+            type="button"
+            onClick={() => setShowDealMenu(!showDealMenu)}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-300 transition-colors"
+            aria-label="Pilih template deal"
+          >
+            <svg
+              className="w-5 h-5 opacity-60"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={3}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+          </button>
+
+          <input
+            id="message-input"
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Tulis pesan deal atau pilih shortcut…"
+            className="
+              input input-ghost focus:outline-none
+              bg-transparent w-full text-sm py-4
+            "
+          />
+        </div>
+
+        {/* Send Button */}
+        <button
+          type="submit"
+          disabled={!newMessage.trim()}
+          className="
+            btn bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white rounded-2xl px-5
+            disabled:opacity-50 disabled:cursor-not-allowed
+          "
+        >
+          Kirim
+        </button>
+
+        {/* Dropdown Menu Template Deal */}
+        {showDealMenu && (
+          <div
+            ref={menuRef}
+            className="absolute bottom-full left-4 mb-2 w-80 bg-base-100 border border-base-300 rounded-2xl shadow-xl overflow-hidden z-50"
+          >
+            <div className="p-4 border-b border-base-300">
+              <h3 className="font-semibold text-sm">Shortcut Deal Penjemputan Titipan (Jastip)</h3>
+            </div>
+
+            <div className="py-2 max-h-96 overflow-y-auto">
+              {/* Template 1 */}
+              <button
+                type="button"
+                onClick={() =>
+                  applyDealTemplate(
+                    `Deal Jastip ✅\n\n💰 Ongkos jastip: \n📍 Lokasi ketemuan: \n🕐 Jam ketemuan: \n📝 Catatan tambahan: `
+                  )
+                }
+                className="w-full text-left px-4 py-3 hover:bg-base-200 transition-colors"
+              >
+                <div className="font-medium text-sm">Template Kosong</div>
+                <div className="text-xs opacity-70 mt-1">Mulai dari nol, isi manual</div>
+              </button>
+
+              {/* Template 2 */}
+              <button
+                type="button"
+                onClick={() =>
+                  applyDealTemplate(
+                    `Deal Jastip ✅\n\n💰 Ongkos jastip: Rp35.000 (bisa nego)\n📍 Lokasi ketemuan: Mall Kelapa Gading / sesuai rute\n🕐 Jam ketemuan: Fleksibel weekday setelah jam 18.00 atau weekend\n📦 Maksimal 3 item per orang\n📝 Catatan: Bayar ongkos dulu ya kak, barang diambil H+3 setelah DP`
+                  )
+                }
+                className="w-full text-left px-4 py-3 hover:bg-base-200 transition-colors"
+              >
+                <div className="font-medium text-sm">Standar Mall (Rp35rb)</div>
+                <div className="text-xs opacity-70 mt-1">Cocok untuk mall Jakarta Utara</div>
+              </button>
+
+              {/* Template 3 */}
+              <button
+                type="button"
+                onClick={() =>
+                  applyDealTemplate(
+                    `Open Jastip Luar Kota 🚚\n\n💰 Ongkos jastip: Rp50.000 - Rp100.000 (tergantung lokasi)\n📍 Lokasi ketemuan: Jakarta Pusat / ekspedisi\n🕐 Jam ketemuan: Sesuai jadwal kedatangan\n⏰ Deadline order: \n📝 Catatan: DP 50% dulu ya, sisanya COD atau transfer`
+                  )
+                }
+                className="w-full text-left px-4 py-3 hover:bg-base-200 transition-colors border-t border-base-300"
+              >
+                <div className="font-medium text-sm">Jastip Luar Kota</div>
+                <div className="text-xs opacity-70 mt-1">Untuk trip ke luar Jakarta</div>
+              </button>
+
+              {/* Bisa tambah template lain di sini */}
+            </div>
+
+            <div className="p-3 bg-base-200 text-center">
+              <button
+                type="button"
+                onClick={() => setShowDealMenu(false)}
+                className="text-xs opacity-70 hover:opacity-100"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        )}
+      </form>
+
+      {/* Overlay untuk menutup menu saat klik di luar */}
+      {showDealMenu && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowDealMenu(false)}
         />
-      </svg>
-
-      <input
-        type="text"
-        value={newMessage}
-        onChange={(e) => setNewMessage(e.target.value)}
-        placeholder="Tulis pesan deal atau pilih shortcut…"
-        className="
-          input input-ghost focus:outline-none
-          bg-transparent w-full text-sm
-        "
-      />
-    </div>
-
-    {/* Send Button */}
-    <button
-      type="submit"
-      disabled={!newMessage.trim()}
-      className="
-        btn bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white rounded-2xl px-5
-        disabled:opacity-50 disabled:cursor-not-allowed
-      "
-    >
-      Kirim
-    </button>
-  </form>
+      )}
 </div>
 
     </div>

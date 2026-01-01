@@ -535,19 +535,9 @@ export default function ChatRoom() {
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-300 transition-colors"
             aria-label="Pilih template deal"
           >
-            <svg
-              className="w-5 h-5 opacity-60"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={3}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
           </button>
 
           <input
@@ -582,7 +572,7 @@ export default function ChatRoom() {
             className="absolute bottom-full left-4 mb-2 w-80 bg-base-100 border border-base-300 rounded-2xl shadow-xl overflow-hidden z-50"
           >
             <div className="p-4 border-b border-base-300">
-              <h3 className="font-semibold text-sm">Shortcut Deal Penjemputan Titipan (Jastip)</h3>
+              <h3 className="font-semibold text-sm">Pastikan semuanya sudah Deal </h3>
             </div>
 
             <div className="py-2 max-h-96 overflow-y-auto">
@@ -596,8 +586,8 @@ export default function ChatRoom() {
                 }
                 className="w-full text-left px-4 py-3 hover:bg-base-200 transition-colors"
               >
-                <div className="font-medium text-sm">Template Kosong</div>
-                <div className="text-xs opacity-70 mt-1">Mulai dari nol, isi manual</div>
+                <div className="font-medium text-sm">Dealkan Ongkos Jastip</div>
+                <div className="text-xs opacity-70 mt-1">Bisa Nego</div>
               </button>
 
               {/* Template 2 */}
@@ -610,8 +600,8 @@ export default function ChatRoom() {
                 }
                 className="w-full text-left px-4 py-3 hover:bg-base-200 transition-colors"
               >
-                <div className="font-medium text-sm">Standar Mall (Rp35rb)</div>
-                <div className="text-xs opacity-70 mt-1">Cocok untuk mall Jakarta Utara</div>
+                <div className="font-medium text-sm">Dealkan Lokasi Penjemputan</div>
+                <div className="text-xs opacity-70 mt-1">Bisa Sharelock</div>
               </button>
 
               {/* Template 3 */}
@@ -624,11 +614,23 @@ export default function ChatRoom() {
                 }
                 className="w-full text-left px-4 py-3 hover:bg-base-200 transition-colors border-t border-base-300"
               >
-                <div className="font-medium text-sm">Jastip Luar Kota</div>
-                <div className="text-xs opacity-70 mt-1">Untuk trip ke luar Jakarta</div>
+                <div className="font-medium text-sm">Dealkan Waktu Penjemputan</div>
+                <div className="text-xs opacity-70 mt-1">Bisa Maju / Mundur</div>
               </button>
 
-              {/* Bisa tambah template lain di sini */}
+              {/* Template 3 */}
+              <button
+                type="button"
+                onClick={() =>
+                  applyDealTemplate(
+                    `Open Jastip Luar Kota 🚚\n\n💰 Ongkos jastip: Rp50.000 - Rp100.000 (tergantung lokasi)\n📍 Lokasi ketemuan: Jakarta Pusat / ekspedisi\n🕐 Jam ketemuan: Sesuai jadwal kedatangan\n⏰ Deadline order: \n📝 Catatan: DP 50% dulu ya, sisanya COD atau transfer`
+                  )
+                }
+                className="w-full text-left px-4 py-3 hover:bg-base-200 transition-colors border-t border-base-300"
+              >
+                <div className="font-medium text-sm">Dealkan Barang Titipan</div>
+                <div className="text-xs opacity-70 mt-1">Bisa Lampirkan foto detail</div>
+              </button>
             </div>
 
             <div className="p-3 bg-base-200 text-center">

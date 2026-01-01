@@ -18,6 +18,9 @@ export default function ChatRoom() {
   const [newMessage, setNewMessage] = useState('');
   const [showDealMenu, setShowDealMenu] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [conversationPostId, setConversationPostId] = useState(null);
+  const [showNegoModal, setShowNegoModal] = useState(false);
+  const [negoPrice, setNegoPrice] = useState('');
 
   const messagesEndRef = useRef(null);
   const menuRef = useRef(null);
@@ -149,6 +152,20 @@ export default function ChatRoom() {
     markAsRead();
   }, [conversationId, currentUserId]);
 
+  useEffect(() => {
+    const fetchConversationPostId = async () => {
+      const { data } = await supabase
+        .from('conversations')
+        .select('post_id')
+        .eq('id', conversationId)
+        .single();
+
+      setConversationPostId(data?.post_id || null);
+    };
+
+    fetchConversationPostId();
+  }, [conversationId]);
+
   // Ekstrak message_type dari content (jika ada tag [deal_xxx])
   const extractMessageType = (content) => {
     const match = content.trim().match(/^\[([a-zA-Z0-9_]+)\]/);
@@ -161,20 +178,32 @@ export default function ChatRoom() {
     if (!newMessage.trim() || !currentUserId) return;
 
     const content = newMessage.trim();
-    const message_type = extractMessageType(content);
+    const message_type = extractMessageType(content) || 'text';
 
     setNewMessage('');
 
-    const { error } = await supabase.from('messages').insert({
+    const insertData = {
       conversation_id: conversationId,
       sender_id: currentUserId,
       content: content,
-      message_type: message_type, // ← INI YANG PENTING!
-    });
+    };
+
+    // Hanya jika ini pesan deal, isi post_id dan message_type
+    if (message_type && message_type.startsWith('deal_')) {
+      insertData.message_type = message_type;
+
+      if (conversationPostId) {
+        insertData.post_id = conversationPostId;
+        console.log('Deal terkirim dengan post_id:', conversationPostId);
+      } else {
+        console.warn('Conversation ini tidak punya post_id!');
+      }
+    }
+
+    const { error } = await supabase.from('messages').insert(insertData);
 
     if (error) {
-      console.error('Gagal kirim:', error);
-      alert('Gagal mengirim pesan.');
+      console.error('Error kirim pesan:', error);
       setNewMessage(content);
     }
   };
@@ -257,20 +286,215 @@ export default function ChatRoom() {
                 </div>
 
                 {/* Render berdasarkan message_type */}
-                {msg.message_type === 'post_card' ? (
-                  <div className="chat-bubble bg-base-100 border border-base-300 max-w-md shadow-lg">
-                    {/* Card post content (sama seperti sebelumnya) */}
-                    {/* ... (di sini kamu bisa copy bagian card post yang lama) */}
-                  </div>
+                {/* Bubble Content - Bedakan berdasarkan message_type */}
+          {msg.message_type=== 'deal_ongkos_jastip' ? (
+  // CARD KHUSUS DEAL (hanya untuk deal_xxx)
+  <div className={`
+    relative max-w-md px-5 py-4 rounded-2xl shadow-lg overflow-hidden border
+    ${msg.sender_id === currentUserId
+      ? 'bg-gradient-to-r from-[#81c784]/10 to-[#66bb6a]/10 border-emerald-300'
+      : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30'
+    }
+    ${msg.sender_id === currentUserId ? 'rounded-br-none' : 'rounded-bl-none'}
+  `}>
+    {/* Header Deal */}
+    <div className="flex items-center gap-3 mb-4">
+      <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div>
+        <div className="font-bold text-emerald-700 dark:text-emerald-300">
+          {msg.message_type === 'deal_ongkos_jastip' && 'Deal Ongkos Jastip'}
+          {msg.message_type === 'deal_lokasi_ketemuan' && 'Deal Lokasi Ketemuan'}
+          {msg.message_type === 'deal_waktu_ketemuan' && 'Deal Waktu Ketemuan'}
+          {msg.message_type === 'deal_barang_titipan' && 'Deal Barang Titipan'}
+        </div>
+        <div className="text-xs opacity-70">Menunggu konfirmasi</div>
+      </div>
+    </div>
+
+    {/* Isi Pesan Deal */}
+    <div className="mb-5 whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed">
+      {msg.content.replace(/^\[[^\]]+\]\s*/, '').trim()} 
+    </div>
+
+    {/* Ekstrak ongkos yang diusulkan (jika ada) */}
+    {(() => {
+      const ongkosMatch = msg.content.match(/💰[^0-9]*([0-9.,]+)/);
+      const ongkosText = ongkosMatch ? ongkosMatch[1].replace(/\./g, '') : null;
+      const ongkos = ongkosText ? parseInt(ongkosText.replace(/,/g, '')) : null;
+      
+
+      return (
+        <div className="flex gap-3">
+          {/* Tombol Konfirmasi Deal */}
+          <button
+            onClick={() => {
+              if (ongkos) {
+                handleQuickReply(`Deal! Ongkos jastip Rp${ongkos.toLocaleString('id-ID')} ✅\nTerima kasih kak, kapan mau ketemuan?`);
+              } else {
+                handleQuickReply(`Deal! Ongkos jastip sesuai kesepakatan ✅\nKapan mau ketemuan ya kak?`);
+              }
+            }}
+            className="flex-1 btn btn-success btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            Deal
+          </button>
+
+          {/* Tombol Nego */}
+          {/* Tombol Nego di dalam card deal */}
+{/* Tombol Nego di dalam card deal */}
+<button
+  onClick={() => {
+    console.log('Nego button clicked');
+    console.log('Current ongkos value:', ongkos);
+
+    const defaultPrice = ongkos ? Math.floor(ongkos * 0.9) : 30000;
+    console.log('Calculated defaultPrice:', defaultPrice);
+
+    setNegoPrice(defaultPrice.toString());
+    console.log('setNegoPrice called with:', defaultPrice.toString());
+
+    setShowNegoModal(true);
+    console.log('setShowNegoModal(true) called');
+  }}
+  className="flex-1 btn btn-outline btn-warning btn-sm rounded-xl font-medium hover:bg-yellow-50 dark:hover:bg-yellow-900/30 transition-all"
+>
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+  Nego
+</button>
+        </div>
+      );
+    })()}
+    
+    {/* Custom Tail Lancip */}
+    <div className={`
+      absolute w-3 h-5 top-6
+      ${msg.sender_id === currentUserId ? 'right-0 translate-x-full' : 'left-0 -translate-x-full'}
+    `}>
+      <svg viewBox="0 0 8 16" className="w-full h-full drop-shadow-md">
+        <path
+          d="M0,0 Q8,8 0,16 L0,0"
+          fill={msg.sender_id === currentUserId ? '#66bb6a' : '#dcfce7'} 
+          className="dark:fill-emerald-900/50"
+        />
+      </svg>
+    </div>
+  </div>
+) :msg.message_type === 'post_card' ? (
+            // CARD POST (hanya dari sender yang memulai chat)
+            <div className={`
+  relative max-w-md px-5 py-4 rounded-2xl shadow-lg overflow-hidden
+  bg-base-100 border border-base-300
+  ${msg.sender_id === currentUserId
+    ? 'rounded-br-none'   // tail di kanan (pesan sendiri)
+    : 'rounded-bl-none'   // tail di kiri (pesan lawan)
+  }
+`}>
+  {/* Isi Post Card */}
+  <div className="flex gap-4 items-start">
+    {/* Gambar Barang */}
+    <div className="avatar flex-shrink-0">
+      <div className="w-24 h-24 rounded-xl overflow-hidden ring-2 ring-emerald-500/20">
+        <img
+          src={msg.post?.item_photo || '/default-item.jpg'}
+          alt="Barang"
+          className="w-full h-full object-cover"
+        />
+      </div>
+    </div>
+
+    {/* Info Post */}
+    <div className="flex-1 min-w-0">
+      <div className="flex justify-end mb-2">
+        <div className="badge badge-primary badge-sm font-medium">
+          {msg.post?.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 text-sm text-base-content/80 mt-3">
+        <span className="font-semibold">{msg.post?.from_city}</span>
+        <svg className="w-5 h-5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
+        <span className="font-semibold">{msg.post?.to_city}</span>
+      </div>
+
+      <div className="mt-4">
+        <p className="text-emerald-600 font-bold text-lg">
+          Fee: Rp{msg.post?.fee?.toLocaleString('id-ID')}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <hr className="my-4 border-base-300" />
+
+  <p className="text-xs text-center text-base-content/60 -mb-1">
+    {msg.content || 'saya tertarik dengan penawaran ini.'}
+  </p>
+
+  {/* Custom Tail Lancip - Warna sesuai bg-base-100 */}
+  <div className={`
+    absolute w-3 h-5 top-6
+    ${msg.sender_id === currentUserId 
+      ? 'right-0 translate-x-full' 
+      : 'left-0 -translate-x-full'
+    }
+  `}>
+    <svg viewBox="0 0 8 16" className="w-full h-full drop-shadow-md">
+      <path
+        d="M0,0 Q8,8 0,16 L0,0"
+        fill="#f5f5f5"  // bg-base-100 di light mode (daisyUI default)
+        className="dark:fill-base-100"  // otomatis ikut dark mode
+      />
+    </svg>
+  </div>
+</div>
                 ) : (
-                  <div className={`
-                    chat-bubble text-white
-                    ${msg.sender_id === currentUserId
-                      ? 'bg-gradient-to-r from-[#81c784] to-[#66bb6a] shadow-md'
-                      : 'bg-emerald-600'
-                    }
-                  `}>
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                  <div
+                    className={`
+                      relative max-w-xs lg:max-w-md px-4 py-3 rounded-2xl text-white shadow-md
+                      ${msg.sender_id === currentUserId
+                        ? 'bg-gradient-to-r from-[#81c784] to-[#66bb6a] rounded-br-none'
+                        : 'bg-emerald-600 rounded-bl-none'
+                      }
+                    `}
+                  >
+                    {/* Isi pesan */}
+                    <div className="whitespace-pre-wrap text-sm">{msg.content}</div>
+
+                    {/* Custom Tail / Panah Lancip - Mengarah ke Avatar */}
+                    <div
+                      className={`
+                        absolute bottom-0 w-0 h-0 border-[12px] border-transparent
+                        ${msg.sender_id === currentUserId
+                          ? '-right-3 border-l-[#66bb6a]'  // tail kanan (pesan sendiri)
+                          : '-left-3 border-r-emerald-600' // tail kiri (pesan lawan)
+                        }
+                      `}
+                      style={{
+                        // Untuk gradient (hanya pesan sendiri), pakai clip-path atau background matching
+                        // Tapi karena border tidak support gradient langsung, kita pakai pseudo + background
+                        ...(msg.sender_id === currentUserId && {
+                          background: 'linear-gradient(to right, #81c784, #66bb6a)',
+                          WebkitBackgroundClip: 'border-box',
+                          clipPath: 'polygon(0 0, 100% 50%, 0 100%)',
+                          width: '12px',
+                          height: '20px',
+                          right: '-12px',
+                          backgroundClip: 'padding-box',
+                        })
+                      }}
+                    />
                   </div>
                 )}
 
@@ -308,7 +532,6 @@ export default function ChatRoom() {
         <form onSubmit={sendMessage} className="px-4 pb-4 pt-2 flex items-center gap-2">
           <div className="flex-1 flex items-center gap-2 bg-base-200 border border-base-300 rounded-2xl px-3 focus-within:ring-2 focus-within:ring-emerald-400/60">
             
-
             <input
               id="message-input"
               type="text"
@@ -352,15 +575,13 @@ export default function ChatRoom() {
       <div className="max-h-96 overflow-y-auto">
         {/* 1. Ongkos Jastip */}
         <button
-          onClick={() =>
-            selectDealType(
-              'deal_ongkos_jastip',
-              'Deal Ongkos Jastip',
-              '💰 Ongkos jastip: \n📍 Lokasi ketemuan: \n🕐 Jam ketemuan: \n📝 Catatan tambahan: '
-            )
-          }
-          className="w-full text-left px-5 py-4 hover:bg-base-200 transition-colors flex items-center gap-4"
-        >
+  onClick={() => {
+    setNegoPrice(''); // reset input
+    setShowNegoModal(true); // buka modal
+  }}
+  className="w-full text-left px-5 py-4 hover:bg-base-200 transition-colors flex items-center gap-4"
+>
+  
           <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
             <svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -458,6 +679,91 @@ export default function ChatRoom() {
 
     {/* Overlay */}
     <div className="fixed inset-0 z-40" onClick={() => setShowDealMenu(false)} />
+  </>
+)}
+{/* Modal Nego Harga - Bottom Sheet */}
+{showNegoModal && (
+  <>
+    {/* Backdrop */}
+    <div
+      className="fixed inset-0 bg-black/50 z-50"
+      onClick={() => setShowNegoModal(false)}
+    />
+
+    {/* Bottom Sheet */}
+    <div className="fixed inset-x-0 bottom-0 z-50 translate-y-0 transition-transform duration-300">
+      <div className="bg-base-100 rounded-t-3xl shadow-2xl overflow-hidden">
+        {/* Handle Bar */}
+        <div className="flex justify-center pt-3 pb-2">
+          <div className="w-12 h-1.5 bg-base-300 rounded-full" />
+        </div>
+
+        {/* Header */}
+        <div className="px-6 pt-2 pb-4 text-center">
+          <h3 className="text-xl font-bold text-base-content">Nego Ongkos Jastip</h3>
+          <p className="text-sm text-base-content/70 mt-1">Masukkan harga yang kamu inginkan</p>
+        </div>
+
+        {/* Input Harga */}
+        <div className="px-6 pb-6">
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-medium text-base-content/60">
+              Rp
+            </span>
+            <input
+              type="number"
+              value={negoPrice}
+              onChange={(e) => setNegoPrice(e.target.value.replace(/\D/g, ''))} // hanya angka
+              placeholder="35000"
+              className="input input-lg w-full pl-12 pr-4 text-2xl font-bold text-center bg-base-200 focus:outline-none focus:ring-4 focus:ring-emerald-400/30"
+              autoFocus
+            />
+          </div>
+
+          {/* Preview Pesan */}
+          {negoPrice && (
+            <div className="mt-4 p-4 bg-emerald-50 dark:bg-emerald-900/30 rounded-2xl border border-emerald-200 dark:border-emerald-800">
+              <p className="text-sm text-base-content/80 whitespace-pre-wrap">
+                💰 Nego Ongkos jastip: Rp{parseInt(negoPrice).toLocaleString('id-ID')}
+                {'\n\n'}Bisa deal di harga ini ya kak? 🙏
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Tombol Aksi */}
+        <div className="flex gap-3 px-6 pb-8">
+          <button
+            onClick={() => setShowNegoModal(false)}
+            className="flex-1 btn btn-ghost btn-lg rounded-2xl"
+          >
+            Batal
+          </button>
+          <button
+  onClick={() => {
+    if (negoPrice && parseInt(negoPrice) > 0) {
+      const formattedPrice = parseInt(negoPrice).toLocaleString('id-ID');
+      
+      // PENTING: Sertakan tag [deal_ongkos_jastip] di awal!
+      setNewMessage(
+        `[deal_ongkos_jastip] \n\n` +
+        `💰 Nego Ongkos jastip : Rp ${formattedPrice}\n\n` +
+        `Bisa deal di harga ini ya kak? 🙏`
+      );
+      
+      setShowNegoModal(false);
+      setNegoPrice('');
+      document.getElementById('message-input')?.focus();
+    }
+  }}
+  disabled={!negoPrice || parseInt(negoPrice) <= 0}
+  className="flex-1 btn btn-success btn-lg rounded-2xl text-white font-bold shadow-lg disabled:opacity-50"
+>
+  Kirim Nego
+</button>
+        </div>
+      </div>
+    </div>
   </>
 )}
       </div>

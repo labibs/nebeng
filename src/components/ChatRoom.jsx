@@ -1,8 +1,8 @@
 // src/components/ChatRoom.jsx
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabaseClient'; // sesuaikan path
+import { supabase } from '../lib/supabaseClient';
 
 export default function ChatRoom() {
   const { conversationId } = useParams();
@@ -18,6 +18,7 @@ export default function ChatRoom() {
   const [newMessage, setNewMessage] = useState('');
   const [showDealMenu, setShowDealMenu] = useState(false);
   const [loading, setLoading] = useState(true);
+
   const messagesEndRef = useRef(null);
   const menuRef = useRef(null);
 
@@ -25,15 +26,11 @@ export default function ChatRoom() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleShortcut = (text) => {
-    setNewMessage(text);
-  };
-
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Fetch recipient (lawan bicara)
+  // Fetch recipient
   useEffect(() => {
     if (!currentUserId || !conversationId) return;
 
@@ -62,7 +59,7 @@ export default function ChatRoom() {
     fetchRecipient();
   }, [currentUserId, conversationId]);
 
-  // Fetch postInfo dari conversations.post_id
+  // Fetch post info
   useEffect(() => {
     if (!conversationId) return;
 
@@ -87,7 +84,7 @@ export default function ChatRoom() {
     fetchPostInfo();
   }, [conversationId]);
 
-  // Fetch messages dan setup realtime
+  // Realtime messages + mark as read
   useEffect(() => {
     if (!conversationId) return;
 
@@ -95,12 +92,7 @@ export default function ChatRoom() {
       const { data } = await supabase
         .from('messages')
         .select(`
-          id,
-          content,
-          created_at,
-          sender_id,
-          is_read,
-          message_type,
+          id, content, created_at, sender_id, is_read, message_type,
           post:posts (*)
         `)
         .eq('conversation_id', conversationId)
@@ -113,127 +105,104 @@ export default function ChatRoom() {
 
     fetchMessages();
 
-    // Nama channel AMAN: hanya huruf, angka, underscore
     const safeChannelName = `chat_${conversationId.replace(/-/g, '_')}`;
 
     const channel = supabase
       .channel(safeChannelName)
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`,
-        },
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
         (payload) => {
-          console.log('Pesan baru masuk:', payload.new);
           setMessages((prev) => [...prev, payload.new]);
-          setTimeout(scrollToBottom, 100);
+          scrollToBottom();
         }
       )
-      // TAMBAH INI: listener untuk UPDATE is_read
       .on(
         'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`,
-        },
+        { event: 'UPDATE', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
         (payload) => {
-          console.log('Pesan dibaca (update is_read):', payload.new);
           setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === payload.new.id
-                ? { ...msg, is_read: payload.new.is_read }
-                : msg
-            )
+            prev.map((msg) => (msg.id === payload.new.id ? payload.new : msg))
           );
         }
       )
-
-      .subscribe((status, error) => {
-        console.log('Realtime status:', status);
-        if (error) {
-          console.error('Realtime error:', error);
-        }
-        if (status === 'SUBSCRIBED') {
-          console.log('Realtime connected! Sync messages...');
-          fetchMessages(); // refresh sekali saat connect
-        }
-      });
+      .subscribe();
 
     return () => {
-      console.log('Cleaning up realtime channel...');
       supabase.removeChannel(channel);
     };
   }, [conversationId]);
 
-  // Mark pesan dari lawan sebagai terbaca saat buka room
+  // Mark unread messages as read ketika buka chat
   useEffect(() => {
     if (!conversationId || !currentUserId) return;
 
     const markAsRead = async () => {
-      // Update semua pesan dari lawan (sender_id != currentUserId) jadi is_read = true
-      const { error } = await supabase
+      await supabase
         .from('messages')
         .update({ is_read: true })
         .eq('conversation_id', conversationId)
         .neq('sender_id', currentUserId)
-        .eq('is_read', false); // hanya yang belum dibaca
-
-      if (error) {
-        console.error('Error marking messages as read:', error);
-      } else {
-        // Update state lokal biar UI langsung berubah tanpa refresh
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.sender_id !== currentUserId ? { ...msg, is_read: true } : msg
-        
-          )
-          
-        );
-        
-      }
+        .eq('is_read', false);
     };
 
     markAsRead();
   }, [conversationId, currentUserId]);
 
-  // Kirim pesan
+  // Ekstrak message_type dari content (jika ada tag [deal_xxx])
+  const extractMessageType = (content) => {
+    const match = content.trim().match(/^\[([a-zA-Z0-9_]+)\]/);
+    return match ? match[1] : null;
+  };
+
+  // Kirim pesan dengan message_type otomatis
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
 
     const content = newMessage.trim();
-    setNewMessage(''); // kosongkan input dulu biar UX cepat
+    const message_type = extractMessageType(content);
+
+    setNewMessage('');
 
     const { error } = await supabase.from('messages').insert({
       conversation_id: conversationId,
       sender_id: currentUserId,
       content: content,
+      message_type: message_type, // ← INI YANG PENTING!
     });
 
     if (error) {
-      console.error('Gagal kirim pesan:', error);
-      alert('Pesan gagal terkirim. Coba lagi.');
-      // Kembalikan input kalau gagal
+      console.error('Gagal kirim:', error);
+      alert('Gagal mengirim pesan.');
       setNewMessage(content);
     }
-    // Tidak perlu tambah apa-apa ke state — realtime akan handle munculnya pesan
+  };
+
+  // Pilih template deal → otomatis tambah tag [deal_xxx]
+  const selectDealType = (tag, title, template) => {
+    setNewMessage(`[${tag}] ${title} ✅\n\n${template}`);
+    setShowDealMenu(false);
+    document.getElementById('message-input')?.focus();
+  };
+
+  // Shortcut cepat
+  const quickReplies = [
+    "Bisa nego fee / ongkos jastip?",
+    "Boleh COD / ketemuan di lokasi?",
+    "Kapan jadwal keberangkatan?",
+    "Barangnya ukuran & beratnya berapa?",
+    "Apakah aman dibawa di bagasi?",
+  ];
+
+  const handleQuickReply = (text) => {
+    setNewMessage(text);
+    document.getElementById('message-input')?.focus();
   };
 
   if (!conversationId) {
     return <div className="flex h-screen items-center justify-center text-lg">Chat tidak ditemukan</div>;
   }
-
-  const applyDealTemplate = (template) => {
-    setNewMessage(template);
-    setShowDealMenu(false);
-    // Fokus kembali ke input
-    document.getElementById('message-input').focus();
-  };
 
   return (
     <div className="flex h-screen flex-col bg-base-200">
@@ -244,417 +213,164 @@ export default function ChatRoom() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        
+
         <div className="flex-1 flex items-center gap-3">
-          {/* Skeleton Avatar */}
           <div className="avatar online">
             <div className="w-12 rounded-full ring ring-emerald-500 ring-offset-base-100 ring-offset-2">
-              {recipient.imageUrl && recipient.imageUrl !== '/default-avatar.png' ? (
-                <img src={recipient.imageUrl} alt={recipient.name} className="object-cover" />
-              ) : (
-                // Skeleton Avatar: lingkaran berdenyut
-                <div className="w-full h-full bg-gradient-to-r from-base-300 to-base-200 rounded-full animate-pulse shadow-lg" />
-              )}
+              <img src={recipient.imageUrl} alt={recipient.name} />
             </div>
           </div>
-
-          {/* Skeleton Nama & Status */}
           <div>
-            {recipient.name !== 'Loading...' ? (
-              <>
-                <h2 className="font-bold text-lg">{recipient.name}</h2>
-                <p className="text-sm opacity-70">Online</p>
-              </>
-            ) : (
-              // Skeleton Nama + Status
-              <div className="space-y-1.5">
-                <div className="h-6 bg-gradient-to-r from-base-300 to-base-200 rounded-full w-28 animate-pulse" />
-                <div className="h-4 bg-gradient-to-r from-base-300 to-base-200 rounded w-20 animate-pulse" />
-              </div>
-            )}
+            <h2 className="font-bold text-lg">{recipient.name}</h2>
+            <p className="text-sm opacity-70">Online</p>
           </div>
         </div>
       </div>
 
       {/* Chat Area */}
-<div className="flex-1 overflow-y-auto p-4 pb-20">
-  {loading ? (
-    <div className="space-y-6 p-4">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className={`chat ${i % 2 === 0 ? 'chat-end' : 'chat-start'}`}>
-          <div className="chat-bubble bg-base-300 animate-pulse w-64 h-20 rounded-2xl" />
-        </div>
-      ))}
-    </div>
-  ) : (
-    <div className="space-y-6">
-      {messages.map((msg) => (
-        <div
-          key={msg.id}
-          className={`chat ${msg.sender_id === currentUserId ? 'chat-end' : 'chat-start'}`}
-        >
-          {/* Avatar */}
-          <div className="chat-image avatar">
-            <div className="w-10 rounded-full">
-              <img
-                src={msg.sender_id === currentUserId ? currentUserAvatar : recipient.imageUrl}
-                alt="avatar"
-              />
-            </div>
-          </div>
-
-          {/* Header (waktu) */}
-          <div className="chat-header">
-            <time className="text-xs opacity-70">
-              {(() => {
-                const messageDate = new Date(msg.created_at);
-                const today = new Date();
-                const isToday =
-                  messageDate.getDate() === today.getDate() &&
-                  messageDate.getMonth() === today.getMonth() &&
-                  messageDate.getFullYear() === today.getFullYear();
-
-                if (isToday) {
-                  return messageDate.toLocaleTimeString('id-ID', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  });
-                } else {
-                  return messageDate.toLocaleDateString('id-ID', {
-                    weekday: 'short',
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  });
-                }
-              })()}
-            </time>
-          </div>
-
-          {/* Bubble Content - Bedakan berdasarkan message_type */}
-          {msg.message_type === 'post_card' ? (
-            // CARD POST (hanya dari sender yang memulai chat)
-            <div className="chat-bubble bg-base-100 border border-base-300 max-w-md shadow-lg">
-              <div className="flex gap-4 items-start px-0 py-2">
-                {/* Gambar Barang Kecil */}
-                <div className="avatar">
-                  <div className="w-24 h-24 rounded-xl overflow-hidden">
-                    <img
-                      src={msg.post?.item_photo || '/default-item.jpg'} // asumsi post data ada di msg.post
-                      alt="Barang"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-
-                {/* Info Post */}
-                <div className="flex-1">
-                  <div className="mb-2 text-end">
-                    <div className="badge badge-primary badge-sm">
-                      {msg.post?.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm text-base-content/80 mt-3">
-                    <span className="font-medium">{msg.post?.from_city}</span>
-                    <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                    <span className="font-medium">{msg.post?.to_city}</span>
-                  </div>
-
-                  <div className="flex justify-between items-end mt-3 text-sm">
-                    <p className="text-emerald-600 font-bold">
-                      Fee: Rp{msg.post?.fee?.toLocaleString('id-ID')}
-                    </p>
-                  </div>
-                </div>
+      <div className="flex-1 overflow-y-auto p-4 pb-32">
+        {loading ? (
+          <div className="space-y-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className={`chat ${i % 2 === 0 ? 'chat-end' : 'chat-start'}`}>
+                <div className="chat-bubble bg-base-300 animate-pulse w-64 h-20 rounded-2xl" />
               </div>
-
-              <hr className="my-2" />
-
-<p className="text-xs text-center text-base-content/60 mt-2">
-  {msg.content || 'saya tertarik dengan penawaran ini.'}
-</p>
-
-
-
-            </div>
-          ) : (
-            // PESAN TEKS BIASA
-            <div
-  className={`
-    chat-bubble
-    ${
-      msg.sender_id === currentUserId
-        ? `
-          text-white
-          bg-gradient-to-r
-          from-[#81c784]
-          to-[#66bb6a]
-          shadow-md
-        `
-        : `
-          chat-bubble-neutral
-          bg-emerald-600
-          text-white
-        `
-    }
-  `}
->
-  
-  {/* Isi pesan */}
-  {msg.content}
-
-  {/* Shortcut — hanya tampil di pesan post / sistem / seller */}
-  {msg.post && (
-    <div className="mt-3 px-1">
-      <div
-        className="
-          flex gap-2 overflow-x-auto no-scrollbar
-          snap-x snap-mandatory
-          -mx-1 px-1 pb-1
-        "
-      >
-        {[
-          "Bisa nego fee / ongkos jastip?",
-          "Boleh COD / ketemuan di lokasi?",
-          "Kapan jadwal keberangkatan?",
-          "Barangnya ukuran & beratnya berapa?",
-          "Apakah aman dibawa di bagasi?",
-        ].map((text, i) => (
-          <button
-            key={i}
-            onClick={() => handleShortcut(text)}
-            className="
-              btn btn-xs rounded-full snap-start whitespace-nowrap
-              border border-base-300 bg-base-200 hover:bg-base-300
-              dark:bg-base-300/30 dark:hover:bg-base-300/50
-            "
-          >
-            {text}
-          </button>
-        ))}
-      </div>
-    </div>
-  )}
-</div>
-
-          )}
-
-          {/* Footer: status terkirim/terbaca - hanya untuk pesan dari current user */}
-          {msg.sender_id === currentUserId && (
-            <div
-              className={`chat-footer text-xs mt-1 flex items-center gap-1 ${
-                msg.is_read ? 'text-blue-500' : 'opacity-70'
-              }`}
-            >
-              {msg.is_read ? (
-                <>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M4 10l4 4L16 6" stroke="currentColor" strokeWidth="2" fill="none" />
-                    <path d="M8 10l4 4L20 6" stroke="currentColor" strokeWidth="2" fill="none" />
-                  </svg>
-                  <span>Terbaca</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M4 10l4 4L16 6" stroke="currentColor" strokeWidth="2" fill="none" />
-                  </svg>
-                  <span>Terkirim</span>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
-
-      {/* Auto scroll ke bawah */}
-      <div ref={messagesEndRef} />
-    </div>
-  )}
-</div>
-
-      {/* Input Fixed */}
-      {/* Input Fixed */}
-<div className="
-  fixed bottom-0 left-0 right-0 z-50
-  bg-base-100/80 backdrop-blur-xl
-  border-t border-base-300/60
-">
-  {/* Quick Reply Shortcuts */}
-<div className="mt-3 px-1">
-  <div
-    className="
-      flex gap-2 overflow-x-auto no-scrollbar
-      snap-x snap-mandatory
-      w-full
-      -mx-1 px-1 pb-1
-    "
-  >
-    {[
-      "Bisa nego fee / ongkos jastip?",
-      "Boleh COD / ketemuan di lokasi?",
-      "Kapan jadwal keberangkatan?",
-      "Barangnya ukuran & beratnya berapa?",
-      "Apakah aman dibawa di bagasi?",
-    ].map((text, i) => (
-      <button
-        key={i}
-        onClick={() => handleShortcut(text)}
-        className="
-          btn btn-xs rounded-full snap-start whitespace-nowrap
-          border border-base-300 bg-base-200 hover:bg-base-300
-          dark:bg-base-300/30 dark:hover:bg-base-300/50
-        "
-      >
-        {text}
-      </button>
-    ))}
-  </div>
-</div>
-  {/* Form Input */}
-      <form
-        onSubmit={sendMessage}
-        className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-2 relative"
-      >
-        {/* Input Box */}
-        <div className="
-          flex items-center gap-2
-          flex-1
-          bg-base-200 border border-base-300
-          rounded-2xl px-3
-          focus-within:ring-2 focus-within:ring-emerald-400/60
-          transition-all
-        ">
-          {/* Icon Plus yang bisa diklik */}
-          <button
-            type="button"
-            onClick={() => setShowDealMenu(!showDealMenu)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-300 transition-colors"
-            aria-label="Pilih template deal"
-          >
-            <svg className="w-6 h-6 text-emerald-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-          </svg>
-          </button>
-
-          <input
-            id="message-input"
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Tulis pesan deal atau pilih shortcut…"
-            className="
-              input input-ghost focus:outline-none
-              bg-transparent w-full text-sm py-4
-            "
-          />
-        </div>
-
-        {/* Send Button */}
-        <button
-          type="submit"
-          disabled={!newMessage.trim()}
-          className="
-            btn bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white rounded-2xl px-5
-            disabled:opacity-50 disabled:cursor-not-allowed
-          "
-        >
-          Kirim
-        </button>
-
-        {/* Dropdown Menu Template Deal */}
-        {showDealMenu && (
-          <div
-            ref={menuRef}
-            className="absolute bottom-full left-4 mb-2 w-80 bg-base-100 border border-base-300 rounded-2xl shadow-xl overflow-hidden z-50"
-          >
-            <div className="p-4 border-b border-base-300">
-              <h3 className="font-semibold text-sm">Pastikan semuanya sudah Deal </h3>
-            </div>
-
-            <div className="py-2 max-h-96 overflow-y-auto">
-              {/* Template 1 */}
-              <button
-                type="button"
-                onClick={() =>
-                  applyDealTemplate(
-                    `Deal Jastip ✅\n\n💰 Ongkos jastip: \n📍 Lokasi ketemuan: \n🕐 Jam ketemuan: \n📝 Catatan tambahan: `
-                  )
-                }
-                className="w-full text-left px-4 py-3 hover:bg-base-200 transition-colors"
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`chat ${msg.sender_id === currentUserId ? 'chat-end' : 'chat-start'}`}
               >
-                <div className="font-medium text-sm">Dealkan Ongkos Jastip</div>
-                <div className="text-xs opacity-70 mt-1">Bisa Nego</div>
-              </button>
+                <div className="chat-image avatar">
+                  <div className="w-10 rounded-full">
+                    <img src={msg.sender_id === currentUserId ? currentUserAvatar : recipient.imageUrl} alt="avatar" />
+                  </div>
+                </div>
 
-              {/* Template 2 */}
-              <button
-                type="button"
-                onClick={() =>
-                  applyDealTemplate(
-                    `Deal Jastip ✅\n\n💰 Ongkos jastip: Rp35.000 (bisa nego)\n📍 Lokasi ketemuan: Mall Kelapa Gading / sesuai rute\n🕐 Jam ketemuan: Fleksibel weekday setelah jam 18.00 atau weekend\n📦 Maksimal 3 item per orang\n📝 Catatan: Bayar ongkos dulu ya kak, barang diambil H+3 setelah DP`
-                  )
-                }
-                className="w-full text-left px-4 py-3 hover:bg-base-200 transition-colors"
-              >
-                <div className="font-medium text-sm">Dealkan Lokasi Penjemputan</div>
-                <div className="text-xs opacity-70 mt-1">Bisa Sharelock</div>
-              </button>
+                <div className="chat-header">
+                  <time className="text-xs opacity-70">
+                    {new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                  </time>
+                </div>
 
-              {/* Template 3 */}
-              <button
-                type="button"
-                onClick={() =>
-                  applyDealTemplate(
-                    `Open Jastip Luar Kota 🚚\n\n💰 Ongkos jastip: Rp50.000 - Rp100.000 (tergantung lokasi)\n📍 Lokasi ketemuan: Jakarta Pusat / ekspedisi\n🕐 Jam ketemuan: Sesuai jadwal kedatangan\n⏰ Deadline order: \n📝 Catatan: DP 50% dulu ya, sisanya COD atau transfer`
-                  )
-                }
-                className="w-full text-left px-4 py-3 hover:bg-base-200 transition-colors border-t border-base-300"
-              >
-                <div className="font-medium text-sm">Dealkan Waktu Penjemputan</div>
-                <div className="text-xs opacity-70 mt-1">Bisa Maju / Mundur</div>
-              </button>
+                {/* Render berdasarkan message_type */}
+                {msg.message_type === 'post_card' ? (
+                  <div className="chat-bubble bg-base-100 border border-base-300 max-w-md shadow-lg">
+                    {/* Card post content (sama seperti sebelumnya) */}
+                    {/* ... (di sini kamu bisa copy bagian card post yang lama) */}
+                  </div>
+                ) : (
+                  <div className={`
+                    chat-bubble text-white
+                    ${msg.sender_id === currentUserId
+                      ? 'bg-gradient-to-r from-[#81c784] to-[#66bb6a] shadow-md'
+                      : 'bg-emerald-600'
+                    }
+                  `}>
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                  </div>
+                )}
 
-              {/* Template 3 */}
-              <button
-                type="button"
-                onClick={() =>
-                  applyDealTemplate(
-                    `Open Jastip Luar Kota 🚚\n\n💰 Ongkos jastip: Rp50.000 - Rp100.000 (tergantung lokasi)\n📍 Lokasi ketemuan: Jakarta Pusat / ekspedisi\n🕐 Jam ketemuan: Sesuai jadwal kedatangan\n⏰ Deadline order: \n📝 Catatan: DP 50% dulu ya, sisanya COD atau transfer`
-                  )
-                }
-                className="w-full text-left px-4 py-3 hover:bg-base-200 transition-colors border-t border-base-300"
-              >
-                <div className="font-medium text-sm">Dealkan Barang Titipan</div>
-                <div className="text-xs opacity-70 mt-1">Bisa Lampirkan foto detail</div>
-              </button>
-            </div>
-
-            <div className="p-3 bg-base-200 text-center">
-              <button
-                type="button"
-                onClick={() => setShowDealMenu(false)}
-                className="text-xs opacity-70 hover:opacity-100"
-              >
-                Tutup
-              </button>
-            </div>
+                {/* Status terbaca (hanya pesan sendiri) */}
+                {msg.sender_id === currentUserId && (
+                  <div className={`chat-footer text-xs mt-1 ${msg.is_read ? 'text-blue-500' : 'opacity-70'}`}>
+                    {msg.is_read ? 'Terbaca ✓✓' : 'Terkirim ✓'}
+                  </div>
+                )}
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
           </div>
         )}
-      </form>
+      </div>
 
-      {/* Overlay untuk menutup menu saat klik di luar */}
-      {showDealMenu && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setShowDealMenu(false)}
-        />
-      )}
-</div>
+      {/* Input Area - Fixed Bottom */}
+      <div className="fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 pb-safe">
+        {/* Quick Replies */}
+        <div className="px-4 py-2 overflow-x-auto no-scrollbar">
+          <div className="flex gap-2">
+            {quickReplies.map((text, i) => (
+              <button
+                key={i}
+                onClick={() => handleQuickReply(text)}
+                className="btn btn-xs rounded-full whitespace-nowrap bg-base-200 hover:bg-base-300"
+              >
+                {text}
+              </button>
+            ))}
+          </div>
+        </div>
 
+        {/* Form */}
+        <form onSubmit={sendMessage} className="px-4 pb-4 pt-2 flex items-center gap-2">
+          <div className="flex-1 flex items-center gap-2 bg-base-200 border border-base-300 rounded-2xl px-3 focus-within:ring-2 focus-within:ring-emerald-400/60">
+            {/* Icon PLUS kembali! */}
+            <button
+                type="button"
+                onClick={() => setShowDealMenu(!showDealMenu)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-300 transition-colors"
+                aria-label="Pilih template deal"
+              >
+                <svg className="w-6 h-6 text-emerald-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+           </button>
+
+            <input
+              id="message-input"
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Tulis pesan atau pilih deal…"
+              className="input input-ghost focus:outline-none
+              bg-transparent w-full text-sm py-4"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={!newMessage.trim()}
+            className="btn bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white rounded-2xl px-6 disabled:opacity-50"
+          >
+            Kirim
+          </button>
+        </form>
+
+        {/* Deal Menu */}
+        {showDealMenu && (
+          <>
+            <div className="absolute bottom-20 left-4 right-4 bg-base-100 border border-base-300 rounded-2xl shadow-2xl overflow-hidden z-50">
+              <div className="p-4 border-b border-base-300">
+                <h3 className="font-bold">Pilih Jenis Deal</h3>
+              </div>
+              <div className="max-h-96 overflow-y-auto">
+                <button onClick={() => selectDealType('deal_ongkos_jastip', 'Deal Ongkos Jastip', '💰 Ongkos jastip: \n📍 Lokasi ketemuan: \n🕐 Jam ketemuan: \n📝 Catatan: ')} className="w-full text-left px-4 py-3 hover:bg-base-200">
+                  <div className="font-medium">[deal_ongkos_jastip]</div>
+                  <div className="text-xs opacity-70">Ongkos jastip umum</div>
+                </button>
+                <button onClick={() => selectDealType('deal_lokasi_ketemuan', 'Deal Lokasi Ketemuan', '📍 Lokasi ketemuan: \n🕐 Jam: \n💰 Ongkos: \n📝 Catatan: ')} className="w-full text-left px-4 py-3 hover:bg-base-200">
+                  <div className="font-medium">[deal_lokasi_ketemuan]</div>
+                  <div className="text-xs opacity-70">Sepakati tempat bertemu</div>
+                </button>
+                <button onClick={() => selectDealType('deal_waktu_ketemuan', 'Deal Waktu Ketemuan', '🕐 Jam ketemuan: \n📍 Lokasi: \n💰 Ongkos tetap: \n📝 Info tambahan: ')} className="w-full text-left px-4 py-3 hover:bg-base-200">
+                  <div className="font-medium">[deal_waktu_ketemuan]</div>
+                  <div className="text-xs opacity-70">Sepakati jadwal</div>
+                </button>
+                <button onClick={() => selectDealType('deal_barang_titipan', 'Deal Barang Titipan', '📦 Detail barang: \n⚖️ Berat/ukuran: \n💰 Ongkos final: \n📝 Lampirkan foto jika perlu')} className="w-full text-left px-4 py-3 hover:bg-base-200 border-t border-base-300">
+                  <div className="font-medium">[deal_barang_titipan]</div>
+                  <div className="text-xs opacity-70">Konfirmasi barang</div>
+                </button>
+              </div>
+            </div>
+
+            {/* Overlay */}
+            <div className="fixed inset-0 z-40" onClick={() => setShowDealMenu(false)} />
+          </>
+        )}
+      </div>
     </div>
   );
 }

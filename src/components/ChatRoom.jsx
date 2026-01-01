@@ -339,37 +339,126 @@ export default function ChatRoom() {
           </button>
         </form>
 
-        {/* Deal Menu */}
-        {showDealMenu && (
-          <>
-            <div className="absolute bottom-20 left-4 right-4 bg-base-100 border border-base-300 rounded-2xl shadow-2xl overflow-hidden z-50">
-              <div className="p-4 border-b border-base-300">
-                <h3 className="font-bold">Pilih Jenis Deal</h3>
-              </div>
-              <div className="max-h-96 overflow-y-auto">
-                <button onClick={() => selectDealType('deal_ongkos_jastip', 'Deal Ongkos Jastip', '💰 Ongkos jastip: \n📍 Lokasi ketemuan: \n🕐 Jam ketemuan: \n📝 Catatan: ')} className="w-full text-left px-4 py-3 hover:bg-base-200">
-                  <div className="font-medium">[deal_ongkos_jastip]</div>
-                  <div className="text-xs opacity-70">Ongkos jastip umum</div>
-                </button>
-                <button onClick={() => selectDealType('deal_lokasi_ketemuan', 'Deal Lokasi Ketemuan', '📍 Lokasi ketemuan: \n🕐 Jam: \n💰 Ongkos: \n📝 Catatan: ')} className="w-full text-left px-4 py-3 hover:bg-base-200">
-                  <div className="font-medium">[deal_lokasi_ketemuan]</div>
-                  <div className="text-xs opacity-70">Sepakati tempat bertemu</div>
-                </button>
-                <button onClick={() => selectDealType('deal_waktu_ketemuan', 'Deal Waktu Ketemuan', '🕐 Jam ketemuan: \n📍 Lokasi: \n💰 Ongkos tetap: \n📝 Info tambahan: ')} className="w-full text-left px-4 py-3 hover:bg-base-200">
-                  <div className="font-medium">[deal_waktu_ketemuan]</div>
-                  <div className="text-xs opacity-70">Sepakati jadwal</div>
-                </button>
-                <button onClick={() => selectDealType('deal_barang_titipan', 'Deal Barang Titipan', '📦 Detail barang: \n⚖️ Berat/ukuran: \n💰 Ongkos final: \n📝 Lampirkan foto jika perlu')} className="w-full text-left px-4 py-3 hover:bg-base-200 border-t border-base-300">
-                  <div className="font-medium">[deal_barang_titipan]</div>
-                  <div className="text-xs opacity-70">Konfirmasi barang</div>
-                </button>
-              </div>
-            </div>
+        {/* Deal Menu - Di dalam fixed bottom area */}
+{showDealMenu && (
+  <>
+    <div className="absolute bottom-20 left-4 right-4 bg-base-100 border border-base-300 rounded-2xl shadow-2xl overflow-hidden z-50">
+      <div className="p-4 border-b border-base-300 bg-base-200/50">
+        <h3 className="font-bold text-lg text-center">Pilih Jenis Deal</h3>
+        <p className="text-xs text-center opacity-70 mt-1">Tag otomatis ditambahkan saat kirim</p>
+      </div>
 
-            {/* Overlay */}
-            <div className="fixed inset-0 z-40" onClick={() => setShowDealMenu(false)} />
-          </>
-        )}
+      <div className="max-h-96 overflow-y-auto">
+        {/* 1. Ongkos Jastip */}
+        <button
+          onClick={() =>
+            selectDealType(
+              'deal_ongkos_jastip',
+              'Deal Ongkos Jastip',
+              '💰 Ongkos jastip: \n📍 Lokasi ketemuan: \n🕐 Jam ketemuan: \n📝 Catatan tambahan: '
+            )
+          }
+          className="w-full text-left px-5 py-4 hover:bg-base-200 transition-colors flex items-center gap-4"
+        >
+          <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+            <svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <div className="font-semibold text-base">Ongkos Jastip</div>
+            <div className="text-xs opacity-70">Sepakati biaya jasa titip / belanja</div>
+          </div>
+        </button>
+
+        {/* 2. Lokasi Ketemuan */}
+        <button
+          onClick={() =>
+            selectDealType(
+              'deal_lokasi_ketemuan',
+              'Deal Lokasi Ketemuan',
+              '📍 Lokasi ketemuan: \n🕐 Jam ketemuan: \n💰 Ongkos tetap: \n📝 Catatan lokasi: '
+            )
+          }
+          className="w-full text-left px-5 py-4 hover:bg-base-200 transition-colors flex items-center gap-4 border-t border-base-300/50"
+        >
+          <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <div>
+            <div className="font-semibold text-base">Lokasi Ketemuan</div>
+            <div className="text-xs opacity-70">Tentukan tempat serah terima</div>
+          </div>
+        </button>
+
+        {/* 3. Waktu Ketemuan */}
+        <button
+          onClick={() =>
+            selectDealType(
+              'deal_waktu_ketemuan',
+              'Deal Waktu Ketemuan',
+              '🕐 Jam ketemuan: \n📍 Lokasi: \n💰 Ongkos final: \n📝 Konfirmasi jadwal: '
+            )
+          }
+          className="w-full text-left px-5 py-4 hover:bg-base-200 transition-colors flex items-center gap-4"
+        >
+          <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
+            <svg className="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <div className="font-semibold text-base">Waktu Ketemuan</div>
+            <div className="text-xs opacity-70">Sepakati jam & hari bertemu</div>
+          </div>
+        </button>
+
+        {/* 4. Barang Titipan */}
+        <button
+          onClick={() =>
+            selectDealType(
+              'deal_barang_titipan',
+              'Deal Barang Titipan',
+              '📦 Detail barang: \n⚖️ Ukuran & berat: \n💰 Ongkos final: \n📝 Lampirkan foto/detail jika ada'
+            )
+          }
+          className="w-full text-left px-5 py-4 hover:bg-base-200 transition-colors flex items-center gap-4 border-t border-base-300/50"
+        >
+          <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0">
+            <svg className="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+          </div>
+          <div>
+            <div className="font-semibold text-base">Barang Titipan</div>
+            <div className="text-xs opacity-70">Konfirmasi detail barang yang dititipkan</div>
+          </div>
+        </button>
+      </div>
+
+      <div className="p-3 bg-base-200 text-center border-t border-base-300/50">
+        <button
+          type="button"
+          onClick={() => setShowDealMenu(false)}
+          className="text-sm font-medium text-base-content/70 hover:text-base-content"
+        >
+          Tutup
+        </button>
+      </div>
+    </div>
+
+    {/* Overlay */}
+    <div className="fixed inset-0 z-40" onClick={() => setShowDealMenu(false)} />
+  </>
+)}
       </div>
     </div>
   );

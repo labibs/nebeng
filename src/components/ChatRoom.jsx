@@ -154,11 +154,22 @@ export default function ChatRoom() {
 
   useEffect(() => {
     const fetchConversationPostId = async () => {
-      const { data } = await supabase
-        .from('conversations')
+      if (!conversationId) return;
+
+      const { data, error } = await supabase
+        .from('messages')
         .select('post_id')
-        .eq('id', conversationId)
-        .single();
+        .eq('conversation_id', conversationId)
+        .eq('message_type', 'post_card')  // Hanya ambil yang message_type post_card
+        .order('created_at', { ascending: false })  // Urutkan dari terbaru ke terlama
+        .limit(1)  // Ambil hanya 1 yang paling baru
+        .maybeSingle();  // Gunakan maybeSingle() agar tidak error jika tidak ada
+
+      if (error && error.code !== 'PGRST116') {  // PGRST116 = no rows returned
+        console.error('Error fetching post_id:', error);
+        setConversationPostId(null);
+        return;
+      }
 
       setConversationPostId(data?.post_id || null);
     };
@@ -314,7 +325,7 @@ export default function ChatRoom() {
 
     {/* Isi Pesan (tanpa tag [deal_...]) */}
     <div className="mb-5 whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed">
-      {msg.post ? (msg.post.fee) : ''}
+      💰 Ongkos awal jastip : Rp {msg.post ? (parseInt(msg.post.fee).toLocaleString('id-ID')) : ''} <br />
       {msg.content.replace(/^\[[^\]]+\]\s*/, '').trim()}
     </div>
 

@@ -10,7 +10,7 @@ import Login from './pages/Login'
 import Home from './pages/Home'
 import CreatePost from './pages/CreatePost'
 import ChatInbox from './pages/Chat'
-import ChatRoom from './components/ChatRoom'
+import ChatRoom from './components/chat/ChatRoom'
 
 import Profile from './pages/Profile'
 import Transaksi from './pages/Transaksi'

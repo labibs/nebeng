@@ -6,6 +6,7 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
 import './index.css';
 import { ClerkProvider } from '@clerk/clerk-react';
 import "leaflet/dist/leaflet.css";
+import { UserProvider } from './lib/UserContext.jsx';
 
 // Komponen Toast Minimalis
 const Toast = ({ message, type = 'success', onClose }) => {
@@ -102,7 +103,9 @@ function SWUpdatePrompt() {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
-      <App />
+      <UserProvider>
+        <App />
+      </UserProvider>
       <SWUpdatePrompt /> {/* Toast akan muncul di sini */}
     </ClerkProvider>
   </React.StrictMode>

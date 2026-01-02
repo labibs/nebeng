@@ -8,6 +8,9 @@ export default function ChatMessages({
   recipientImageUrl,
   postInfo,
   messagesEndRef,
+  onOpenNego,
+  onSendNego,
+  onInsertDeal,
 }) {
   if (loading) {
     return (
@@ -34,6 +37,9 @@ export default function ChatMessages({
             currentUserAvatar={currentUserAvatar}
             recipientImageUrl={recipientImageUrl}
             postInfo={postInfo}
+            onOpenNego={onOpenNego}
+            onSendNego={onSendNego}
+            onInsertDeal={onInsertDeal}
           />
         ))}
         <div ref={messagesEndRef} />

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import NegoModal from './chat/NegoModal';
 
 export default function ChatRoom() {
   const { conversationId } = useParams();
@@ -20,7 +21,7 @@ export default function ChatRoom() {
   const [loading, setLoading] = useState(true);
   const [conversationPostId, setConversationPostId] = useState(null);
   const [showNegoModal, setShowNegoModal] = useState(false);
-  const [negoPrice, setNegoPrice] = useState('');
+  const [negoInitialPrice, setNegoInitialPrice] = useState('');
 
   const messagesEndRef = useRef(null);
   const menuRef = useRef(null);
@@ -184,19 +185,19 @@ export default function ChatRoom() {
   };
 
   // Kirim pesan dengan message_type otomatis
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !currentUserId) return;
+  const sendMessage = async (e, content = null) => {
+    if (e) e.preventDefault();
+    const messageContent = content || newMessage.trim();
+    if (!messageContent || !currentUserId) return;
 
-    const content = newMessage.trim();
-    const message_type = extractMessageType(content) || 'text';
+    const message_type = extractMessageType(messageContent) || 'text';
 
-    setNewMessage('');
+    if (!content) setNewMessage('');
 
     const insertData = {
       conversation_id: conversationId,
       sender_id: currentUserId,
-      content: content,
+      content: messageContent,
     };
 
     // Hanya jika ini pesan deal, isi post_id dan message_type
@@ -238,6 +239,15 @@ export default function ChatRoom() {
   const handleQuickReply = (text) => {
     setNewMessage(text);
     document.getElementById('message-input')?.focus();
+  };
+
+  const handleOpenNegoFromDeal = (initialPrice) => {
+    setNegoInitialPrice(initialPrice);
+    setShowNegoModal(true);
+  };
+
+  const handleSendNegoFromDeal = (message) => {
+    sendMessage(null, message);
   };
 
   if (!conversationId) {
@@ -359,7 +369,7 @@ export default function ChatRoom() {
             <button
               onClick={() => {
                 const defaultPrice = ongkos ? Math.floor(ongkos * 0.9) : 30000;
-                setNegoPrice(defaultPrice.toString());
+                setNegoInitialPrice(defaultPrice.toString());
                 setShowNegoModal(true);
               }}
               className="flex-1 btn btn-outline btn-warning btn-sm rounded-xl font-medium hover:bg-yellow-50 dark:hover:bg-yellow-900/30 transition-all"
@@ -578,7 +588,7 @@ export default function ChatRoom() {
         {/* 1. Ongkos Jastip */}
         <button
   onClick={() => {
-    setNegoPrice(''); // reset input
+    setNegoInitialPrice(''); // reset input
     setShowNegoModal(true); // buka modal
     setShowDealMenu(false); // tutup menu
   }}
@@ -684,91 +694,13 @@ export default function ChatRoom() {
     <div className="fixed inset-0 z-40" onClick={() => setShowDealMenu(false)} />
   </>
 )}
-{/* Modal Nego Harga - Bottom Sheet */}
-{showNegoModal && (
-  <>
-    {/* Backdrop */}
-    <div
-      className="fixed inset-0 bg-black/50 z-50"
-      onClick={() => setShowNegoModal(false)}
-    />
-
-    {/* Bottom Sheet */}
-    <div className="fixed inset-x-0 bottom-0 z-50 translate-y-0 transition-transform duration-300">
-      <div className="bg-base-100 rounded-t-3xl shadow-2xl overflow-hidden">
-        {/* Handle Bar */}
-        <div className="flex justify-center pt-3 pb-2">
-          <div className="w-12 h-1.5 bg-base-300 rounded-full" />
-        </div>
-
-        {/* Header */}
-        <div className="px-6 pt-2 pb-4 text-center">
-          <h3 className="text-xl font-bold text-base-content">Nego Ongkos Jastip</h3>
-          <p className="text-sm text-base-content/70 mt-1">Masukkan harga yang kamu inginkan</p>
-        </div>
-
-        {/* Input Harga */}
-        <div className="px-6 pb-6">
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-medium text-base-content/60">
-              Rp
-            </span>
-            <input
-              type="number"
-              value={negoPrice}
-              onChange={(e) => setNegoPrice(e.target.value.replace(/\D/g, ''))} // hanya angka
-              placeholder="35000"
-              className="input input-lg w-full pl-12 pr-4 text-2xl font-bold text-center bg-base-200 focus:outline-none focus:ring-4 focus:ring-emerald-400/30"
-              autoFocus
-            />
-          </div>
-
-          {/* Preview Pesan */}
-          {negoPrice && (
-            <div className="mt-4 p-4 bg-emerald-50 dark:bg-emerald-900/30 rounded-2xl border border-emerald-200 dark:border-emerald-800">
-              <p className="text-sm text-base-content/80 whitespace-pre-wrap">
-                💰 Nego Ongkos jastip: Rp{parseInt(negoPrice).toLocaleString('id-ID')}
-                {'\n\n'}Bisa deal di harga ini ya kak? 🙏
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Tombol Aksi */}
-        <div className="flex gap-3 px-6 pb-8">
-          <button
-            onClick={() => setShowNegoModal(false)}
-            className="flex-1 btn btn-ghost btn-lg rounded-2xl"
-          >
-            Batal
-          </button>
-          <button
-  onClick={() => {
-    if (negoPrice && parseInt(negoPrice) > 0) {
-      const formattedPrice = parseInt(negoPrice).toLocaleString('id-ID');
-      
-      // PENTING: Sertakan tag [deal_ongkos_jastip] di awal!
-      setNewMessage(
-        `[deal_ongkos_jastip] \n\n` +
-        `💰 Nego Ongkos jastip : Rp ${formattedPrice}\n\n` +
-        `Bisa deal di harga ini ya kak? 🙏`
-      );
-      
-      setShowNegoModal(false);
-      setNegoPrice('');
-      document.getElementById('message-input')?.focus();
-    }
-  }}
-  disabled={!negoPrice || parseInt(negoPrice) <= 0}
-  className="flex-1 btn btn-success btn-lg rounded-2xl text-white font-bold shadow-lg disabled:opacity-50"
->
-  Kirim Nego
-</button>
-        </div>
-      </div>
-    </div>
-  </>
-)}
+        {/* Modal Nego Harga - Bottom Sheet */}
+        <NegoModal
+          isOpen={showNegoModal}
+          onClose={() => setShowNegoModal(false)}
+          onSend={handleSendNegoFromDeal}
+          initialPrice={negoInitialPrice}
+        />
       </div>
     </div>
   );

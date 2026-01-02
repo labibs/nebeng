@@ -1,6 +1,9 @@
 export default function PostCard({ msg, isMine, avatar, postInfo }) {
-  const post = postInfo || {}; // fallback jika post tidak ada
-  console.log('PostCard msg:', post);
+  // Gunakan postInfo sebagai fallback utama
+  // const post = postInfo || {}; 
+
+  // Kalau mau tetap coba pakai msg.post (untuk safety ekstra), bisa:
+  const post = msg.post || postInfo || {};
 
   return (
     <div className={`chat ${isMine ? 'chat-end' : 'chat-start'}`}>
@@ -48,16 +51,16 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
             </div>
 
             <div className="flex items-center gap-2 text-sm text-base-content/80 mt-3">
-              <span className="font-semibold">{post.from_city}</span>
+              <span className="font-semibold">{post.from_city || '-'}</span>
               <svg className="w-5 h-5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
-              <span className="font-semibold">{post.to_city}</span>
+              <span className="font-semibold">{post.to_city || '-'}</span>
             </div>
 
             <div className="mt-4">
               <p className="text-emerald-600 font-bold text-lg">
-                Fee: Rp{post.fee?.toLocaleString('id-ID') || '-'}
+                Fee: Rp{post.fee ? parseInt(post.fee).toLocaleString('id-ID') : '-'}
               </p>
             </div>
           </div>

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-
 export default function NegoModal({ isOpen, onClose, onSend, initialPrice = '' }) {
   if (!isOpen) return null;
 

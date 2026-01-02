@@ -7,6 +7,9 @@ export default function MessageBubble({
   currentUserAvatar,
   recipientImageUrl,
   postInfo,
+  onOpenNego,
+  onSendNego,
+  onInsertDeal,
 }) {
   const isMine = msg.sender_id === currentUserId;
   const avatar = isMine ? currentUserAvatar : recipientImageUrl;
@@ -20,6 +23,9 @@ export default function MessageBubble({
         avatar={avatar}
         postInfo={postInfo}
         currentUserId={currentUserId}
+        onOpenNego={onOpenNego}
+        onSendNego={onSendNego}
+        onInsertDeal={onInsertDeal}
       />
     );
   }

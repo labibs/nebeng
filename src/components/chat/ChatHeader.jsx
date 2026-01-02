@@ -1,19 +1,12 @@
+// src/components/chat/ChatHeader.jsx
 import { useNavigate } from 'react-router-dom';
 
-export default function ChatHeader({ recipient, onBack }) {
+export default function ChatHeader({ recipient }) {
   const navigate = useNavigate();
-
-  const handleBack = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      navigate(-1);
-    }
-  };
 
   return (
     <div className="navbar bg-base-100 shadow-lg">
-      <button onClick={handleBack} className="btn btn-ghost btn-circle">
+      <button onClick={() => navigate(-1)} className="btn btn-ghost btn-circle">
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import NegoModal from './NegoModal';
 
-export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId }) {
+export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId, onOpenNego, onSendNego, onInsertDeal }) {
   const [negoPrice, setNegoPrice] = useState('');
   const [showNegoModal, setShowNegoModal] = useState(false);
 
@@ -10,10 +11,13 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId 
   const ongkos = ongkosText ? parseInt(ongkosText.replace(/,/g, ''), 10) : null;
 
   const handleQuickReply = (text) => {
-    // Ini sementara — nanti akan diganti di MessageInput
-    // Untuk sekarang, kita bisa copy ke clipboard atau alert
-    navigator.clipboard.writeText(text);
-    alert('Teks deal disalin ke clipboard!\n\n' + text);
+    if (onSendNego) {
+      onSendNego(text);
+    } else {
+      // Fallback sementara
+      navigator.clipboard.writeText(text);
+      alert('Teks deal disalin ke clipboard!\n\n' + text);
+    }
   };
 
   return (
@@ -76,6 +80,9 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId 
                     ? `Deal! Ongkos jastip Rp${ongkos.toLocaleString('id-ID')} ✅\nTerima kasih kak, kapan mau ketemuan?`
                     : `Deal! Ongkos jastip sesuai kesepakatan ✅\nKapan mau ketemuan ya kak?`;
                   handleQuickReply(replyText);
+                  if (onInsertDeal && ongkos) {
+                    onInsertDeal(msg.post_id, ongkos);
+                  }
                 }}
                 className="flex-1 btn btn-success btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"
               >
@@ -114,39 +121,13 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId 
         </div>
       </div>
 
-      {/* Modal Nego sementara (akan dipindah ke komponen terpisah nanti) */}
-      {showNegoModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={() => setShowNegoModal(false)}>
-          <div className="bg-base-100 rounded-t-3xl w-full p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-xl font-bold text-center mb-4">Nego Ongkos Jastip</h3>
-            <input
-              type="number"
-              value={negoPrice}
-              onChange={(e) => setNegoPrice(e.target.value.replace(/\D/g, ''))}
-              className="input input-lg w-full text-center text-2xl"
-              placeholder="35000"
-              autoFocus
-            />
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowNegoModal(false)} className="flex-1 btn btn-ghost">
-                Batal
-              </button>
-              <button
-                onClick={() => {
-                  if (negoPrice) {
-                    const text = `[deal_ongkos_jastip]\n\n💰 Nego Ongkos jastip: Rp${parseInt(negoPrice).toLocaleString('id-ID')}\n\nBisa deal di harga ini ya kak? 🙏`;
-                    handleQuickReply(text);
-                    setShowNegoModal(false);
-                  }
-                }}
-                className="flex-1 btn btn-success"
-              >
-                Kirim Nego
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal Nego */}
+      <NegoModal
+        isOpen={showNegoModal}
+        onClose={() => setShowNegoModal(false)}
+        onSend={onSendNego || handleQuickReply}
+        initialPrice={negoPrice}
+      />
     </>
   );
 }

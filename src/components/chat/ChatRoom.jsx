@@ -1,19 +1,20 @@
-import { useParams, useNavigate } from 'react-router-dom';
+// src/components/chat/ChatRoom.jsx
+import { useParams } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '../../lib/supabaseClient'; // sesuaikan path
+import { supabase } from '../../lib/supabaseClient';
 
 import ChatHeader from './ChatHeader';
 import ChatMessages from './ChatMessages';
 import MessageInput from './MessageInput';
+import { useSupabaseUserId } from '../../lib/UserContext';
 
 export default function ChatRoom() {
   const { conversationId } = useParams();
-  const navigate = useNavigate();
   const { user } = useUser();
-
+  const { supabaseUserId } = useSupabaseUserId();
+  
   const currentUserId = user?.id;
-  const currentClerkId = user?.clerkId;
   const currentUserAvatar = user?.imageUrl || '/default-avatar.png';
 
   const [recipient, setRecipient] = useState({ name: 'Loading...', imageUrl: '/default-avatar.png' });
@@ -31,6 +32,66 @@ export default function ChatRoom() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const extractMessageType = (content) => {
+    const match = content.trim().match(/^\[([a-zA-Z0-9_]+)\]/);
+    return match ? match[1] : null;
+  };
+
+  const sendMessage = async (content) => {
+    if (!content.trim() || !currentUserId) return;
+
+    const message_type = extractMessageType(content) || 'text';
+
+    const insertData = {
+      conversation_id: conversationId,
+      sender_id: currentUserId,
+      content: content.trim(),
+    };
+
+    if (message_type.startsWith('deal_')) {
+      insertData.message_type = message_type;
+      if (conversationPostId) {
+        insertData.post_id = conversationPostId;
+      }
+    }
+
+    const { error } = await supabase.from('messages').insert(insertData);
+
+    if (error) {
+      console.error('Error kirim pesan:', error);
+      alert('Gagal mengirim pesan');
+    }
+  };
+
+  const userUuId = user?.id;
+
+  // console.log('Current User ID:', userUuId);
+
+  const insertDeal = async (postId, agreedFee) => {
+    if (!postInfo?.clerk_user_id || !supabaseUserId || !postId) return;
+
+    const { error } = await supabase.from('deals').insert({
+      carrier_id: postInfo.clerk_user_id,
+      depositor_id: currentUserId,
+      post_id: postId,
+      agreed_fee: agreedFee,
+      status: 'pending',
+      pickup_location: 'TBD',
+      delivery_location: 'TBD',
+      pickup_datetime: '2026-01-20 12:00:00',
+      item_description: 'TBD',
+      item_photos: [],
+      notes: '',
+    });
+
+    if (error) {
+      console.error('Error insert deal:', error);
+      alert('Gagal membuat deal');
+    } else {
+      alert('Deal berhasil dibuat!');
+    }
+  };
 
   // Fetch recipient
   useEffect(() => {
@@ -61,25 +122,35 @@ export default function ChatRoom() {
     fetchRecipient();
   }, [currentUserId, conversationId]);
 
-  // Fetch post info (untuk ongkos awal)
+  // Fetch post info (untuk ongkos & post card)
   useEffect(() => {
     if (!conversationId) return;
 
     const fetchPostInfo = async () => {
-      const { data: conv } = await supabase
-        .from('conversations')
+      // Ambil post_id dari pesan terakhir dengan message_type 'post_card'
+      const { data: messageData, error: msgError } = await supabase
+        .from('messages')
         .select('post_id')
-        .eq('id', conversationId)
-        .single();
+        .eq('conversation_id', conversationId)
+        .eq('message_type', 'post_card')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      if (conv?.post_id) {
-        const { data: postData } = await supabase
+      console.log('Message data for post_id:', messageData, 'Error:', msgError);
+
+      if (messageData?.post_id) {
+        const { data: postData, error: postError } = await supabase
           .from('posts')
-          .select('item_description, item_photo, from_city, to_city, price, fee, type')
-          .eq('id', conv.post_id)
+          .select('item_description, item_photo, from_city, to_city, price, fee, type, user_id, clerk_user_id')
+          .eq('id', messageData.post_id)
           .single();
 
+        console.log('Post data:', postData, 'Error:', postError);
         setPostInfo(postData);
+      } else {
+        console.log('No post_id found in messages');
+        setPostInfo(null);
       }
     };
 
@@ -93,9 +164,7 @@ export default function ChatRoom() {
     const fetchMessages = async () => {
       const { data } = await supabase
         .from('messages')
-        .select(`
-          id, content, created_at, sender_id, is_read, message_type, post_id
-        `)
+        .select('id, content, created_at, sender_id, is_read, message_type, post_id')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
@@ -122,9 +191,7 @@ export default function ChatRoom() {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
         (payload) => {
-          setMessages((prev) =>
-            prev.map((msg) => (msg.id === payload.new.id ? payload.new : msg))
-          );
+          setMessages((prev) => prev.map((msg) => (msg.id === payload.new.id ? payload.new : msg)));
         }
       )
       .subscribe();
@@ -176,10 +243,8 @@ export default function ChatRoom() {
 
   return (
     <div className="flex h-screen flex-col bg-base-200">
-      {/* Header */}
       <ChatHeader recipient={recipient} />
 
-      {/* Messages Area */}
       <ChatMessages
         messages={messages}
         loading={loading}
@@ -188,9 +253,10 @@ export default function ChatRoom() {
         recipientImageUrl={recipient.imageUrl}
         postInfo={postInfo}
         messagesEndRef={messagesEndRef}
+        onSendNego={sendMessage}
+        onInsertDeal={insertDeal}
       />
 
-      {/* Input Area */}
       <MessageInput
         currentUserId={currentUserId}
         conversationId={conversationId}

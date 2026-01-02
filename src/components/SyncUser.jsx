@@ -23,7 +23,9 @@ export default function SyncUser() {
     }
 
     checkUser()
+    
   }, [isLoaded, user])
+  
 
   return null
 }

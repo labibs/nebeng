@@ -1,4 +1,4 @@
-export default function DealMenu({ onClose, onSelectDeal, onOpenNego }) {
+export default function DealMenu({ onClose, onSelectDeal, onOpenNego, onOpenLocation }) {
   const deals = [
     {
       tag: 'deal_ongkos_jastip',
@@ -24,7 +24,7 @@ export default function DealMenu({ onClose, onSelectDeal, onOpenNego }) {
             d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       ),
-      template: '📍 Lokasi ketemuan: \n🕐 Jam ketemuan: \n💰 Ongkos tetap: \n📝 Catatan lokasi: ',
+      action: () => onOpenLocation(),
     },
     {
       tag: 'deal_waktu_ketemuan',

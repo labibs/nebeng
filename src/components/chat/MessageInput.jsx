@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabaseClient'; // sesuaikan path
 import QuickReplies from './QuickReplies';
 import DealMenu from './DealMenu';
 import NegoModal from './NegoModal';
+import LocationModal from './LocationModal';
 
 export default function MessageInput({
   currentUserId,
@@ -14,6 +15,7 @@ export default function MessageInput({
   const [showDealMenu, setShowDealMenu] = useState(false);
   const [showNegoModal, setShowNegoModal] = useState(false);
   const [negoInitialPrice, setNegoInitialPrice] = useState('');
+  const [showLocationModal, setShowLocationModal] = useState(false);
 
   const extractMessageType = (content) => {
     const match = content.trim().match(/^\[([a-zA-Z0-9_]+)\]/);
@@ -69,6 +71,15 @@ export default function MessageInput({
     sendMessage(message);
   };
 
+  const handleOpenLocation = () => {
+    setShowLocationModal(true);
+    setShowDealMenu(false);
+  };
+
+  const handleSendLocation = (message) => {
+    sendMessage(message);
+  };
+
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 pb-safe">
@@ -116,6 +127,7 @@ export default function MessageInput({
             onClose={() => setShowDealMenu(false)}
             onSelectDeal={handleSelectDeal}
             onOpenNego={() => handleOpenNego('')}
+            onOpenLocation={handleOpenLocation}
           />
         )}
 
@@ -124,6 +136,12 @@ export default function MessageInput({
           onClose={() => setShowNegoModal(false)}
           onSend={handleSendNego}
           initialPrice={negoInitialPrice}
+        />
+
+        <LocationModal
+          isOpen={showLocationModal}
+          onClose={() => setShowLocationModal(false)}
+          onSend={handleSendLocation}
         />
       </div>
     </>

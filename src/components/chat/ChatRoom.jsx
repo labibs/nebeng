@@ -93,6 +93,50 @@ export default function ChatRoom() {
     }
   };
 
+  const updateDealLocation = async (postId, locationData) => {
+    if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
+
+    console.log('cek dulu', postId, postInfo.clerk_user_id, currentUserId);
+
+    // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
+    // Ambil yang terbaru jika ada multiple
+    const { data: existingDeals, error: fetchError } = await supabase
+      .from('deals')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('carrier_id', postInfo.clerk_user_id)
+      .eq('depositor_id', currentUserId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (fetchError) {
+      console.error('Error fetching deal:', fetchError);
+      alert('Gagal mencari deal');
+      return;
+    }
+
+    if (!existingDeals || existingDeals.length === 0) {
+      alert('Deal belum dibuat. Buat deal ongkos dulu.');
+      return;
+    }
+
+    const existingDeal = existingDeals[0];
+
+    // Update pickup_location dengan koordinat
+    const locationString = `${locationData.lat},${locationData.lng}`;
+    const { error: updateError } = await supabase
+      .from('deals')
+      .update({ pickup_location: locationString })
+      .eq('id', existingDeal.id);
+
+    if (updateError) {
+      console.error('Error update deal location:', updateError);
+      alert('Gagal update lokasi deal');
+    } else {
+      alert('Lokasi deal berhasil diupdate!');
+    }
+  };
+
   // Fetch recipient
   useEffect(() => {
     if (!currentUserId || !conversationId) return;
@@ -255,6 +299,7 @@ export default function ChatRoom() {
         messagesEndRef={messagesEndRef}
         onSendNego={sendMessage}
         onInsertDeal={insertDeal}
+        onUpdateDealLocation={updateDealLocation}
       />
 
       <MessageInput

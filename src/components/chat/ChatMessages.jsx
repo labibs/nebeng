@@ -11,6 +11,7 @@ export default function ChatMessages({
   onOpenNego,
   onSendNego,
   onInsertDeal,
+  onUpdateDealLocation,
 }) {
   if (loading) {
     return (
@@ -40,6 +41,7 @@ export default function ChatMessages({
             onOpenNego={onOpenNego}
             onSendNego={onSendNego}
             onInsertDeal={onInsertDeal}
+            onUpdateDealLocation={onUpdateDealLocation}
           />
         ))}
         <div ref={messagesEndRef} />

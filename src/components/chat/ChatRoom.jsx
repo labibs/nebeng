@@ -71,6 +71,26 @@ export default function ChatRoom() {
   const insertDeal = async (postId, agreedFee) => {
     if (!postInfo?.clerk_user_id || !supabaseUserId || !postId) return;
 
+    // Cek apakah deal sudah ada
+    const { data: existingDeals, error: checkError } = await supabase
+      .from('deals')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('carrier_id', postInfo.clerk_user_id)
+      .eq('depositor_id', currentUserId)
+      .limit(1);
+
+    if (checkError) {
+      console.error('Error checking existing deal:', checkError);
+      alert('Gagal memeriksa deal yang ada');
+      return;
+    }
+
+    if (existingDeals && existingDeals.length > 0) {
+      alert('Deal sudah ada untuk post ini. Tidak bisa membuat deal duplikat.');
+      return;
+    }
+
     const { error } = await supabase.from('deals').insert({
       carrier_id: postInfo.clerk_user_id,
       depositor_id: currentUserId,

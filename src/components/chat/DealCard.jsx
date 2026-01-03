@@ -31,8 +31,8 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
     const locationMatch = msg.content.match(/📍 Lokasi ketemuan: ([^\n]+)/);
     const addressMatch = msg.content.match(/📝 Alamat: ([^\n]+)/);
     const coordMatch = msg.content.match(/🗺️ Koordinat: ([^,]+), ([^\n]+)/);
-    extractedData.locationName = locationMatch ? locationMatch[1].trim() : null;
-    extractedData.address = addressMatch ? addressMatch[1].trim() : null;
+    extractedData.locationName = locationMatch ? locationMatch[1].trim() : "Lokasi Terpilih";
+    extractedData.address = addressMatch ? addressMatch[1].trim() : "Alamat tidak tersedia";
     extractedData.lat = coordMatch ? parseFloat(coordMatch[1].trim()) : null;
     extractedData.lng = coordMatch ? parseFloat(coordMatch[2].trim()) : null;
   }
@@ -121,7 +121,8 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                 {msg.content.replace(/^\[[^\]]+\]\s*/, '').trim()}
               </div>
               {/* Mini Map */}
-              <div className="relative w-full h-24 rounded-xl overflow-hidden border border-base-300">
+              <div className="relative w-full h-24 rounded-xl overflow-hidden border border-base-300 cursor-not-allowed">
+                <div className="absolute inset-0 z-10 pointer-events-none bg-transparent"></div>
                 <MapContainer
                   center={[extractedData.lat, extractedData.lng]}
                   zoom={15}
@@ -131,6 +132,7 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                   touchZoom={false}
                   doubleClickZoom={false}
                   style={{ height: "100%", width: "100%" }}
+                  className="pointer-events-none"
                 >
                   <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

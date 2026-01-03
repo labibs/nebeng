@@ -28,14 +28,18 @@ export default function SearchControl({ onSelect }) {
     map.addControl(searchControl);
 
     map.on("geosearch/showlocation", (result) => {
+      console.log("Geosearch result:", result);
       const { x: lng, y: lat, label } = result.location;
 
-      onSelect({
+      const locationData = {
         lat,
         lng,
         name: label.split(",")[0].trim() || label,
         address: label,
-        });
+      };
+      
+      console.log("Calling onSelect with:", locationData);
+      onSelect(locationData);
     });
 
     return () => map.removeControl(searchControl);

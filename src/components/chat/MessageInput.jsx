@@ -4,6 +4,8 @@ import QuickReplies from './QuickReplies';
 import DealMenu from './DealMenu';
 import NegoModal from './NegoModal';
 import LocationModal from './LocationModal';
+import TimeModal from './TimeModal';
+import ItemModal from './ItemModal';
 
 export default function MessageInput({
   currentUserId,
@@ -16,6 +18,8 @@ export default function MessageInput({
   const [showNegoModal, setShowNegoModal] = useState(false);
   const [negoInitialPrice, setNegoInitialPrice] = useState('');
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showTimeModal, setShowTimeModal] = useState(false);
+  const [showItemModal, setShowItemModal] = useState(false);
 
   const extractMessageType = (content) => {
     const match = content.trim().match(/^\[([a-zA-Z0-9_]+)\]/);
@@ -80,6 +84,24 @@ export default function MessageInput({
     sendMessage(message);
   };
 
+  const handleOpenTime = () => {
+    setShowTimeModal(true);
+    setShowDealMenu(false);
+  };
+
+  const handleSendTime = (message) => {
+    sendMessage(message);
+  };
+
+  const handleOpenItem = () => {
+    setShowItemModal(true);
+    setShowDealMenu(false);
+  };
+
+  const handleSendItem = (message) => {
+    sendMessage(message);
+  };
+
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 pb-safe">
@@ -116,7 +138,7 @@ export default function MessageInput({
           <button
             type="submit"
             disabled={!newMessage.trim()}
-            className="btn bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white rounded-2xl px-6 disabled:opacity-50"
+            className="btn bg-linear-to-r from-[#81c784] to-[#66bb6a] text-white rounded-2xl px-6 disabled:opacity-50"
           >
             Kirim
           </button>
@@ -128,6 +150,8 @@ export default function MessageInput({
             onSelectDeal={handleSelectDeal}
             onOpenNego={() => handleOpenNego('')}
             onOpenLocation={handleOpenLocation}
+            onOpenTime={handleOpenTime}
+            onOpenItem={handleOpenItem}
           />
         )}
 
@@ -142,6 +166,18 @@ export default function MessageInput({
           isOpen={showLocationModal}
           onClose={() => setShowLocationModal(false)}
           onSend={handleSendLocation}
+        />
+
+        <TimeModal
+          isOpen={showTimeModal}
+          onClose={() => setShowTimeModal(false)}
+          onSend={handleSendTime}
+        />
+
+        <ItemModal
+          isOpen={showItemModal}
+          onClose={() => setShowItemModal(false)}
+          onSend={handleSendItem}
         />
       </div>
     </>

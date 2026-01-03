@@ -11,6 +11,7 @@ export default function MessageBubble({
   onSendNego,
   onInsertDeal,
   onUpdateDealLocation,
+  onUpdateDealTime,
 }) {
   const isMine = msg.sender_id === currentUserId;
   const avatar = isMine ? currentUserAvatar : recipientImageUrl;
@@ -45,6 +46,42 @@ export default function MessageBubble({
         onSendNego={onSendNego}
         onInsertDeal={onInsertDeal}
         onUpdateDealLocation={onUpdateDealLocation}
+      />
+    );
+  }
+
+  // Pesan Deal Waktu Ketemuan
+  if (msg.message_type === 'deal_waktu_ketemuan') {
+    return (
+      <DealCard
+        msg={msg}
+        isMine={isMine}
+        avatar={avatar}
+        postInfo={postInfo}
+        currentUserId={currentUserId}
+        onOpenNego={onOpenNego}
+        onSendNego={onSendNego}
+        onInsertDeal={onInsertDeal}
+        onUpdateDealLocation={onUpdateDealLocation}
+        onUpdateDealTime={onUpdateDealTime}
+      />
+    );
+  }
+
+  // Pesan Deal Barang Titipan
+  if (msg.message_type === 'deal_barang_titipan') {
+    return (
+      <DealCard
+        msg={msg}
+        isMine={isMine}
+        avatar={avatar}
+        postInfo={postInfo}
+        currentUserId={currentUserId}
+        onOpenNego={onOpenNego}
+        onSendNego={onSendNego}
+        onInsertDeal={onInsertDeal}
+        onUpdateDealLocation={onUpdateDealLocation}
+        onUpdateDealTime={onUpdateDealTime}
       />
     );
   }

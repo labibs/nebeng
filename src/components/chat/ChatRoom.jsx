@@ -157,6 +157,51 @@ export default function ChatRoom() {
     }
   };
 
+  const updateDealTime = async (postId, timeData) => {
+    if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
+
+    console.log('Update deal time:', postId, timeData);
+
+    // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
+    const { data: existingDeals, error: fetchError } = await supabase
+      .from('deals')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('carrier_id', postInfo.clerk_user_id)
+      .eq('depositor_id', currentUserId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (fetchError) {
+      console.error('Error fetching deal:', fetchError);
+      alert('Gagal mencari deal');
+      return;
+    }
+
+    if (!existingDeals || existingDeals.length === 0) {
+      alert('Deal belum dibuat. Buat deal ongkos dulu.');
+      return;
+    }
+
+    const existingDeal = existingDeals[0];
+
+    // Update pickup_datetime dan notes
+    const { error: updateError } = await supabase
+      .from('deals')
+      .update({
+        pickup_datetime: timeData.datetime,
+        notes: timeData.notes || ''
+      })
+      .eq('id', existingDeal.id);
+
+    if (updateError) {
+      console.error('Error update deal time:', updateError);
+      alert('Gagal update waktu deal');
+    } else {
+      alert('Waktu deal berhasil diupdate!');
+    }
+  };
+
   // Fetch recipient
   useEffect(() => {
     if (!currentUserId || !conversationId) return;
@@ -320,6 +365,7 @@ export default function ChatRoom() {
         onSendNego={sendMessage}
         onInsertDeal={insertDeal}
         onUpdateDealLocation={updateDealLocation}
+        onUpdateDealTime={updateDealTime}
       />
 
       <MessageInput

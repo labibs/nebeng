@@ -1,4 +1,4 @@
-export default function DealMenu({ onClose, onSelectDeal, onOpenNego, onOpenLocation }) {
+export default function DealMenu({ onClose, onSelectDeal, onOpenNego, onOpenLocation, onOpenTime, onOpenItem }) {
   const deals = [
     {
       tag: 'deal_ongkos_jastip',
@@ -36,19 +36,19 @@ export default function DealMenu({ onClose, onSelectDeal, onOpenNego, onOpenLoca
             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      template: '🕐 Jam ketemuan: \n📍 Lokasi: \n💰 Ongkos final: \n📝 Konfirmasi jadwal: ',
+      action: () => onOpenTime(),
     },
     {
       tag: 'deal_barang_titipan',
       title: 'Barang Titipan',
-      desc: 'Konfirmasi detail barang yang dititipkan',
+      desc: 'Kirim detail dan foto barang titipan',
       icon: (
         <svg className="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
       ),
-      template: '📦 Detail barang: \n⚖️ Ukuran & berat: \n💰 Ongkos final: \n📝 Lampirkan foto/detail jika ada',
+      action: () => onOpenItem(),
     },
   ];
 

@@ -129,11 +129,56 @@ export default function DealMenu({
   return (
     <>
       <div className="absolute bottom-20 left-4 right-4 bg-base-100 border border-base-300 rounded-2xl shadow-2xl overflow-hidden z-50">
-        <div className="p-4 border-b border-base-300 bg-base-200/50">
-          <h3 className="font-bold text-lg text-center">Pilih Jenis Deal</h3>
-          <p className="text-xs text-center opacity-70 mt-1">Tag otomatis ditambahkan saat kirim</p>
-        </div>
+        {/* Isi Post Card */}
+        <div className="w-full text-left px-5 py-4 transition-colors flex items-center justify-between">
+          <div className="flex items-center gap-4 w-full">
+            {/* Gambar Barang */}
+            <div className="avatar flex-shrink-0">
+              <div className="w-14 h-14 rounded-xl overflow-hidden ring-2 ring-emerald-500/20">
+                <img
+                  src={postInfo.item_photo || '/default-item.jpg'}
+                  alt="Barang"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
 
+            {/* Info Post */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                {/* Kota From — Arrow — To */}
+                <div className="flex items-center gap-2 text-sm text-base-content/80">
+                  <span className="font-semibold">{postInfo.from_city || '-'}</span>
+                  <svg
+                    className="w-5 h-5 text-emerald-500 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M14 5l7 7m0 0l-7 7m7-7H3"
+                    />
+                  </svg>
+
+                  <span className="font-semibold">{postInfo.to_city || '-'}</span>
+                </div>
+              </div>
+
+              {/* Fee */}
+              <p className="font-semibold text-base opacity-70 mt-1">
+                Pilih Jenis Deal
+              </p>
+
+            </div>
+            {/* Badge */}
+                <div className="badge badge-primary badge-sm font-medium ml-auto">
+                  {postInfo.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}
+                </div>
+          </div>
+        </div>
         <div className="max-h-96 overflow-y-auto">
           {deals.map((deal, i) => (
             <button

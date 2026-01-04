@@ -334,16 +334,16 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
           {/* Tombol hanya muncul jika pesan dari lawan */}
           {!isMine && (
             <div className="flex gap-3">
-              {dealType === 'deal_ongkos_jastip' ? (
+              {dealType === 'deal_ongkos_jastip' && msg.deal_id == null ? (
                 <>
                   <button
                     onClick={() => {
                       const replyText = extractedData.ongkos
-                        ? `Deal! Ongkos jastip Rp${extractedData.ongkos.toLocaleString('id-ID')} ✅\nTerima kasih kak, kapan mau ketemuan?`
-                        : `Deal! Ongkos jastip sesuai kesepakatan ✅\nKapan mau ketemuan ya kak?`;
+                        ? `Deal! Ongkos jastip Rp${extractedData.ongkos.toLocaleString('id-ID')} ✅`
+                        : `Deal! Ongkos jastip sesuai kesepakatan ✅`;
                       handleQuickReply(replyText);
                       if (onInsertDeal && extractedData.ongkos) {
-                        onInsertDeal(msg.post_id, extractedData.ongkos);
+                        onInsertDeal(msg.post_id, extractedData.ongkos, msg.id);
                       }
                     }}
                     className="flex-1 btn btn-success btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"

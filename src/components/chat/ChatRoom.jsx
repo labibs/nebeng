@@ -22,6 +22,8 @@ export default function ChatRoom() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [conversationPostId, setConversationPostId] = useState(null);
+  const [carrierId, setCarrierId] = useState(null);
+  const [depositorId, setDepositorId] = useState(null);
 
   const messagesEndRef = useRef(null);
 
@@ -67,70 +69,138 @@ export default function ChatRoom() {
   const userUuId = user?.id;
 
   // console.log('Current User ID:', userUuId);
+  const resolveParticipantIds = async (conversationId, postInfo) => {
+    const { data: opponent } = await supabase
+      .from("conversation_participants")
+      .select("user_id")
+      .eq("conversation_id", conversationId)
+      .neq("user_id", postInfo.clerk_user_id)
+      .limit(1)
+      .single();
 
-  const insertDeal = async (postId, agreedFee) => {
+    const opponentId = opponent?.user_id ?? null;
+
+    return postInfo.type === "bawa"
+      ? {
+          carrierId: postInfo.clerk_user_id,
+          depositorId: opponentId,
+        }
+      : {
+          carrierId: opponentId,
+          depositorId: postInfo.clerk_user_id,
+        };
+  };
+
+  useEffect(() => {
+    if (!conversationId || !postInfo) return;
+
+    const loadIds = async () => {
+      const ids = await resolveParticipantIds(conversationId, postInfo);
+      if (!ids) return;
+
+      setCarrierId(ids.carrierId);
+      setDepositorId(ids.depositorId);
+    };
+
+    loadIds();
+  }, [conversationId, postInfo]);
+
+  console.log('cek dulu', carrierId, depositorId)
+
+
+  const insertDeal = async (postId, agreedFee, msgId) => {
     if (!postInfo?.clerk_user_id || !supabaseUserId || !postId) return;
 
-    // Cek apakah deal sudah ada
-    const { data: existingDeals, error: checkError } = await supabase
-      .from('deals')
-      .select('id')
-      .eq('post_id', postId)
-      .eq('carrier_id', postInfo.clerk_user_id)
-      .eq('depositor_id', currentUserId)
-      .limit(1);
+    // Pastikan participant IDs siap
+    if (!carrierId || !depositorId) {
+      console.warn("carrierId / depositorId belum siap");
+      return;
+    }
+
+    // 1️⃣ Cek apakah deal sudah ada
+    const { data: existingDeal, error: checkError } = await supabase
+      .from("deals")
+      .select("id")
+      .eq("post_id", postId)
+      .eq("carrier_id", carrierId)
+      .eq("depositor_id", depositorId)
+      .maybeSingle(); // 👈 lebih rapi
 
     if (checkError) {
-      console.error('Error checking existing deal:', checkError);
-      alert('Gagal memeriksa deal yang ada');
+      console.error("Error checking existing deal:", checkError);
+      alert("Gagal memeriksa deal yang ada");
       return;
     }
 
-    // 👉 Jika sudah ada, lakukan UPDATE agreed_fee
-    if (existingDeals && existingDeals.length > 0) {
-      const dealId = existingDeals[0].id;
+    let dealId = existingDeal?.id;
 
+    // 2️⃣ Jika deal sudah ada → UPDATE agreed_fee
+    if (dealId) {
       const { error: updateError } = await supabase
-        .from('deals')
+        .from("deals")
         .update({
           agreed_fee: agreedFee,
-          status: 'pending', // opsional, kalau mau reset status
-          updated_at: new Date().toISOString()
+          status: "pending",
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', dealId);
+        .eq("id", dealId);
 
       if (updateError) {
-        console.error('Error updating deal:', updateError);
-        alert('Gagal meng-update deal');
-      } else {
-        alert('Deal sudah ada — fee berhasil diperbarui!');
+        console.error("Error updating deal:", updateError);
+        alert("Gagal meng-update deal");
+        return;
       }
 
-      return;
+      alert("Deal sudah ada — fee berhasil diperbarui!");
     }
 
-    // 👉 Jika belum ada, lakukan INSERT
-    const { error } = await supabase.from('deals').insert({
-      carrier_id: postInfo.clerk_user_id,
-      depositor_id: currentUserId,
-      post_id: postId,
-      agreed_fee: agreedFee,
-      status: 'pending',
-      pickup_location: 'TBD',
-      delivery_location: 'TBD',
-      pickup_datetime: '2026-01-20 12:00:00',
-      item_description: 'TBD',
-      item_photos: [],
-      notes: '',
-    });
+    // 3️⃣ Jika belum ada → INSERT deal baru
+    if (!dealId) {
+      const { data, error } = await supabase
+        .from("deals")
+        .insert({
+          carrier_id: carrierId,
+          depositor_id: depositorId,
+          post_id: postId,
+          agreed_fee: agreedFee,
+          status: "pending",
+          pickup_location: "TBD",
+          delivery_location: "TBD",
+          pickup_datetime: "2026-01-20 12:00:00",
+          item_description: "TBD",
+          item_photos: [],
+          notes: "",
+        })
+        .select("id")
+        .single(); // 👈 ambil id hasil insert
 
-    if (error) {
-      console.error('Error insert deal:', error);
-      alert('Gagal membuat deal');
-    } else {
-      alert('Deal baru berhasil dibuat!');
+      if (error) {
+        console.error("Error insert deal:", error);
+        alert("Gagal membuat deal");
+        return;
+      }
+
+      dealId = data.id;
+
+      alert("Deal baru berhasil dibuat!");
     }
-  };
+
+
+  // 4️⃣ Update message → ALWAYS pakai dealId final
+  if (msgId && dealId) {
+    const { error: msgError } = await supabase
+      .from("messages")
+      .update({
+        deal_id: dealId,
+      })
+      .eq("id", msgId);
+
+    if (msgError) {
+      console.error("Gagal update message.deal_id:", msgError);
+    }
+  }
+};
+
 
   const updateDealLocation = async (postId, locationData) => {
     if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
@@ -143,8 +213,8 @@ export default function ChatRoom() {
       .from('deals')
       .select('id')
       .eq('post_id', postId)
-      .eq('carrier_id', postInfo.clerk_user_id)
-      .eq('depositor_id', currentUserId)
+      .eq('carrier_id', carrierId)
+      .eq('depositor_id', depositorId)
       .order('created_at', { ascending: false })
       .limit(1);
 
@@ -161,8 +231,8 @@ export default function ChatRoom() {
       const { data: newDeal, error: insertError } = await supabase
         .from('deals')
         .insert({
-          carrier_id: postInfo.clerk_user_id,
-          depositor_id: currentUserId,
+          carrier_id: carrierId,
+          depositor_id: depositorId,
           post_id: postId,
           agreed_fee: postInfo?.fee || 0, // Ambil dari post info jika ada
           status: 'pending',
@@ -213,8 +283,8 @@ export default function ChatRoom() {
       .from('deals')
       .select('id')
       .eq('post_id', postId)
-      .eq('carrier_id', postInfo.clerk_user_id)
-      .eq('depositor_id', currentUserId)
+      .eq('carrier_id', carrierId)
+      .eq('depositor_id', depositorId)
       .order('created_at', { ascending: false })
       .limit(1);
 
@@ -231,8 +301,8 @@ export default function ChatRoom() {
       const { data: newDeal, error: insertError } = await supabase
         .from('deals')
         .insert({
-          carrier_id: postInfo.clerk_user_id,
-          depositor_id: currentUserId,
+          carrier_id: carrierId,
+          depositor_id: depositorId,
           post_id: postId,
           agreed_fee: postInfo?.fee || 0, // Ambil dari post info jika ada
           status: 'pending',
@@ -285,8 +355,8 @@ export default function ChatRoom() {
       .from('deals')
       .select('id')
       .eq('post_id', postId)
-      .eq('carrier_id', postInfo.clerk_user_id)
-      .eq('depositor_id', currentUserId)
+      .eq('carrier_id', carrierId)
+      .eq('depositor_id', depositorId)
       .order('created_at', { ascending: false })
       .limit(1);
 
@@ -303,8 +373,8 @@ export default function ChatRoom() {
       const { data: newDeal, error: insertError } = await supabase
         .from('deals')
         .insert({
-          carrier_id: postInfo.clerk_user_id,
-          depositor_id: currentUserId,
+          carrier_id: carrierId,
+          depositor_id: depositorId,
           post_id: postId,
           agreed_fee: postInfo?.fee || 0, // Ambil dari post info jika ada
           status: 'pending',
@@ -357,8 +427,8 @@ export default function ChatRoom() {
       .from('deals')
       .select('id')
       .eq('post_id', postId)
-      .eq('carrier_id', postInfo.clerk_user_id)
-      .eq('depositor_id', currentUserId)
+      .eq('carrier_id', carrierId)
+      .eq('depositor_id', depositorId)
       .order('created_at', { ascending: false })
       .limit(1);
 
@@ -375,8 +445,8 @@ export default function ChatRoom() {
       const { data: newDeal, error: insertError } = await supabase
         .from('deals')
         .insert({
-          carrier_id: postInfo.clerk_user_id,
-          depositor_id: currentUserId,
+          carrier_id: carrierId,
+          depositor_id: depositorId,
           post_id: postId,
           agreed_fee: postInfo?.fee || 0, // Ambil dari post info jika ada
           status: 'pending',
@@ -488,7 +558,7 @@ export default function ChatRoom() {
     const fetchMessages = async () => {
       const { data } = await supabase
         .from('messages')
-        .select('id, content, created_at, sender_id, is_read, message_type, post_id')
+        .select('id, content, created_at, sender_id, is_read, message_type, post_id, deal_id', )
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 

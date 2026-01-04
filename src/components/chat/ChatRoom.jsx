@@ -86,11 +86,30 @@ export default function ChatRoom() {
       return;
     }
 
+    // 👉 Jika sudah ada, lakukan UPDATE agreed_fee
     if (existingDeals && existingDeals.length > 0) {
-      alert('Deal sudah ada untuk post ini. Tidak bisa membuat deal duplikat.');
+      const dealId = existingDeals[0].id;
+
+      const { error: updateError } = await supabase
+        .from('deals')
+        .update({
+          agreed_fee: agreedFee,
+          status: 'pending', // opsional, kalau mau reset status
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', dealId);
+
+      if (updateError) {
+        console.error('Error updating deal:', updateError);
+        alert('Gagal meng-update deal');
+      } else {
+        alert('Deal sudah ada — fee berhasil diperbarui!');
+      }
+
       return;
     }
 
+    // 👉 Jika belum ada, lakukan INSERT
     const { error } = await supabase.from('deals').insert({
       carrier_id: postInfo.clerk_user_id,
       depositor_id: currentUserId,
@@ -109,7 +128,7 @@ export default function ChatRoom() {
       console.error('Error insert deal:', error);
       alert('Gagal membuat deal');
     } else {
-      alert('Deal berhasil dibuat!');
+      alert('Deal baru berhasil dibuat!');
     }
   };
 
@@ -135,19 +154,46 @@ export default function ChatRoom() {
       return;
     }
 
-    if (!existingDeals || existingDeals.length === 0) {
-      alert('Deal belum dibuat. Buat deal ongkos dulu.');
-      return;
-    }
+    let dealId;
 
-    const existingDeal = existingDeals[0];
+    if (!existingDeals || existingDeals.length === 0) {
+      // Jika belum ada deal, buat deal baru dengan data default
+      const { data: newDeal, error: insertError } = await supabase
+        .from('deals')
+        .insert({
+          carrier_id: postInfo.clerk_user_id,
+          depositor_id: currentUserId,
+          post_id: postId,
+          agreed_fee: postInfo?.fee || 0, // Ambil dari post info jika ada
+          status: 'pending',
+          pickup_location: 'TBD',
+          delivery_location: 'TBD',
+          pickup_datetime: '2026-01-20 12:00:00',
+          item_description: 'TBD',
+          item_photos: [],
+          notes: '',
+        })
+        .select('id')
+        .single();
+
+      if (insertError) {
+        console.error('Error creating new deal:', insertError);
+        alert('Gagal membuat deal baru');
+        return;
+      }
+
+      dealId = newDeal.id;
+      console.log('Created new deal with ID:', dealId);
+    } else {
+      dealId = existingDeals[0].id;
+    }
 
     // Update pickup_location dengan koordinat
     const locationString = `${locationData.lat},${locationData.lng}`;
     const { error: updateError } = await supabase
       .from('deals')
       .update({ pickup_location: locationString })
-      .eq('id', existingDeal.id);
+      .eq('id', dealId);
 
     if (updateError) {
       console.error('Error update deal location:', updateError);
@@ -178,12 +224,39 @@ export default function ChatRoom() {
       return;
     }
 
-    if (!existingDeals || existingDeals.length === 0) {
-      alert('Deal belum dibuat. Buat deal ongkos dulu.');
-      return;
-    }
+    let dealId;
 
-    const existingDeal = existingDeals[0];
+    if (!existingDeals || existingDeals.length === 0) {
+      // Jika belum ada deal, buat deal baru dengan data default
+      const { data: newDeal, error: insertError } = await supabase
+        .from('deals')
+        .insert({
+          carrier_id: postInfo.clerk_user_id,
+          depositor_id: currentUserId,
+          post_id: postId,
+          agreed_fee: postInfo?.fee || 0, // Ambil dari post info jika ada
+          status: 'pending',
+          pickup_location: 'TBD',
+          delivery_location: 'TBD',
+          pickup_datetime: '2026-01-20 12:00:00',
+          item_description: 'TBD',
+          item_photos: [],
+          notes: '',
+        })
+        .select('id')
+        .single();
+
+      if (insertError) {
+        console.error('Error creating new deal:', insertError);
+        alert('Gagal membuat deal baru');
+        return;
+      }
+
+      dealId = newDeal.id;
+      console.log('Created new deal with ID:', dealId);
+    } else {
+      dealId = existingDeals[0].id;
+    }
 
     // Update pickup_datetime dan notes
     const { error: updateError } = await supabase
@@ -192,13 +265,155 @@ export default function ChatRoom() {
         pickup_datetime: timeData.datetime,
         notes: timeData.notes || ''
       })
-      .eq('id', existingDeal.id);
+      .eq('id', dealId);
 
     if (updateError) {
       console.error('Error update deal time:', updateError);
       alert('Gagal update waktu deal');
     } else {
       alert('Waktu deal berhasil diupdate!');
+    }
+  };
+
+  const updateDealItem = async (postId, itemData) => {
+    if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
+
+    console.log('Update deal item:', postId, itemData);
+
+    // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
+    const { data: existingDeals, error: fetchError } = await supabase
+      .from('deals')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('carrier_id', postInfo.clerk_user_id)
+      .eq('depositor_id', currentUserId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (fetchError) {
+      console.error('Error fetching deal:', fetchError);
+      alert('Gagal mencari deal');
+      return;
+    }
+
+    let dealId;
+
+    if (!existingDeals || existingDeals.length === 0) {
+      // Jika belum ada deal, buat deal baru dengan data default
+      const { data: newDeal, error: insertError } = await supabase
+        .from('deals')
+        .insert({
+          carrier_id: postInfo.clerk_user_id,
+          depositor_id: currentUserId,
+          post_id: postId,
+          agreed_fee: postInfo?.fee || 0, // Ambil dari post info jika ada
+          status: 'pending',
+          pickup_location: 'TBD',
+          delivery_location: 'TBD',
+          pickup_datetime: '2026-01-20 12:00:00',
+          item_description: 'TBD',
+          item_photos: [],
+          notes: '',
+        })
+        .select('id')
+        .single();
+
+      if (insertError) {
+        console.error('Error creating new deal:', insertError);
+        alert('Gagal membuat deal baru');
+        return;
+      }
+
+      dealId = newDeal.id;
+      console.log('Created new deal with ID:', dealId);
+    } else {
+      dealId = existingDeals[0].id;
+    }
+
+    // Update item_description dan item_photos
+    const { error: updateError } = await supabase
+      .from('deals')
+      .update({
+        item_description: itemData.description,
+        item_photos: itemData.photos || []
+      })
+      .eq('id', dealId);
+
+    if (updateError) {
+      console.error('Error update deal item:', updateError);
+      alert('Gagal update detail barang deal');
+    } else {
+      alert('Detail barang deal berhasil diupdate!');
+    }
+  };
+
+  const updateDealDelivery = async (postId, locationData) => {
+    if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
+
+    console.log('Update deal delivery:', postId, locationData);
+
+    // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
+    const { data: existingDeals, error: fetchError } = await supabase
+      .from('deals')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('carrier_id', postInfo.clerk_user_id)
+      .eq('depositor_id', currentUserId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (fetchError) {
+      console.error('Error fetching deal:', fetchError);
+      alert('Gagal mencari deal');
+      return;
+    }
+
+    let dealId;
+
+    if (!existingDeals || existingDeals.length === 0) {
+      // Jika belum ada deal, buat deal baru dengan data default
+      const { data: newDeal, error: insertError } = await supabase
+        .from('deals')
+        .insert({
+          carrier_id: postInfo.clerk_user_id,
+          depositor_id: currentUserId,
+          post_id: postId,
+          agreed_fee: postInfo?.fee || 0, // Ambil dari post info jika ada
+          status: 'pending',
+          pickup_location: 'TBD',
+          delivery_location: 'TBD',
+          pickup_datetime: '2026-01-20 12:00:00',
+          item_description: 'TBD',
+          item_photos: [],
+          notes: '',
+        })
+        .select('id')
+        .single();
+
+      if (insertError) {
+        console.error('Error creating new deal:', insertError);
+        alert('Gagal membuat deal baru');
+        return;
+      }
+
+      dealId = newDeal.id;
+      console.log('Created new deal with ID:', dealId);
+    } else {
+      dealId = existingDeals[0].id;
+    }
+
+    // Update delivery_location dengan koordinat
+    const locationString = `${locationData.lat},${locationData.lng}`;
+    const { error: updateError } = await supabase
+      .from('deals')
+      .update({ delivery_location: locationString })
+      .eq('id', dealId);
+
+    if (updateError) {
+      console.error('Error update deal delivery:', updateError);
+      alert('Gagal update lokasi pengantaran deal');
+    } else {
+      alert('Lokasi pengantaran deal berhasil diupdate!');
     }
   };
 
@@ -366,6 +581,8 @@ export default function ChatRoom() {
         onInsertDeal={insertDeal}
         onUpdateDealLocation={updateDealLocation}
         onUpdateDealTime={updateDealTime}
+        onUpdateDealItem={updateDealItem}
+        onUpdateDealDelivery={updateDealDelivery}
       />
 
       <MessageInput

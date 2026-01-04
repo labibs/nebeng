@@ -12,6 +12,8 @@ export default function MessageBubble({
   onInsertDeal,
   onUpdateDealLocation,
   onUpdateDealTime,
+  onUpdateDealItem,
+  onUpdateDealDelivery,
 }) {
   const isMine = msg.sender_id === currentUserId;
   const avatar = isMine ? currentUserAvatar : recipientImageUrl;
@@ -64,7 +66,7 @@ export default function MessageBubble({
         onInsertDeal={onInsertDeal}
         onUpdateDealLocation={onUpdateDealLocation}
         onUpdateDealTime={onUpdateDealTime}
-      />
+        onUpdateDealItem={onUpdateDealItem}        onUpdateDealDelivery={onUpdateDealDelivery}      />
     );
   }
 
@@ -82,6 +84,26 @@ export default function MessageBubble({
         onInsertDeal={onInsertDeal}
         onUpdateDealLocation={onUpdateDealLocation}
         onUpdateDealTime={onUpdateDealTime}
+        onUpdateDealItem={onUpdateDealItem}        onUpdateDealDelivery={onUpdateDealDelivery}      />
+    );
+  }
+
+  // Pesan Deal Lokasi Pengantaran
+  if (msg.message_type === 'deal_lokasi_pengantaran') {
+    return (
+      <DealCard
+        msg={msg}
+        isMine={isMine}
+        avatar={avatar}
+        postInfo={postInfo}
+        currentUserId={currentUserId}
+        onOpenNego={onOpenNego}
+        onSendNego={onSendNego}
+        onInsertDeal={onInsertDeal}
+        onUpdateDealLocation={onUpdateDealLocation}
+        onUpdateDealTime={onUpdateDealTime}
+        onUpdateDealItem={onUpdateDealItem}
+        onUpdateDealDelivery={onUpdateDealDelivery}
       />
     );
   }

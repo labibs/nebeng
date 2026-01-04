@@ -6,6 +6,7 @@ import NegoModal from './NegoModal';
 import LocationModal from './LocationModal';
 import TimeModal from './TimeModal';
 import ItemModal from './ItemModal';
+import DeliveryModal from './DeliveryModal';
 
 export default function MessageInput({
   currentUserId,
@@ -20,6 +21,7 @@ export default function MessageInput({
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [showItemModal, setShowItemModal] = useState(false);
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
 
   const extractMessageType = (content) => {
     const match = content.trim().match(/^\[([a-zA-Z0-9_]+)\]/);
@@ -102,6 +104,15 @@ export default function MessageInput({
     sendMessage(message);
   };
 
+  const handleOpenDelivery = () => {
+    setShowDeliveryModal(true);
+    setShowDealMenu(false);
+  };
+
+  const handleSendDelivery = (message) => {
+    sendMessage(message);
+  };
+
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 pb-safe">
@@ -152,6 +163,7 @@ export default function MessageInput({
             onOpenLocation={handleOpenLocation}
             onOpenTime={handleOpenTime}
             onOpenItem={handleOpenItem}
+            onOpenDelivery={handleOpenDelivery}
           />
         )}
 
@@ -178,6 +190,12 @@ export default function MessageInput({
           isOpen={showItemModal}
           onClose={() => setShowItemModal(false)}
           onSend={handleSendItem}
+        />
+
+        <DeliveryModal
+          isOpen={showDeliveryModal}
+          onClose={() => setShowDeliveryModal(false)}
+          onSend={handleSendDelivery}
         />
       </div>
     </>

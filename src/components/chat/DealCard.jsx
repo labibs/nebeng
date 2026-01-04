@@ -2,6 +2,8 @@ import { useState } from 'react';
 import NegoModal from './NegoModal';
 import LocationModal from './LocationModal';
 import TimeModal from './TimeModal';
+import DeliveryModal from './DeliveryModal';
+import ItemModal from './ItemModal';
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -45,14 +47,17 @@ function convertIndonesianDateTimeToISO(dateStr, timeStr) {
   return date.toISOString().slice(0, 19).replace('T', ' ');
 }
 
-export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId, onOpenNego, onSendNego, onInsertDeal, onUpdateDealLocation, onUpdateDealTime }) {
+export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId, onOpenNego, onSendNego, onInsertDeal, onUpdateDealLocation, onUpdateDealTime, onUpdateDealDelivery, onUpdateDealItem }) {
   const [negoPrice, setNegoPrice] = useState('');
   const [showNegoModal, setShowNegoModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showTimeModal, setShowTimeModal] = useState(false);
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [showItemModal, setShowItemModal] = useState(false);
+  const [initialItemData, setInitialItemData] = useState({});
 
   // Tentukan jenis deal
-  const dealType = msg.message_type || (msg.content.includes('[deal_ongkos_jastip]') ? 'deal_ongkos_jastip' : msg.content.includes('[deal_lokasi_ketemuan]') ? 'deal_lokasi_ketemuan' : msg.content.includes('[deal_waktu_ketemuan]') ? 'deal_waktu_ketemuan' : msg.content.includes('[deal_barang_titipan]') ? 'deal_barang_titipan' : null);
+  const dealType = msg.message_type || (msg.content.includes('[deal_ongkos_jastip]') ? 'deal_ongkos_jastip' : msg.content.includes('[deal_lokasi_ketemuan]') ? 'deal_lokasi_ketemuan' : msg.content.includes('[deal_waktu_ketemuan]') ? 'deal_waktu_ketemuan' : msg.content.includes('[deal_lokasi_pengantaran]') ? 'deal_lokasi_pengantaran' : msg.content.includes('[deal_barang_titipan]') ? 'deal_barang_titipan' : null);
   
   console.log('DealCard - Message content:', msg.content);
   console.log('DealCard - Detected dealType:', dealType);
@@ -65,6 +70,14 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
     extractedData.ongkos = ongkosText ? parseInt(ongkosText.replace(/,/g, ''), 10) : null;
   } else if (dealType === 'deal_lokasi_ketemuan') {
     const locationMatch = msg.content.match(/📍 Lokasi ketemuan: ([^\n]+)/);
+    const addressMatch = msg.content.match(/📝 Alamat: ([^\n]+)/);
+    const coordMatch = msg.content.match(/🗺️ Koordinat: ([^,]+), ([^\n]+)/);
+    extractedData.locationName = locationMatch ? locationMatch[1].trim() : "Lokasi Terpilih";
+    extractedData.address = addressMatch ? addressMatch[1].trim() : "Alamat tidak tersedia";
+    extractedData.lat = coordMatch ? parseFloat(coordMatch[1].trim()) : null;
+    extractedData.lng = coordMatch ? parseFloat(coordMatch[2].trim()) : null;
+  } else if (dealType === 'deal_lokasi_pengantaran') {
+    const locationMatch = msg.content.match(/📍 Lokasi pengantaran: ([^\n]+)/);
     const addressMatch = msg.content.match(/📝 Alamat: ([^\n]+)/);
     const coordMatch = msg.content.match(/🗺️ Koordinat: ([^,]+), ([^\n]+)/);
     extractedData.locationName = locationMatch ? locationMatch[1].trim() : "Lokasi Terpilih";
@@ -141,6 +154,8 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                   ? 'bg-linear-to-r from-[#64b5f6]/10 to-[#42a5f5]/10 border-blue-300 rounded-br-none'
                   : dealType === 'deal_waktu_ketemuan'
                   ? 'bg-linear-to-r from-[#ba68c8]/10 to-[#9c27b0]/10 border-purple-300 rounded-br-none'
+                  : dealType === 'deal_lokasi_pengantaran'
+                  ? 'bg-linear-to-r from-[#4dd0e1]/10 to-[#00bcd4]/10 border-cyan-300 rounded-br-none'
                   : 'bg-linear-to-r from-[#fb8c00]/10 to-[#f57c00]/10 border-orange-300 rounded-br-none')
               : (dealType === 'deal_ongkos_jastip'
                   ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 rounded-bl-none'
@@ -148,6 +163,8 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                   ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/30 rounded-bl-none'
                   : dealType === 'deal_waktu_ketemuan'
                   ? 'bg-purple-50 border-purple-200 dark:bg-purple-900/30 rounded-bl-none'
+                  : dealType === 'deal_lokasi_pengantaran'
+                  ? 'bg-cyan-50 border-cyan-200 dark:bg-cyan-900/30 rounded-bl-none'
                   : 'bg-orange-50 border-orange-200 dark:bg-orange-900/30 rounded-bl-none')
             }
           `}
@@ -155,7 +172,7 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
           {/* Header Card */}
           <div className="flex items-center gap-3 mb-4">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-              dealType === 'deal_ongkos_jastip' ? 'bg-emerald-500' : dealType === 'deal_lokasi_ketemuan' ? 'bg-blue-500' : dealType === 'deal_waktu_ketemuan' ? 'bg-purple-500' : 'bg-orange-500'
+              dealType === 'deal_ongkos_jastip' ? 'bg-emerald-500' : dealType === 'deal_lokasi_ketemuan' ? 'bg-blue-500' : dealType === 'deal_waktu_ketemuan' ? 'bg-purple-500' : dealType === 'deal_lokasi_pengantaran' ? 'bg-cyan-500' : 'bg-orange-500'
             }`}>
               {dealType === 'deal_ongkos_jastip' ? (
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,6 +191,13 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
+              ) : dealType === 'deal_lokasi_pengantaran' ? (
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
               ) : (
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -183,9 +207,9 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
             </div>
             <div>
               <div className={`font-bold ${
-                dealType === 'deal_ongkos_jastip' ? 'text-emerald-700 dark:text-emerald-300' : dealType === 'deal_lokasi_ketemuan' ? 'text-blue-700 dark:text-blue-300' : dealType === 'deal_waktu_ketemuan' ? 'text-purple-700 dark:text-purple-300' : 'text-orange-700 dark:text-orange-300'
+                dealType === 'deal_ongkos_jastip' ? 'text-emerald-700 dark:text-emerald-300' : dealType === 'deal_lokasi_ketemuan' ? 'text-blue-700 dark:text-blue-300' : dealType === 'deal_waktu_ketemuan' ? 'text-purple-700 dark:text-purple-300' : dealType === 'deal_lokasi_pengantaran' ? 'text-cyan-700 dark:text-cyan-300' : 'text-orange-700 dark:text-orange-300'
               }`}>
-                {dealType === 'deal_ongkos_jastip' ? 'Deal Ongkos Jastip' : dealType === 'deal_lokasi_ketemuan' ? 'Deal Lokasi Ketemuan' : dealType === 'deal_waktu_ketemuan' ? 'Deal Waktu Ketemuan' : 'Deal Barang Titipan'}
+                {dealType === 'deal_ongkos_jastip' ? 'Deal Ongkos Jastip' : dealType === 'deal_lokasi_ketemuan' ? 'Deal Lokasi Ketemuan' : dealType === 'deal_waktu_ketemuan' ? 'Deal Waktu Ketemuan' : dealType === 'deal_lokasi_pengantaran' ? 'Deal Lokasi Pengantaran' : 'Deal Barang Titipan'}
               </div>
               <div className="text-xs opacity-70">
                 {isMine ? 'Menunggu konfirmasi dari lawan...' : 'Pilih aksi'}
@@ -200,6 +224,42 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
               {msg.content.replace(/^\[[^\]]+\]\s*/, '').trim()}
             </div>
           ) : dealType === 'deal_lokasi_ketemuan' && extractedData.lat && extractedData.lng ? (
+            <div className="mb-5">
+              <div className="whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed mb-3">
+                {msg.content.replace(/^\[[^\]]+\]\s*/, '').trim()}
+              </div>
+              {/* Mini Map */}
+              <div className="relative w-full h-24 rounded-xl overflow-hidden border border-base-300">
+
+                <MapContainer
+                  center={[extractedData.lat, extractedData.lng]}
+                  zoom={15}
+                  scrollWheelZoom={false}
+                  zoomControl={false}
+                  dragging={false}
+                  touchZoom={false}
+                  doubleClickZoom={false}
+                  keyboard={false}
+                  boxZoom={false}
+                  className="h-full w-full z-0 pointer-events-none"
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <Marker position={[extractedData.lat, extractedData.lng]} />
+                </MapContainer>
+
+                {/* Overlay di atas map */}
+                <div className="absolute inset-0 z-10 flex items-center justify-center">
+                  {/* <button className="px-4 py-2 bg-blue-500 text-white rounded">
+                    Klik Saya!
+                  </button> */}
+                </div>
+              </div>
+
+            </div>
+          ) : dealType === 'deal_lokasi_pengantaran' && extractedData.lat && extractedData.lng ? (
             <div className="mb-5">
               <div className="whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed mb-3">
                 {msg.content.replace(/^\[[^\]]+\]\s*/, '').trim()}
@@ -341,6 +401,39 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                     Revisi
                   </button>
                 </>
+              ) : dealType === 'deal_lokasi_pengantaran' ? (
+                <>
+                  <button
+                    onClick={() => {
+                      const replyText = `Deal! Lokasi pengantaran di ${extractedData.locationName} ✅\nTerima kasih kak, kapan mau diantar?`;
+                      handleQuickReply(replyText);
+                      if (onUpdateDealDelivery && extractedData.lat && extractedData.lng) {
+                        onUpdateDealDelivery(msg.post_id, {
+                          lat: extractedData.lat,
+                          lng: extractedData.lng,
+                          name: extractedData.locationName,
+                          address: extractedData.address
+                        });
+                      }
+                    }}
+                    className="flex-1 btn btn-success btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Deal
+                  </button>
+
+                  <button
+                    onClick={() => setShowDeliveryModal(true)}
+                    className="flex-1 btn btn-outline btn-info btn-sm rounded-xl font-medium hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition-all"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Revisi
+                  </button>
+                </>
               ) : dealType === 'deal_waktu_ketemuan' ? (
                 <>
                   <button
@@ -388,6 +481,12 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                     onClick={() => {
                       const replyText = `Deal! Barang titipan ${extractedData.itemDetail} ✅\nSiap titipkan ya kak!`;
                       handleQuickReply(replyText);
+                      if (onUpdateDealItem && msg.post_id) {
+                        onUpdateDealItem(msg.post_id, {
+                          description: extractedData.itemDetail || '',
+                          photos: extractedData.photos || []
+                        });
+                      }
                     }}
                     className="flex-1 btn btn-success btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"
                   >
@@ -399,8 +498,12 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
 
                   <button
                     onClick={() => {
-                      // TODO: Open item modal for revision
-                      alert('Fitur revisi barang titipan akan segera hadir!');
+                      setInitialItemData({
+                        description: extractedData.itemDetail || '',
+                        weight: extractedData.weight || '',
+                        photos: extractedData.photos || []
+                      });
+                      setShowItemModal(true);
                     }}
                     className="flex-1 btn btn-outline btn-warning btn-sm rounded-xl font-medium hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-all"
                   >
@@ -420,10 +523,10 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
               <path
                 d="M0,0 Q8,8 0,16 L0,0"
                 fill={isMine
-                  ? (dealType === 'deal_ongkos_jastip' ? '#66bb6a' : dealType === 'deal_lokasi_ketemuan' ? '#42a5f5' : dealType === 'deal_waktu_ketemuan' ? '#9c27b0' : '#f57c00')
-                  : (dealType === 'deal_ongkos_jastip' ? '#dcfce7' : dealType === 'deal_lokasi_ketemuan' ? '#dbeafe' : dealType === 'deal_waktu_ketemuan' ? '#f3e5f5' : '#fff3e0')
+                  ? (dealType === 'deal_ongkos_jastip' ? '#66bb6a' : dealType === 'deal_lokasi_ketemuan' ? '#42a5f5' : dealType === 'deal_waktu_ketemuan' ? '#9c27b0' : dealType === 'deal_lokasi_pengantaran' ? '#00bcd4' : '#f57c00')
+                  : (dealType === 'deal_ongkos_jastip' ? '#dcfce7' : dealType === 'deal_lokasi_ketemuan' ? '#dbeafe' : dealType === 'deal_waktu_ketemuan' ? '#f3e5f5' : dealType === 'deal_lokasi_pengantaran' ? '#e0f7fa' : '#fff3e0')
                 }
-                className={dealType === 'deal_ongkos_jastip' ? "dark:fill-emerald-900/50" : dealType === 'deal_lokasi_ketemuan' ? "dark:fill-blue-900/50" : dealType === 'deal_waktu_ketemuan' ? "dark:fill-purple-900/50" : "dark:fill-orange-900/50"}
+                className={dealType === 'deal_ongkos_jastip' ? "dark:fill-emerald-900/50" : dealType === 'deal_lokasi_ketemuan' ? "dark:fill-blue-900/50" : dealType === 'deal_waktu_ketemuan' ? "dark:fill-purple-900/50" : dealType === 'deal_lokasi_pengantaran' ? "dark:fill-cyan-900/50" : "dark:fill-orange-900/50"}
               />
             </svg>
           </div>
@@ -450,6 +553,21 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
         isOpen={showTimeModal}
         onClose={() => setShowTimeModal(false)}
         onSend={onSendNego || handleQuickReply}
+      />
+
+      {/* Modal Delivery */}
+      <DeliveryModal
+        isOpen={showDeliveryModal}
+        onClose={() => setShowDeliveryModal(false)}
+        onSend={onSendNego || handleQuickReply}
+      />
+
+      {/* Modal Item */}
+      <ItemModal
+        isOpen={showItemModal}
+        onClose={() => setShowItemModal(false)}
+        onSend={onSendNego || handleQuickReply}
+        initialData={initialItemData}
       />
     </>
   );

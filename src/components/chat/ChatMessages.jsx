@@ -13,6 +13,8 @@ export default function ChatMessages({
   onInsertDeal,
   onUpdateDealLocation,
   onUpdateDealTime,
+  onUpdateDealItem,
+  onUpdateDealDelivery,
 }) {
   if (loading) {
     return (
@@ -44,6 +46,8 @@ export default function ChatMessages({
             onInsertDeal={onInsertDeal}
             onUpdateDealLocation={onUpdateDealLocation}
             onUpdateDealTime={onUpdateDealTime}
+            onUpdateDealItem={onUpdateDealItem}
+            onUpdateDealDelivery={onUpdateDealDelivery}
           />
         ))}
         <div ref={messagesEndRef} />

@@ -77,7 +77,7 @@ export default function ChatRoom() {
       if (conv?.post_id) {
         const { data: postData } = await supabase
           .from('posts')
-          .select('item_description, item_photo, from_city, to_city, price, fee, type')
+          .select('item_description, item_photo, from_city, to_city, price, fee, type, travel_date')
           .eq('id', conv.post_id)
           .single();
 

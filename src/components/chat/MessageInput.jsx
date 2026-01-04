@@ -13,6 +13,8 @@ export default function MessageInput({
   conversationId,
   conversationPostId,
   postInfo,
+  carrierId,
+  depositorId,
   setMessages,
 }) {
   const [newMessage, setNewMessage] = useState('');
@@ -168,6 +170,9 @@ export default function MessageInput({
             postId={conversationPostId}
             postInfo={postInfo} // pastikan ada clerk_user_id di dalamnya
             currentUserId={currentUserId}
+            carrierId={carrierId}
+            depositorId={depositorId}
+            conversationId={conversationId}
           />
         )}
 
@@ -176,30 +181,35 @@ export default function MessageInput({
           onClose={() => setShowNegoModal(false)}
           onSend={handleSendNego}
           initialPrice={negoInitialPrice}
+          postInfo={postInfo}
         />
 
         <LocationModal
           isOpen={showLocationModal}
           onClose={() => setShowLocationModal(false)}
           onSend={handleSendLocation}
+          postInfo={postInfo}
         />
 
         <TimeModal
           isOpen={showTimeModal}
           onClose={() => setShowTimeModal(false)}
           onSend={handleSendTime}
+          postInfo={postInfo}
         />
 
         <ItemModal
           isOpen={showItemModal}
           onClose={() => setShowItemModal(false)}
           onSend={handleSendItem}
+          postInfo={postInfo}
         />
 
         <DeliveryModal
           isOpen={showDeliveryModal}
           onClose={() => setShowDeliveryModal(false)}
           onSend={handleSendDelivery}
+          postInfo={postInfo}
         />
       </div>
     </>

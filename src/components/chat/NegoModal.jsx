@@ -1,7 +1,12 @@
 import { useState } from 'react';
-export default function NegoModal({ isOpen, onClose, onSend, initialPrice = '' }) {
+export default function NegoModal({ isOpen, onClose, onSend, initialPrice, postInfo = '' }) {
   if (!isOpen) return null;
 
+  const formatRupiah = (value) => {
+    const num = Number(value);
+      if (isNaN(num)) return '-';
+      return `Rp ${num.toLocaleString('id-ID')}`;
+    };
   return (
     <>
       {/* Backdrop */}
@@ -17,10 +22,14 @@ export default function NegoModal({ isOpen, onClose, onSend, initialPrice = '' }
 
           <div className="px-6 pt-2 pb-4 text-center">
             <h3 className="text-xl font-bold">Nego Ongkos Jastip</h3>
-            <p className="text-sm text-base-content/70 mt-1">Masukkan harga yang kamu inginkan</p>
+            <p className="text-sm text-base-content/70 mt-1">{formatRupiah(postInfo.fee)} mau dinego berapa ?</p>
           </div>
 
-          <NegoForm initialPrice={initialPrice} onSend={onSend} onClose={onClose} />
+          <NegoForm 
+            initialPrice={postInfo?.fee ? Math.floor(postInfo.fee * 0.95) : 0} 
+            onSend={onSend} 
+            onClose={onClose} 
+          />
         </div>
       </div>
     </>

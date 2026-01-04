@@ -536,7 +536,7 @@ export default function ChatRoom() {
       if (messageData?.post_id) {
         const { data: postData, error: postError } = await supabase
           .from('posts')
-          .select('item_description, item_photo, from_city, to_city, price, fee, type, user_id, clerk_user_id')
+          .select('item_description, item_photo, from_city, to_city, price, fee, type, user_id, clerk_user_id, travel_date')
           .eq('id', messageData.post_id)
           .single();
 
@@ -661,6 +661,8 @@ export default function ChatRoom() {
         conversationPostId={conversationPostId}
         postInfo={postInfo}
         setMessages={setMessages}
+        carrierId={carrierId}
+        depositorId={depositorId}
       />
     </div>
   );

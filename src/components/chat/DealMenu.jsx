@@ -236,7 +236,7 @@ export default function DealMenu({
                 </svg>
                 <span className="font-semibold">{postInfo?.to_city || '-'}</span>
               </div>
-              <p className="font-semibold text-base opacity-70 mt-1">Pilih Jenis Deal {postId}</p>
+              <p className="font-semibold text-base opacity-70 mt-1">Pilih Jenis Deal </p>
             </div>
             <div className="badge badge-primary badge-sm font-medium">
               {postInfo?.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}

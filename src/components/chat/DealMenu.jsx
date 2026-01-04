@@ -8,16 +8,12 @@ export default function DealMenu({
   onOpenTime,
   onOpenItem,
   onOpenDelivery,
-  postId,              // tambahkan props ini
-  postInfo,            // { clerk_user_id, dll }
-  currentUserId,       // user yang sedang login
+  postId,
+  postInfo,
+  currentUserId,
 }) {
   const [existingDeal, setExistingDeal] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  console.log('ini existing data', postId,              // tambahkan props ini
-  postInfo,            // { clerk_user_id, dll }
-  currentUserId, );
 
   useEffect(() => {
     async function fetchExistingDeal() {
@@ -34,7 +30,7 @@ export default function DealMenu({
         .eq('depositor_id', currentUserId)
         .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows
+      if (error && error.code !== 'PGRST116') {
         console.error('Error fetching deal:', error);
       }
 
@@ -43,10 +39,9 @@ export default function DealMenu({
     }
 
     fetchExistingDeal();
-   
   }, [postId, postInfo?.clerk_user_id, currentUserId]);
 
-  
+  const PLACEHOLDER_DATE = '2026-01-20T12:00:00Z';
 
   const deals = [
     {
@@ -58,7 +53,7 @@ export default function DealMenu({
           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>,
       action: () => onOpenNego(),
-      isCompleted: existingDeal?.agreed_fee > 0,
+      isCompleted: existingDeal?.agreed_fee && existingDeal.agreed_fee !== postInfo.fee
     },
     {
       tag: 'deal_lokasi_ketemuan',
@@ -71,18 +66,22 @@ export default function DealMenu({
           d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>,
       action: () => onOpenLocation(),
-      isCompleted: !!existingDeal?.pickup_location,
+      isCompleted: existingDeal?.pickup_location && existingDeal.pickup_location !== 'TBD'
     },
     {
       tag: 'deal_waktu_ketemuan',
       title: 'Waktu Ketemuan',
       desc: 'Sepakati jam & hari bertemu',
-      icon: <svg className="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
+      icon: (
+        <svg className="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
       action: () => onOpenTime(),
-      isCompleted: !!existingDeal?.pickup_datetime,
+      isCompleted:
+        !!existingDeal?.pickup_datetime &&
+        new Date(existingDeal.pickup_datetime).getTime() !== new Date(PLACEHOLDER_DATE).getTime(),
     },
     {
       tag: 'deal_lokasi_pengantaran',
@@ -95,7 +94,7 @@ export default function DealMenu({
           d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>,
       action: () => onOpenDelivery(),
-      isCompleted: !!existingDeal?.delivery_location,
+      isCompleted: existingDeal?.delivery_location && existingDeal.delivery_location !== 'TBD'
     },
     {
       tag: 'deal_barang_titipan',
@@ -106,13 +105,14 @@ export default function DealMenu({
           d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
       </svg>,
       action: () => onOpenItem(),
-      isCompleted: !!existingDeal?.item_description || (existingDeal?.item_photos?.length > 0),
+      isCompleted: (existingDeal?.item_description && existingDeal.item_description !== 'TBD') || (existingDeal?.item_photos?.length > 0),
     },
   ];
 
   const handleSelect = (deal) => {
+    if (deal.isCompleted) return; // prevent action jika sudah completed
     deal.action();
-    onClose(); // optional: tutup menu setelah pilih
+    onClose();
   };
 
   if (loading) {
@@ -139,8 +139,13 @@ export default function DealMenu({
             <button
               key={i}
               onClick={() => handleSelect(deal)}
-              className={`w-full text-left px-5 py-4 hover:bg-base-200 transition-colors flex items-center justify-between ${
+              disabled={deal.isCompleted} // disable button jika sudah completed
+              className={`w-full text-left px-5 py-4 transition-colors flex items-center justify-between ${
                 i !== 0 ? 'border-t border-base-300/50' : ''
+              } ${
+                deal.isCompleted
+                  ? 'opacity-60 cursor-default hover:bg-transparent' // visual feedback: sudah selesai
+                  : 'hover:bg-base-200'
               }`}
             >
               <div className="flex items-center gap-4">
@@ -159,7 +164,7 @@ export default function DealMenu({
                 </div>
               </div>
 
-              {/* Centang hijau jika sudah deal */}
+              {/* Centang hijau hanya jika completed */}
               {deal.isCompleted && (
                 <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -182,7 +187,6 @@ export default function DealMenu({
         </div>
       </div>
 
-      {/* Overlay */}
       <div className="fixed inset-0 z-40 bg-black/30" onClick={onClose} />
     </>
   );

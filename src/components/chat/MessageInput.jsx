@@ -12,6 +12,7 @@ export default function MessageInput({
   currentUserId,
   conversationId,
   conversationPostId,
+  postInfo,
   setMessages,
 }) {
   const [newMessage, setNewMessage] = useState('');
@@ -164,6 +165,9 @@ export default function MessageInput({
             onOpenTime={handleOpenTime}
             onOpenItem={handleOpenItem}
             onOpenDelivery={handleOpenDelivery}
+            postId={conversationPostId}
+            postInfo={postInfo} // pastikan ada clerk_user_id di dalamnya
+            currentUserId={currentUserId}
           />
         )}
 

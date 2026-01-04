@@ -7,10 +7,10 @@ export default function LocationModal({ isOpen, onClose, onSend }) {
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 z-100" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50 z-[200]" onClick={onClose} />
 
       {/* Bottom Sheet */}
-      <div className="fixed inset-x-0 bottom-0 z-100 isolate">
+      <div className="fixed inset-x-0 bottom-0 z-[200] isolate">
         <div className="bg-base-100 rounded-t-3xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
           {/* Handle */}
           <div className="flex justify-center pt-3 pb-2">

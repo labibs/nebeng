@@ -589,6 +589,7 @@ export default function ChatRoom() {
         currentUserId={currentUserId}
         conversationId={conversationId}
         conversationPostId={conversationPostId}
+        postInfo={postInfo}
         setMessages={setMessages}
       />
     </div>

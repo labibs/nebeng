@@ -16,6 +16,7 @@ export default function DealMenu({
   const [approvedMessages, setApprovedMessages] = useState([]); // pesan deal yang sudah deal_id != null
   const [lastPendingMessage, setLastPendingMessage] = useState(null); // pesan deal terakhir yang masih pending
   const [loading, setLoading] = useState(true);
+  const [dealData, setDealData] = useState(null);
 
   useEffect(() => {
     async function fetchMessages() {
@@ -25,19 +26,38 @@ export default function DealMenu({
       }
 
       try {
-        // 1. Ambil semua pesan deal yang SUDAH DISETUJUI (deal_id != null)
         const { data: approved, error: approvedError } = await supabase
           .from('messages')
-          .select('message_type')
+          .select('message_type, deal_id')
           .eq('post_id', postId)
           .neq('message_type', 'text')
-          .not('deal_id', 'is', null) // <--- ini kunci utama!
+          .not('deal_id', 'is', null)
           .order('created_at', { ascending: false })
           .limit(10);
 
         if (approvedError) throw approvedError;
 
-        // 2. Ambil pesan deal terakhir yang MASIH PENDING
+        // ----> pastikan hanya ambil deal_id pertama yang valid
+        const dealId = approved?.[0]?.deal_id;
+
+        let dealResult = null;
+
+        if (dealId) {
+          const { data, error } = await supabase
+            .from('deals')
+            .select('agreed_fee, pickup_location, delivery_location, pickup_datetime, item_description')
+            .eq('post_id', postId)
+            .eq('id', dealId)
+            .maybeSingle();
+
+          if (!error) {
+            dealResult = data;
+          }
+        }
+
+        // simpan ke GLOBAL STATE
+        setDealData(dealResult);
+
         const { data: pending, error: pendingError } = await supabase
           .from('posts')
           .select('fee, from_city, to_city, travel_date, item_description')
@@ -46,11 +66,13 @@ export default function DealMenu({
           .limit(1)
           .maybeSingle();
 
-        if (pendingError && pendingError.code !== 'PGRST116') throw pendingError;
+        if (pendingError && pendingError.code !== 'PGRST116')
+          throw pendingError;
 
         setApprovedMessages(approved || []);
         setLastPendingMessage(pending);
         setLoading(false);
+
       } catch (err) {
         console.error('Error fetching deal messages:', err);
         setLoading(false);
@@ -99,7 +121,7 @@ export default function DealMenu({
         : 'Sudah deal',
       ket: !isCompleted('deal_ongkos_jastip')
         ? formatRupiah(lastPendingMessage?.fee)
-        : getApprovedValue('deal_ongkos_jastip', 'fee', true) || '-',
+        : getApprovedValue('deal_ongkos_jastip', 'fee', true) || formatRupiah(dealData.agreed_fee),
       icon: <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -115,7 +137,7 @@ export default function DealMenu({
         : 'Sudah deal',
       ket: !isCompleted('deal_lokasi_ketemuan')
         ? (lastPendingMessage?.from_city || '-')
-        : getApprovedValue('deal_lokasi_ketemuan', 'from_city') || '-',
+        : getApprovedValue('deal_lokasi_ketemuan', 'from_city') || dealData.pickup_location,
       icon: <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
           d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -133,7 +155,7 @@ export default function DealMenu({
         : 'Sudah deal',
       ket: !isCompleted('deal_waktu_ketemuan')
         ? (lastPendingMessage?.travel_date || '-')
-        : getApprovedValue('deal_waktu_ketemuan', 'travel_date') || '-',
+        : getApprovedValue('deal_waktu_ketemuan', 'travel_date') || dealData.pickup_datetime,
       icon: <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -149,7 +171,7 @@ export default function DealMenu({
         : 'Sudah deal',
       ket: !isCompleted('deal_lokasi_pengantaran')
         ? (lastPendingMessage?.to_city || '-')
-        : getApprovedValue('deal_lokasi_pengantaran', 'to_city') || '-',
+        : getApprovedValue('deal_lokasi_pengantaran', 'to_city') || dealData.delivery_location,
       icon: <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
           d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -167,7 +189,7 @@ export default function DealMenu({
         : 'Sudah deal',
       ket: !isCompleted('deal_barang_titipan')
         ? (lastPendingMessage?.item_description || '-')
-        : getApprovedValue('deal_barang_titipan', 'item_description') || '-',
+        : getApprovedValue('deal_barang_titipan', 'item_description') || dealData.item_description,
       icon: <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
           d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -214,7 +236,7 @@ export default function DealMenu({
                 </svg>
                 <span className="font-semibold">{postInfo?.to_city || '-'}</span>
               </div>
-              <p className="font-semibold text-base opacity-70 mt-1">Pilih Jenis Deal</p>
+              <p className="font-semibold text-base opacity-70 mt-1">Pilih Jenis Deal {postId}</p>
             </div>
             <div className="badge badge-primary badge-sm font-medium">
               {postInfo?.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}

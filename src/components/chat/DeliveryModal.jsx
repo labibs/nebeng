@@ -40,11 +40,12 @@ function DeliveryForm({ onSend, onClose }) {
 
   const handleSend = () => {
     if (location.lat && location.lng) {
-      const message = `[deal_lokasi_pengantaran]\n\n📍 Lokasi pengantaran: ${location.name || "Lokasi Terpilih"}\n📝 Alamat: ${location.address}\n🗺️ Koordinat: ${location.lat}, ${location.lng}\n\nTempat ini cocok untuk pengantaran ya kak? 🙏`;
+      const message = `[deal_lokasi_pengantaran]\n\n📍 Lokasi pengantaran: ${location.name || "Lokasi Terpilih"}\n📝 Alamat: ${location.address}\n🗺️ Koordinat: ${location.lat}, ${location.lng}\n\nKonfirmasi lokasi pengantaran ya kak? 🙏`;
       onSend(message);
       onClose();
     }
   };
+  
 
   return (
     <>
@@ -62,7 +63,7 @@ function DeliveryForm({ onSend, onClose }) {
               📍 Lokasi pengantaran: {location.name || "Lokasi Terpilih"}{'\n'}
               📝 Alamat: ${location.address}{'\n'}
               🗺️ Koordinat: ${location.lat}, ${location.lng}{'\n\n'}
-              Tempat ini cocok untuk pengantaran ya kak? 🙏
+              Konfirmasi lokasi pengantaran ya kak? 🙏
             </p>
           </div>
         )}

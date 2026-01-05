@@ -55,6 +55,7 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   const [showItemModal, setShowItemModal] = useState(false);
   const [initialItemData, setInitialItemData] = useState({});
+  const [mapInteractive, setMapInteractive] = useState(false);
 
   // Tentukan jenis deal
   const dealType = msg.message_type || (msg.content.includes('[deal_ongkos_jastip]') ? 'deal_ongkos_jastip' : msg.content.includes('[deal_lokasi_ketemuan]') ? 'deal_lokasi_ketemuan' : msg.content.includes('[deal_waktu_ketemuan]') ? 'deal_waktu_ketemuan' : msg.content.includes('[deal_lokasi_pengantaran]') ? 'deal_lokasi_pengantaran' : msg.content.includes('[deal_barang_titipan]') ? 'deal_barang_titipan' : null);
@@ -234,30 +235,45 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                 <MapContainer
                   center={[extractedData.lat, extractedData.lng]}
                   zoom={15}
-                  scrollWheelZoom={false}
-                  zoomControl={false}
-                  dragging={false}
-                  touchZoom={false}
-                  doubleClickZoom={false}
-                  keyboard={false}
-                  boxZoom={false}
-                  className="h-full w-full z-0 pointer-events-none"
+                  scrollWheelZoom={mapInteractive}
+                  zoomControl={mapInteractive}
+                  dragging={mapInteractive}
+                  touchZoom={mapInteractive}
+                  doubleClickZoom={mapInteractive}
+                  keyboard={mapInteractive}
+                  boxZoom={mapInteractive}
+                  className="h-full w-full z-0"
                   style={{ height: "100%", width: "100%" }}
                 >
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                   <Marker position={[extractedData.lat, extractedData.lng]} />
                 </MapContainer>
 
-                {/* Overlay di atas map */}
-                <div className="absolute inset-0 z-10 flex items-center justify-center">
-                  {/* <button className="px-4 py-2 bg-blue-500 text-white rounded">
-                    Klik Saya!
-                  </button> */}
-                </div>
-              </div>
+                {/* Overlay klik untuk mengaktifkan zoom */}
+                {!mapInteractive && (
+                  <button
+                    onClick={() => setMapInteractive(true)}
+                    className="absolute inset-0 z-0 flex items-center justify-center
+                              bg-base-100/10 backdrop-blur-[1px] cursor-zoom-in"
+                  >
+                    <span className="px-3 py-1 text-xs rounded-lg bg-base-200/80">
+                      Klik untuk zoom & geser
+                    </span>
+                  </button>
+                )}
 
+                {/* Tombol keluar zoom */}
+                {mapInteractive && (
+                  <button
+                    onClick={() => setMapInteractive(false)}
+                    className="absolute top-2 right-2 z-0 px-2 py-1 text-xs rounded-lg
+                              bg-base-200/90 border border-base-300"
+                  >
+                    Kunci Map
+                  </button>
+                )}
+
+              </div>
             </div>
           ) : dealType === 'deal_lokasi_pengantaran' && extractedData.lat && extractedData.lng ? (
             <div className="mb-5">
@@ -270,30 +286,45 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                 <MapContainer
                   center={[extractedData.lat, extractedData.lng]}
                   zoom={15}
-                  scrollWheelZoom={false}
-                  zoomControl={false}
-                  dragging={false}
-                  touchZoom={false}
-                  doubleClickZoom={false}
-                  keyboard={false}
-                  boxZoom={false}
-                  className="h-full w-full z-0 pointer-events-none"
+                  scrollWheelZoom={mapInteractive}
+                  zoomControl={mapInteractive}
+                  dragging={mapInteractive}
+                  touchZoom={mapInteractive}
+                  doubleClickZoom={mapInteractive}
+                  keyboard={mapInteractive}
+                  boxZoom={mapInteractive}
+                  className="h-full w-full z-0"
                   style={{ height: "100%", width: "100%" }}
                 >
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                   <Marker position={[extractedData.lat, extractedData.lng]} />
                 </MapContainer>
 
-                {/* Overlay di atas map */}
-                <div className="absolute inset-0 z-10 flex items-center justify-center">
-                  {/* <button className="px-4 py-2 bg-blue-500 text-white rounded">
-                    Klik Saya!
-                  </button> */}
-                </div>
-              </div>
+                {/* Overlay klik untuk mengaktifkan zoom */}
+                {!mapInteractive && (
+                  <button
+                    onClick={() => setMapInteractive(true)}
+                    className="absolute inset-0 z-0 flex items-center justify-center
+                              bg-base-100/10 backdrop-blur-[1px] cursor-zoom-in"
+                  >
+                    <span className="px-3 py-1 text-xs rounded-lg bg-base-200/80">
+                      Klik untuk zoom & geser
+                    </span>
+                  </button>
+                )}
 
+                {/* Tombol keluar zoom */}
+                {mapInteractive && (
+                  <button
+                    onClick={() => setMapInteractive(false)}
+                    className="absolute top-2 right-2 z-0 px-2 py-1 text-xs rounded-lg
+                              bg-base-200/90 border border-base-300"
+                  >
+                    Kunci Map
+                  </button>
+                )}
+
+              </div>
             </div>
           ) : dealType === 'deal_waktu_ketemuan' ? (
             <div className="mb-5 whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed">
@@ -372,7 +403,7 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                 <>
                   <button
                     onClick={() => {
-                      const replyText = `Deal! Lokasi ketemuan di ${extractedData.locationName} ✅\nTerima kasih kak, kapan jam berapa?`;
+                      const replyText = `Deal! Lokasi ketemuan di ${extractedData.locationName} ✅\nTerima kasih kak`;
                       handleQuickReply(replyText);
                       if (onUpdateDealLocation && extractedData.lat && extractedData.lng) {
                         onUpdateDealLocation(msg.post.id, {
@@ -405,7 +436,7 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                 <>
                   <button
                     onClick={() => {
-                      const replyText = `Deal! Lokasi pengantaran di ${extractedData.locationName} ✅\nTerima kasih kak, kapan mau diantar?`;
+                      const replyText = `Deal! Lokasi pengantaran di ${extractedData.locationName} ✅\nTerima kasih kak`;
                       handleQuickReply(replyText);
                       if (onUpdateDealDelivery && extractedData.lat && extractedData.lng) {
                         onUpdateDealDelivery(msg.post.id, {
@@ -438,7 +469,7 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                 <>
                   <button
                     onClick={() => {
-                      const replyText = `Deal! Waktu ketemuan ${extractedData.meetingTime} ✅\nSiap ketemuan ya kak!`;
+                      const replyText = `Deal! Waktu ketemuan ${extractedData.meetingTime} ✅\nTerima kasih kak!`;
                       handleQuickReply(replyText);
                       if (onUpdateDealTime && msg.post.id) {
                         // Parse meeting time to get date and time, then convert to ISO format
@@ -479,7 +510,7 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                 <>
                   <button
                     onClick={() => {
-                      const replyText = `Deal! Barang titipan ${extractedData.itemDetail} ✅\nSiap titipkan ya kak!`;
+                      const replyText = `Deal! Barang titipan ${extractedData.itemDetail} ✅\nTerima kasih kak!`;
                       handleQuickReply(replyText);
                       if (onUpdateDealItem && msg.post.id) {
                         onUpdateDealItem(msg.post.id, {

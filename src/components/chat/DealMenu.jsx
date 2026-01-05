@@ -108,9 +108,20 @@ export default function DealMenu({
     deal_ongkos_jastip: 'emerald',
     deal_lokasi_ketemuan: 'blue',
     deal_waktu_ketemuan: 'purple',
-    deal_lokasi_pengantaran: 'cyan',
+    deal_lokasi_pengantaran: 'emerald',
     deal_barang_titipan: 'orange',
   };
+
+  const formattedPickupTime = dealData?.pickup_datetime
+  ? new Date(dealData.pickup_datetime).toLocaleString("id-ID", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  : "-";
+
 
   const deals = [
     {
@@ -137,7 +148,7 @@ export default function DealMenu({
         : 'Sudah deal',
       ket: !isCompleted('deal_lokasi_ketemuan')
         ? (lastPendingMessage?.from_city || '-')
-        : getApprovedValue('deal_lokasi_ketemuan', 'from_city') || dealData.pickup_location,
+        : getApprovedValue('deal_lokasi_ketemuan', 'from_city') || dealData?.pickup_location?.split(",")[2]?.trim() || "-",
       icon: <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
           d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -155,7 +166,7 @@ export default function DealMenu({
         : 'Sudah deal',
       ket: !isCompleted('deal_waktu_ketemuan')
         ? (lastPendingMessage?.travel_date || '-')
-        : getApprovedValue('deal_waktu_ketemuan', 'travel_date') || dealData.pickup_datetime,
+        : getApprovedValue('deal_waktu_ketemuan', 'travel_date') || formattedPickupTime,
       icon: <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -171,7 +182,7 @@ export default function DealMenu({
         : 'Sudah deal',
       ket: !isCompleted('deal_lokasi_pengantaran')
         ? (lastPendingMessage?.to_city || '-')
-        : getApprovedValue('deal_lokasi_pengantaran', 'to_city') || dealData.delivery_location,
+        : getApprovedValue('deal_lokasi_pengantaran', 'to_city') || dealData?.delivery_location?.split(",")[2]?.trim() || "-",
       icon: <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
           d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />

@@ -210,7 +210,7 @@ export default function ChatRoom() {
   };
 
   const updateDealLocation = async (postId, locationData, msgId) => {
-   
+   console.log('cekiin', postId, locationData, msgId)
     if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
 
     // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
@@ -265,7 +265,7 @@ export default function ChatRoom() {
     }
 
     // Update pickup_location dengan koordinat
-    const locationString = `${locationData.lat},${locationData.lng}`;
+    const locationString = `${locationData.lat},${locationData.lng}, ${locationData.name}`;
     const { error: updateError } = await supabase
       .from('deals')
       .update({ pickup_location: locationString })
@@ -295,8 +295,6 @@ export default function ChatRoom() {
 
   const updateDealTime = async (postId, timeData, msgId) => {
     if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
-
-    
 
     // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
     const { data: existingDeals, error: fetchError } = await supabase
@@ -381,8 +379,6 @@ export default function ChatRoom() {
 
   const updateDealItem = async (postId, itemData, msgId) => {
     if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
-
-    
 
     // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
     const { data: existingDeals, error: fetchError } = await supabase
@@ -520,7 +516,7 @@ export default function ChatRoom() {
     }
 
     // Update delivery_location dengan koordinat
-    const locationString = `${locationData.lat},${locationData.lng}`;
+    const locationString = `${locationData.lat},${locationData.lng},${locationData.name}`;
     const { error: updateError } = await supabase
       .from('deals')
       .update({ delivery_location: locationString })

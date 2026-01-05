@@ -40,7 +40,8 @@ function LocationForm({ onSend, onClose }) {
 
   const handleSend = () => {
     if (location.lat && location.lng) {
-      const message = `[deal_lokasi_ketemuan]\n\n📍 Lokasi ketemuan: ${location.name || "Lokasi Terpilih"}\n📝 Alamat: ${location.address}\n🗺️ Koordinat: ${location.lat}, ${location.lng}\n\nTempat ini cocok untuk serah terima ya kak? 🙏`;
+      
+      const message = `[deal_lokasi_ketemuan]\n\n📍 Lokasi ketemuan: ${location.name || "Lokasi Terpilih"}\n📝 Alamat: ${location.address}\n🗺️ Koordinat: ${location.lat}, ${location.lng}\n\nKonfirmasi lokasi penjemputan titipan ya kak? 🙏`;
       onSend(message);
       onClose();
     }
@@ -62,7 +63,7 @@ function LocationForm({ onSend, onClose }) {
               📍 Lokasi ketemuan: {location.name || "Lokasi Terpilih"}{'\n'}
               📝 Alamat: ${location.address}{'\n'}
               🗺️ Koordinat: ${location.lat}, ${location.lng}{'\n\n'}
-              Tempat ini cocok untuk serah terima ya kak? 🙏
+              Konfirmasi lokasi penjemputan titipan ya kak? 🙏
             </p>
           </div>
         )}

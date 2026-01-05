@@ -3,10 +3,11 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
   // const post = postInfo || {}; 
 
   // Kalau mau tetap coba pakai msg.post (untuk safety ekstra), bisa:
-  const post = msg.post || postInfo || {};
+  const post =  msg.post || {};
+  //console.log ('isi relasi msg dan post', post)
 
   return (
-    <div className={`chat ${isMine ? 'chat-end' : 'chat-start'}`}>
+    <div className={`chat ${isMine ? 'chat-end border-orange-300' : 'chat-start'} `} >
       <div className="chat-image avatar">
         <div className="w-10 rounded-full">
           <img src={avatar} alt="avatar" />
@@ -46,7 +47,7 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
           <div className="flex-1 min-w-0">
             <div className="flex justify-end mb-2">
               <div className="badge badge-primary badge-sm font-medium">
-                {post.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}
+                {post.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa'} 
               </div>
             </div>
 

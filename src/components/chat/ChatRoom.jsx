@@ -107,35 +107,74 @@ export default function ChatRoom() {
 
   console.log('cek dulu', carrierId, depositorId)
 
-
   const insertDeal = async (postId, agreedFee, msgId) => {
+     
     if (!postInfo?.clerk_user_id || !supabaseUserId || !postId) return;
 
-    // Pastikan participant IDs siap
     if (!carrierId || !depositorId) {
       console.warn("carrierId / depositorId belum siap");
       return;
     }
 
-    // 1️⃣ Cek apakah deal sudah ada
-    const { data: existingDeal, error: checkError } = await supabase
+    // 1️⃣ Cari deal terbaru berdasarkan kombinasi peserta
+    const { data: existingDeals, error: fetchError } = await supabase
       .from("deals")
       .select("id")
       .eq("post_id", postId)
       .eq("carrier_id", carrierId)
       .eq("depositor_id", depositorId)
-      .maybeSingle(); // 👈 lebih rapi
+      .order("created_at", { ascending: false })
+      .limit(1);
 
-    if (checkError) {
-      console.error("Error checking existing deal:", checkError);
-      alert("Gagal memeriksa deal yang ada");
+    if (fetchError) {
+      console.error("Error fetching deal:", fetchError);
+      alert("Gagal mencari deal yang ada");
       return;
     }
 
-    let dealId = existingDeal?.id;
+    let dealId;
 
-    // 2️⃣ Jika deal sudah ada → UPDATE agreed_fee
-    if (dealId) {
+    // ===============================
+    // 2️⃣ Jika BELUM ADA deal → INSERT (dipertahankan seperti logic milikmu)
+    // ===============================
+    if (!existingDeals || existingDeals.length === 0) {
+      const { data: newDeal, error: insertError } = await supabase
+        .from("deals")
+        .insert({
+          carrier_id: carrierId,
+          depositor_id: depositorId,
+          post_id: postId,
+          agreed_fee: agreedFee,
+          status: "pending",
+
+          // default fields — dipertahankan 👍
+          pickup_location: "TBD",
+          delivery_location: "TBD",
+          pickup_datetime: "2026-01-20 12:00:00",
+          item_description: "TBD",
+          item_photos: [],
+          notes: "",
+        })
+        .select("id")
+        .single();
+
+      if (insertError) {
+        console.error("Error insert deal:", insertError);
+        alert("Gagal membuat deal baru");
+        return;
+      }
+
+      dealId = newDeal.id;
+      console.log("Created new deal:", dealId);
+
+      alert("Deal baru berhasil dibuat!");
+    } 
+    else {
+      // ===============================
+      // 3️⃣ Jika SUDAH ADA deal → UPDATE agreed_fee saja
+      // ===============================
+      dealId = existingDeals[0].id;
+
       const { error: updateError } = await supabase
         .from("deals")
         .update({
@@ -151,61 +190,28 @@ export default function ChatRoom() {
         return;
       }
 
-      alert("Deal sudah ada — fee berhasil diperbarui!");
+      console.log("Updated existing deal:", dealId);
+      alert("Deal sudah ada — fee diperbarui!");
     }
 
-    // 3️⃣ Jika belum ada → INSERT deal baru
-    if (!dealId) {
-      const { data, error } = await supabase
-        .from("deals")
-        .insert({
-          carrier_id: carrierId,
-          depositor_id: depositorId,
-          post_id: postId,
-          agreed_fee: agreedFee,
-          status: "pending",
-          pickup_location: "TBD",
-          delivery_location: "TBD",
-          pickup_datetime: "2026-01-20 12:00:00",
-          item_description: "TBD",
-          item_photos: [],
-          notes: "",
-        })
-        .select("id")
-        .single(); // 👈 ambil id hasil insert
+    // ===============================
+    // 4️⃣ Update message.deal_id (selalu pakai dealId final)
+    // ===============================
+    if (msgId && dealId) {
+      const { error: msgError } = await supabase
+        .from("messages")
+        .update({ deal_id: dealId })
+        .eq("id", msgId);
 
-      if (error) {
-        console.error("Error insert deal:", error);
-        alert("Gagal membuat deal");
-        return;
+      if (msgError) {
+        console.error("Gagal update message.deal_id:", msgError);
       }
-
-      dealId = data.id;
-
-      alert("Deal baru berhasil dibuat!");
     }
+  };
 
-
-  // 4️⃣ Update message → ALWAYS pakai dealId final
-  if (msgId && dealId) {
-    const { error: msgError } = await supabase
-      .from("messages")
-      .update({
-        deal_id: dealId,
-      })
-      .eq("id", msgId);
-
-    if (msgError) {
-      console.error("Gagal update message.deal_id:", msgError);
-    }
-  }
-};
-
-
-  const updateDealLocation = async (postId, locationData) => {
+  const updateDealLocation = async (postId, locationData, msgId) => {
+   
     if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
-
-    console.log('cek dulu', postId, postInfo.clerk_user_id, currentUserId);
 
     // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
     // Ambil yang terbaru jika ada multiple
@@ -271,12 +277,26 @@ export default function ChatRoom() {
     } else {
       alert('Lokasi deal berhasil diupdate!');
     }
+
+    // ===============================
+    // 4️⃣ Update message.deal_id (selalu pakai dealId final)
+    // ===============================
+    if (msgId && dealId) {
+      const { error: msgError } = await supabase
+        .from("messages")
+        .update({ deal_id: dealId })
+        .eq("id", msgId);
+
+      if (msgError) {
+        console.error("Gagal update message.deal_id:", msgError);
+      }
+    }
   };
 
-  const updateDealTime = async (postId, timeData) => {
+  const updateDealTime = async (postId, timeData, msgId) => {
     if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
 
-    console.log('Update deal time:', postId, timeData);
+    
 
     // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
     const { data: existingDeals, error: fetchError } = await supabase
@@ -343,12 +363,26 @@ export default function ChatRoom() {
     } else {
       alert('Waktu deal berhasil diupdate!');
     }
+
+    // ===============================
+    // 4️⃣ Update message.deal_id (selalu pakai dealId final)
+    // ===============================
+    if (msgId && dealId) {
+      const { error: msgError } = await supabase
+        .from("messages")
+        .update({ deal_id: dealId })
+        .eq("id", msgId);
+
+      if (msgError) {
+        console.error("Gagal update message.deal_id:", msgError);
+      }
+    }
   };
 
-  const updateDealItem = async (postId, itemData) => {
+  const updateDealItem = async (postId, itemData, msgId) => {
     if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
 
-    console.log('Update deal item:', postId, itemData);
+    
 
     // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
     const { data: existingDeals, error: fetchError } = await supabase
@@ -415,12 +449,25 @@ export default function ChatRoom() {
     } else {
       alert('Detail barang deal berhasil diupdate!');
     }
+
+    // ===============================
+    // 4️⃣ Update message.deal_id (selalu pakai dealId final)
+    // ===============================
+    if (msgId && dealId) {
+      const { error: msgError } = await supabase
+        .from("messages")
+        .update({ deal_id: dealId })
+        .eq("id", msgId);
+
+      if (msgError) {
+        console.error("Gagal update message.deal_id:", msgError);
+      }
+    }
   };
 
-  const updateDealDelivery = async (postId, locationData) => {
+  const updateDealDelivery = async (postId, locationData, msgId) => {
+    console.log('isinya apa', postId, locationData, msgId)
     if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
-
-    console.log('Update deal delivery:', postId, locationData);
 
     // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
     const { data: existingDeals, error: fetchError } = await supabase
@@ -484,6 +531,20 @@ export default function ChatRoom() {
       alert('Gagal update lokasi pengantaran deal');
     } else {
       alert('Lokasi pengantaran deal berhasil diupdate!');
+    }
+
+    // ===============================
+    // 4️⃣ Update message.deal_id (selalu pakai dealId final)
+    // ===============================
+    if (msgId && dealId) {
+      const { error: msgError } = await supabase
+        .from("messages")
+        .update({ deal_id: dealId })
+        .eq("id", msgId);
+
+      if (msgError) {
+        console.error("Gagal update message.deal_id:", msgError);
+      }
     }
   };
 
@@ -556,13 +617,26 @@ export default function ChatRoom() {
     if (!conversationId) return;
 
     const fetchMessages = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('messages')
-        .select('id, content, created_at, sender_id, is_read, message_type, post_id, deal_id', )
+        .select(`
+          id,
+          content,
+          created_at,
+          sender_id,
+          is_read,
+          message_type,
+          deal_id,
+          post:posts!messages_post_id_fkey(*)
+        `)
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
-      setMessages(data || []);
+      if (error) {
+        console.error('Failed to fetch messages:', error);
+      }
+
+      setMessages(data ?? []);
       setLoading(false);
       scrollToBottom();
     };

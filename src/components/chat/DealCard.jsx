@@ -343,7 +343,7 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                         : `Deal! Ongkos jastip sesuai kesepakatan ✅`;
                       handleQuickReply(replyText);
                       if (onInsertDeal && extractedData.ongkos) {
-                        onInsertDeal(msg.post_id, extractedData.ongkos, msg.id);
+                        onInsertDeal(msg.post.id, extractedData.ongkos, msg.id);
                       }
                     }}
                     className="flex-1 btn btn-success btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"
@@ -368,19 +368,19 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                     Nego
                   </button>
                 </>
-              ) : dealType === 'deal_lokasi_ketemuan' ? (
+              ) : dealType === 'deal_lokasi_ketemuan' && msg.deal_id == null ? (
                 <>
                   <button
                     onClick={() => {
                       const replyText = `Deal! Lokasi ketemuan di ${extractedData.locationName} ✅\nTerima kasih kak, kapan jam berapa?`;
                       handleQuickReply(replyText);
                       if (onUpdateDealLocation && extractedData.lat && extractedData.lng) {
-                        onUpdateDealLocation(msg.post_id, {
+                        onUpdateDealLocation(msg.post.id, {
                           lat: extractedData.lat,
                           lng: extractedData.lng,
                           name: extractedData.locationName,
                           address: extractedData.address
-                        });
+                        }, msg.id);
                       }
                     }}
                     className="flex-1 btn btn-success btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"
@@ -401,19 +401,19 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                     Revisi
                   </button>
                 </>
-              ) : dealType === 'deal_lokasi_pengantaran' ? (
+              ) : dealType === 'deal_lokasi_pengantaran' && msg.deal_id == null ? (
                 <>
                   <button
                     onClick={() => {
                       const replyText = `Deal! Lokasi pengantaran di ${extractedData.locationName} ✅\nTerima kasih kak, kapan mau diantar?`;
                       handleQuickReply(replyText);
                       if (onUpdateDealDelivery && extractedData.lat && extractedData.lng) {
-                        onUpdateDealDelivery(msg.post_id, {
+                        onUpdateDealDelivery(msg.post.id, {
                           lat: extractedData.lat,
                           lng: extractedData.lng,
                           name: extractedData.locationName,
                           address: extractedData.address
-                        });
+                        }, msg.id);
                       }
                     }}
                     className="flex-1 btn btn-success btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"
@@ -434,13 +434,13 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                     Revisi
                   </button>
                 </>
-              ) : dealType === 'deal_waktu_ketemuan' ? (
+              ) : dealType === 'deal_waktu_ketemuan' && msg.deal_id == null ? (
                 <>
                   <button
                     onClick={() => {
                       const replyText = `Deal! Waktu ketemuan ${extractedData.meetingTime} ✅\nSiap ketemuan ya kak!`;
                       handleQuickReply(replyText);
-                      if (onUpdateDealTime && msg.post_id) {
+                      if (onUpdateDealTime && msg.post.id) {
                         // Parse meeting time to get date and time, then convert to ISO format
                         const timeMatch = extractedData.meetingTime.match(/(.+), (.+)/);
                         if (timeMatch) {
@@ -450,10 +450,10 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                           // Convert Indonesian date format to ISO datetime
                           const dateTimeISO = convertIndonesianDateTimeToISO(dateStr, timeStr);
                           
-                          onUpdateDealTime(msg.post_id, {
+                          onUpdateDealTime(msg.post.id, {
                             datetime: dateTimeISO,
                             notes: extractedData.notes
-                          });
+                          }, msg.id);
                         }
                       }
                     }}
@@ -475,17 +475,17 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                     Ubah
                   </button>
                 </>
-              ) : dealType === 'deal_barang_titipan' ? (
+              ) : dealType === 'deal_barang_titipan' && msg.deal_id == null ? (
                 <>
                   <button
                     onClick={() => {
                       const replyText = `Deal! Barang titipan ${extractedData.itemDetail} ✅\nSiap titipkan ya kak!`;
                       handleQuickReply(replyText);
-                      if (onUpdateDealItem && msg.post_id) {
-                        onUpdateDealItem(msg.post_id, {
+                      if (onUpdateDealItem && msg.post.id) {
+                        onUpdateDealItem(msg.post.id, {
                           description: extractedData.itemDetail || '',
                           photos: extractedData.photos || []
-                        });
+                        }, msg.id);
                       }
                     }}
                     className="flex-1 btn btn-success btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"

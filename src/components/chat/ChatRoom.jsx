@@ -546,6 +546,7 @@ export default function ChatRoom() {
         console.error("Gagal update message.deal_id:", msgError);
       }
     }
+    
   };
 
   // Fetch recipient
@@ -650,16 +651,53 @@ export default function ChatRoom() {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
-        (payload) => {
-          setMessages((prev) => [...prev, payload.new]);
-          scrollToBottom();
+        async (payload) => {
+          // Jangan langsung pakai payload.new
+          // Fetch ulang pesan yang baru saja di-insert dengan relasi lengkap
+          const { data: newMessage } = await supabase
+            .from('messages')
+            .select(`
+              id,
+              content,
+              created_at,
+              sender_id,
+              is_read,
+              message_type,
+              deal_id,
+              post:posts!messages_post_id_fkey(*)
+            `)
+            .eq('id', payload.new.id)
+            .single();
+
+          if (newMessage) {
+            setMessages((prev) => [...prev, newMessage]);
+            scrollToBottom();
+          }
         }
       )
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
-        (payload) => {
-          setMessages((prev) => prev.map((msg) => (msg.id === payload.new.id ? payload.new : msg)));
+        async (payload) => {
+          // Sama untuk update: fetch ulang biar relasi up-to-date
+          const { data: updatedMessage } = await supabase
+            .from('messages')
+            .select(`
+              id,
+              content,
+              created_at,
+              sender_id,
+              is_read,
+              message_type,
+              deal_id,
+              post:posts!messages_post_id_fkey(*)
+            `)
+            .eq('id', payload.new.id)
+            .single();
+
+          if (updatedMessage) {
+            setMessages((prev) => prev.map((msg) => (msg.id === updatedMessage.id ? updatedMessage : msg)));
+          }
         }
       )
       .subscribe();

@@ -119,6 +119,7 @@ export default function MessageBubble({
       />
     );
   }
+  
 
   // Pesan Teks Biasa
   return (

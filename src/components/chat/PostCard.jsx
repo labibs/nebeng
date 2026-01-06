@@ -1,15 +1,12 @@
 export default function PostCard({ msg, isMine, avatar, postInfo }) {
-  // Gunakan postInfo sebagai fallback utama
-  // const post = postInfo || {}; 
-
   // Kalau mau tetap coba pakai msg.post (untuk safety ekstra), bisa:
   const post =  msg.post || {};
   //console.log ('isi relasi msg dan post', post)
 
   return (
-    <div className={`chat ${isMine ? 'chat-end border-orange-300' : 'chat-start'} `} >
-      <div className="chat-image avatar">
-        <div className="w-10 rounded-full">
+    <div className={`chat ${isMine ? 'chat-end ' : 'chat-start'} `} >
+      <div className="chat-image avatar ">
+        <div className="w-10 rounded-full ">
           <img src={avatar} alt="avatar" />
         </div>
       </div>
@@ -26,7 +23,7 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
       <div
         className={`
           relative max-w-md px-5 py-4 rounded-2xl shadow-lg overflow-hidden
-          bg-base-100 border border-base-300
+          bg-base-100 border border-lime-700
           ${isMine ? 'rounded-br-none' : 'rounded-bl-none'}
         `}
       >

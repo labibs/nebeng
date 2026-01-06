@@ -69,23 +69,33 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
     const ongkosMatch = msg.content.match(/💰[^0-9]*([0-9.,]+)/);
     const ongkosText = ongkosMatch ? ongkosMatch[1].replace(/\./g, '') : null;
     extractedData.ongkos = ongkosText ? parseInt(ongkosText.replace(/,/g, ''), 10) : null;
-  } else if (dealType === 'deal_lokasi_ketemuan') {
-    const locationMatch = msg.content.match(/📍 Lokasi ketemuan: ([^\n]+)/);
-    const addressMatch = msg.content.match(/📝 Alamat: ([^\n]+)/);
-    const coordMatch = msg.content.match(/🗺️ Koordinat: ([^,]+), ([^\n]+)/);
-    extractedData.locationName = locationMatch ? locationMatch[1].trim() : "Lokasi Terpilih";
-    extractedData.address = addressMatch ? addressMatch[1].trim() : "Alamat tidak tersedia";
-    extractedData.lat = coordMatch ? parseFloat(coordMatch[1].trim()) : null;
-    extractedData.lng = coordMatch ? parseFloat(coordMatch[2].trim()) : null;
-  } else if (dealType === 'deal_lokasi_pengantaran') {
-    const locationMatch = msg.content.match(/📍 Lokasi pengantaran: ([^\n]+)/);
-    const addressMatch = msg.content.match(/📝 Alamat: ([^\n]+)/);
-    const coordMatch = msg.content.match(/🗺️ Koordinat: ([^,]+), ([^\n]+)/);
-    extractedData.locationName = locationMatch ? locationMatch[1].trim() : "Lokasi Terpilih";
-    extractedData.address = addressMatch ? addressMatch[1].trim() : "Alamat tidak tersedia";
-    extractedData.lat = coordMatch ? parseFloat(coordMatch[1].trim()) : null;
-    extractedData.lng = coordMatch ? parseFloat(coordMatch[2].trim()) : null;
-  } else if (dealType === 'deal_waktu_ketemuan') {
+  } else if (dealType === 'deal_lokasi_ketemuan' || dealType === 'deal_lokasi_pengantaran') {
+
+  const locationMatch = msg.content.match(/📍\s*Lokasi[^:]*:\s*(.+)/);
+  const addressMatch  = msg.content.match(/📝\s*Alamat:\s*(.+)/);
+
+  // Tangkap koordinat aman
+  const coordMatch = msg.content.match(/Koordinat:\s*([-0-9.]+),\s*([-0-9.]+)/);
+
+  // Hapus baris koordinat dari pesan
+  const cleanedMessage = msg.content
+    .replace(/^\[[^\]]+\]\s*/, '')          // hapus [deal_xxx]
+    .replace(/🗺️\s*Koordinat:[^\n]+/g, '')  // hapus baris koordinat
+    .trim();
+
+  extractedData.cleanedMessage = cleanedMessage;
+
+  extractedData.locationName = locationMatch ? locationMatch[1].trim() : "Lokasi Terpilih";
+  extractedData.address      = addressMatch  ? addressMatch[1].trim()  : "Alamat tidak tersedia";
+
+  extractedData.lat = coordMatch ? parseFloat(coordMatch[1]) : null;
+  extractedData.lng = coordMatch ? parseFloat(coordMatch[2]) : null;
+
+  extractedData.gmapsUrl =
+    extractedData.lat && extractedData.lng
+      ? `https://www.google.com/maps/search/?api=1&query=${extractedData.lat},${extractedData.lng}`
+      : null;
+} else if (dealType === 'deal_waktu_ketemuan') {
     const timeMatch = msg.content.match(/🕐 Waktu ketemuan: ([^\n]+)/);
     const notesMatch = msg.content.match(/📝 Catatan: ([^\n]+)/);
     extractedData.meetingTime = timeMatch ? timeMatch[1].trim() : "Waktu tidak tersedia";
@@ -126,6 +136,15 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
       alert('Teks deal disalin ke clipboard!\n\n' + text);
     }
   };
+
+  const created = new Date(msg.created_at);
+  const today = new Date();
+
+  // cek apakah di hari yang sama
+  const isToday =
+    created.getDate() === today.getDate() &&
+    created.getMonth() === today.getMonth() &&
+    created.getFullYear() === today.getFullYear();
 
   return (
     <>
@@ -213,7 +232,7 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                 {dealType === 'deal_ongkos_jastip' ? 'Deal Ongkos Jastip' : dealType === 'deal_lokasi_ketemuan' ? 'Deal Lokasi Ketemuan' : dealType === 'deal_waktu_ketemuan' ? 'Deal Waktu Ketemuan' : dealType === 'deal_lokasi_pengantaran' ? 'Deal Lokasi Pengantaran' : 'Deal Barang Titipan'}
               </div>
               <div className="text-xs opacity-70">
-                {isMine ? 'Menunggu konfirmasi dari lawan...' : 'Pilih aksi'}
+                {msg.deal_id === null ? isMine ? 'Menunggu konfirmasi dari lawan...' : 'Pilih aksi' : 'Sudah deal'}
               </div>
             </div>
           </div>
@@ -224,11 +243,23 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
               💰 Ongkos awal jastip : Rp {postInfo?.fee ? parseInt(postInfo.fee).toLocaleString('id-ID') : '-'} <br />
               {msg.content.replace(/^\[[^\]]+\]\s*/, '').trim()}
             </div>
-          ) : dealType === 'deal_lokasi_ketemuan' && extractedData.lat && extractedData.lng ? (
+          ) : dealType === 'deal_lokasi_ketemuan' && extractedData.lat && extractedData.lng && extractedData.cleanedMessage ? (
             <div className="mb-5">
-              <div className="whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed mb-3">
-                {msg.content.replace(/^\[[^\]]+\]\s*/, '').trim()}
+              <div className="whitespace-pre-wrap text-sm leading-relaxed mb-3">
+                {extractedData.cleanedMessage}
+
+                {extractedData.gmapsUrl && (
+                  <a
+                    href={extractedData.gmapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#81c784] underline font-medium mt-1 inline-block"
+                  >
+                    Lihat di Google Maps
+                  </a>
+                )}
               </div>
+
               {/* Mini Map */}
               <div className="relative w-full h-24 rounded-xl overflow-hidden border border-base-300">
 
@@ -277,8 +308,19 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
             </div>
           ) : dealType === 'deal_lokasi_pengantaran' && extractedData.lat && extractedData.lng ? (
             <div className="mb-5">
-              <div className="whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed mb-3">
-                {msg.content.replace(/^\[[^\]]+\]\s*/, '').trim()}
+              <div className="whitespace-pre-wrap text-sm leading-relaxed mb-3">
+                {extractedData.cleanedMessage}
+
+                {extractedData.gmapsUrl && (
+                  <a
+                    href={extractedData.gmapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#81c784] underline font-medium mt-1 inline-block"
+                  >
+                    Lihat di Google Maps
+                  </a>
+                )}
               </div>
               {/* Mini Map */}
               <div className="relative w-full h-24 rounded-xl overflow-hidden border border-base-300">

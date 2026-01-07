@@ -586,8 +586,11 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                     Revisi
                   </button>
                 </>
+                
               ) : null}
             </div>
+            
+            
           )}
 
           {/* Tail lancip */}
@@ -604,7 +607,13 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
             </svg>
           </div>
         </div>
+        {isMine && (
+        <div className={`chat-footer text-xs mt-0 ${msg.is_read ? 'text-blue-500' : 'opacity-70'}`}>
+          {msg.is_read ? 'Terbaca ✓✓' : 'Terkirim ✓'}
+        </div>
+      )}
       </div>
+      
 
       {/* Modal Nego */}
       <NegoModal

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
+import SlideToUnlock from './SlideToUnlock';
 
 export default function DealMenu({
   onClose,
@@ -17,6 +18,7 @@ export default function DealMenu({
   const [lastPendingMessage, setLastPendingMessage] = useState(null); // pesan deal terakhir yang masih pending
   const [loading, setLoading] = useState(true);
   const [dealData, setDealData] = useState(null);
+  const [allDone, setAllDone] = useState(false);
 
   useEffect(() => {
     async function fetchMessages() {
@@ -57,6 +59,43 @@ export default function DealMenu({
 
         // simpan ke GLOBAL STATE
         setDealData(dealResult);
+
+        if (dealId) {
+          const REQUIRED_STEPS = [
+            'deal_ongkos_jastip',
+            'deal_lokasi_ketemuan',
+            'deal_waktu_ketemuan',
+            'deal_lokasi_pengantaran',
+            'deal_barang_titipan'
+          ];
+
+          // cek message_type yang sudah ada untuk deal_id ini
+          const { data: dealSteps, error: stepsError } = await supabase
+            .from('messages')
+            .select('message_type')
+            .eq('deal_id', dealId)
+            .in('message_type', REQUIRED_STEPS);
+
+          if (!stepsError) {
+            const completedTypes = dealSteps?.map(m => m.message_type) || [];
+
+            // cek apakah semua step sudah terpenuhi
+            const allDone = REQUIRED_STEPS.every(type =>
+              completedTypes.includes(type)
+            );
+
+            // ⬇️ simpan ke state global komponen
+            setAllDone(allDone);   
+
+            // kalau lengkap → update status deal menjadi completed
+            if (allDone) {
+              await supabase
+                .from('deals')
+                .update({ status: 'completed' })
+                .eq('id', dealId);
+            }
+          }
+        }
 
         const { data: pending, error: pendingError } = await supabase
           .from('posts')
@@ -292,6 +331,15 @@ export default function DealMenu({
 
         {/* Footer */}
         <div className="p-3 bg-base-200 text-center border-t border-base-300/50">
+          {allDone && (
+            <SlideToUnlock 
+              onComplete={() => {
+                console.log("🚀 lanjut transaksi");
+                // panggil fungsi ke halaman transaksi di sini
+              }}
+            />
+          )}
+
           <button onClick={onClose} className="text-sm font-medium text-base-content/70 hover:text-base-content">
             Tutup
           </button>

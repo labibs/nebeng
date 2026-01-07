@@ -6,6 +6,7 @@ function formatDateSeparator(dateStr) {
     day: "2-digit",
     month: "long",
     year: "numeric",
+    timeZone: "Asia/Jakarta",
   });
 }
 
@@ -41,8 +42,12 @@ export default function ChatMessages({
 
   // --- GROUP PESAN PER TANGGAL ---
   const grouped = messages.reduce((acc, msg) => {
-    const d = new Date(msg.created_at);
-    const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
+    const key = new Date(msg.created_at).toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      timeZone: "Asia/Jakarta",
+    });
 
     if (!acc[key]) acc[key] = [];
     acc[key].push(msg);

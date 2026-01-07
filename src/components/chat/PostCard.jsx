@@ -81,6 +81,11 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
           </svg>
         </div>
       </div>
+      {isMine && (
+        <div className={`chat-footer text-xs mt-0 ${msg.is_read ? 'text-blue-500' : 'opacity-70'}`}>
+          {msg.is_read ? 'Terbaca ✓✓' : 'Terkirim ✓'}
+        </div>
+      )}
     </div>
   );
 }

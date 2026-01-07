@@ -16,6 +16,7 @@ import Profile from './pages/Profile'
 import Transaksi from './pages/Transaksi'
 import Market from './pages/Market'
 import BottomNav from './components/BottomNav'
+import DealPage from './pages/DealPage'
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
               </Route>
               <Route element={<ChatLayout />}>
                 <Route path="/chat/:conversationId" element={<ChatRoom />} />
+                <Route path="/deal" element={<DealPage />} />
               </Route>
 
               {/* Redirect semua route tidak dikenal ke home */}

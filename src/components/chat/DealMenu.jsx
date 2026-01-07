@@ -49,7 +49,7 @@ export default function DealMenu({
         if (dealId) {
           const { data, error } = await supabase
             .from('deals')
-            .select('agreed_fee, pickup_location, delivery_location, pickup_datetime, item_description')
+            .select('id,agreed_fee, pickup_location, delivery_location, pickup_datetime, item_description')
             .eq('post_id', postId)
             .eq('id', dealId)
             .maybeSingle();
@@ -336,9 +336,9 @@ export default function DealMenu({
           {allDone ? (
             <SlideToUnlock 
               onComplete={() => {
-                console.log("🚀 lanjut transaksi");
+                console.log("🚀 lanjut transaksi", dealData);
                 setTimeout(() => {
-                  navigate("/transaksi");
+                  navigate(`/deal?deal=${parseInt(dealData.id)}`);
                 }, 1500);
               }}
             />

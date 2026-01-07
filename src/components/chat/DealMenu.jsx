@@ -339,7 +339,7 @@ export default function DealMenu({
                 console.log("🚀 lanjut transaksi");
                 setTimeout(() => {
                   navigate("/transaksi");
-                }, 500);
+                }, 1500);
               }}
             />
           ) : (

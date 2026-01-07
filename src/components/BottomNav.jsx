@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Plus, MessageCircle, Receipt, Store } from 'lucide-react';
+import { Home, Plus, MessageCircle, ClipboardCheck, Store } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useUser } from '@clerk/clerk-react';
@@ -31,7 +31,7 @@ export default function BottomNav() {
           <NavItem to="/" icon={Home} currentPath={location.pathname} />
           <NavItem to="/chat" icon={MessageCircle} currentPath={location.pathname} badge={totalUnread} />
           <div className="w-20" />
-          <NavItem to="/transaksi" icon={Receipt} currentPath={location.pathname} />
+          <NavItem to="/transaksi" icon={ClipboardCheck} currentPath={location.pathname} />
           <NavItem to="/market" icon={Store} currentPath={location.pathname} />
         </div>
 

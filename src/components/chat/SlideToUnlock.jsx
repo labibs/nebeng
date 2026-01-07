@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowRight, ArrowLeft, Check, Unlock } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, ClipboardCheck, Truck } from "lucide-react";
 
 export default function SlideToUnlock({ onComplete }) {
   const [percent, setPercent] = useState(0);
@@ -92,8 +92,8 @@ export default function SlideToUnlock({ onComplete }) {
               ${done ? "opacity-0" : "opacity-80"}
             `}
             >
-              <Unlock className="w-4 h-4 mr-1 opacity-70" />
-              Geser ke transaksi
+              Lanjut transaksi
+              <ClipboardCheck className="w-4 h-4 ml-2 opacity-70" />
             </div>
 
             {/* success text */}
@@ -140,7 +140,7 @@ export default function SlideToUnlock({ onComplete }) {
           ) : isAnimating ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            <ArrowRight className="w-4 h-4" />
+            <Truck className="w-4 h-4" />
           )}
         </button>
 
@@ -162,7 +162,7 @@ export default function SlideToUnlock({ onComplete }) {
           {done ? (
             <Check className="w-5 h-5" />
           ) : (
-            <ArrowRight
+            <Truck
               className="w-5 h-5 transition-transform duration-200"
             />
           )}

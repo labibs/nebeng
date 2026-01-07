@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { supabase } from '../../lib/supabaseClient';
 import SlideToUnlock from './SlideToUnlock';
 
@@ -19,6 +20,7 @@ export default function DealMenu({
   const [loading, setLoading] = useState(true);
   const [dealData, setDealData] = useState(null);
   const [allDone, setAllDone] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchMessages() {
@@ -335,7 +337,7 @@ export default function DealMenu({
             <SlideToUnlock 
               onComplete={() => {
                 console.log("🚀 lanjut transaksi");
-                // panggil fungsi ke halaman transaksi di sini
+                navigate("/transaksi");
               }}
             />
           ) : (

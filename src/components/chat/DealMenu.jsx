@@ -295,7 +295,7 @@ export default function DealMenu({
         </div>
 
         {/* List */}
-        <div className="max-h-96 overflow-y-auto">
+        <div className="max-h-86 overflow-y-auto">
           {deals.map((dealItem, i) => {
             const color = colorMap[dealItem.tag];
             return (
@@ -331,18 +331,21 @@ export default function DealMenu({
 
         {/* Footer */}
         <div className="p-3 bg-base-200 text-center border-t border-base-300/50">
-          {allDone && (
+          {allDone ? (
             <SlideToUnlock 
               onComplete={() => {
                 console.log("🚀 lanjut transaksi");
                 // panggil fungsi ke halaman transaksi di sini
               }}
             />
+          ) : (
+            <button
+              onClick={onClose}
+              className="text-sm font-medium text-base-content/70 hover:text-base-content"
+            >
+              Tutup
+            </button>
           )}
-
-          <button onClick={onClose} className="text-sm font-medium text-base-content/70 hover:text-base-content">
-            Tutup
-          </button>
         </div>
       </div>
 

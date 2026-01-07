@@ -337,7 +337,9 @@ export default function DealMenu({
             <SlideToUnlock 
               onComplete={() => {
                 console.log("🚀 lanjut transaksi");
-                navigate("/transaksi");
+                setTimeout(() => {
+                  navigate("/transaksi");
+                }, 500);
               }}
             />
           ) : (

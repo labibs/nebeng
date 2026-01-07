@@ -38,7 +38,7 @@ export default function SlideToUnlock({ onComplete }) {
               <div
                 style={{ width: `${percent}%` }}
                 className="absolute inset-y-0 left-0
-                bg-emerald-400/25 transition-all duration-150"
+                bg-emerald-400/25 transition-all duration-150 rounded-full"
               />
             )}
 

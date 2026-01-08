@@ -43,7 +43,7 @@ function PaymentOption({
       className={`
         flex items-center gap-3 p-3 rounded-xl border transition-all
         ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-base-200"}
-        ${checked && !disabled ? "border-emerald-500 bg-emerald-50" : "border-base-300"}
+        ${checked && !disabled ? "border-emerald-500 bg-green-400" : "border-base-300"}
       `}
     >
       <input
@@ -123,6 +123,14 @@ export default function DealPage() {
             clerk_id,
             name,
             avatar_url
+          ),
+          
+          post:posts!fk_deals_post (
+            from_city,
+            to_city,
+            type,
+            item_photo,
+            created_at
           )
         `)
         .eq("id", dealId)
@@ -224,13 +232,60 @@ export default function DealPage() {
       {/* Header */}
       <div className="sticky top-0 z-10 navbar bg-base-100/90 backdrop-blur-xl border-b border-base-300/40">
         <button onClick={() => navigate(-1)} className="btn btn-ghost btn-circle">
-          <ArrowLeft className="w-6 h-6" />
-        </button>
-        <div className="flex-1 flex items-center justify-between gap-2 px-4">
-          <h3 className="text-lg font-bold">Detail Deal</h3>
-          <span className={`badge ${statusColor} badge-lg`}>
-            {deal.status || "pending"}
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+        <div className="flex-1 flex items-center justify-between gap-2 px-0 -translate-x-4">
+          <div className="px-5 py-0 flex items-center justify-between">
+            <div className="flex items-center gap-4 w-full">
+              {/* Avatar / Foto Barang */}
+              <div className="avatar flex-shrink-0">
+                <div className="w-11 h-11 rounded-xl overflow-hidden ring-2 ring-emerald-500/20">
+                  <img
+                    src={deal.post?.item_photo || "/default-item.jpg"}
+                    alt="Barang"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+
+              {/* Info Lokasi */}
+              <div className="flex-1 min-w-0">
+                <span className="badge badge-primary badge-sm font-medium">
+                  {deal.post?.type === "titip" ? "Mau Titip" : "Bisa Bawa"}
+                </span>
+                <div className="flex items-center gap-2 text-sm text-base-content/80">
+                  <span className="font-semibold">
+                    {deal.post?.from_city || "-"}
+                  </span>
+
+                  <svg
+                    className="w-5 h-5 text-emerald-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M14 5l7 7m0 0l-7 7m7-7H3"
+                    />
+                  </svg>
+
+                  <span className="font-semibold">
+                    {deal.post?.to_city || "-"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <span className={`badge badge-md ${statusColor}`}>
+            {deal.status === "completed" ? "deal" : deal.status || "pending"}
           </span>
+
         </div>
       </div>
 

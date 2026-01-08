@@ -1,27 +1,112 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-
 import {
   ArrowLeft,
-  Wallet,
+  ClipboardList,
   PackageCheck,
   MapPin,
   CalendarClock,
-  ClipboardList,
   Info,
 } from "lucide-react";
+
+function InfoRow({ icon: Icon, title, value }) {
+  return (
+    <div className="flex gap-3 items-start">
+      <Icon className="w-5 h-5 text-emerald-500 mt-0.5" />
+      <div>
+        <p className="text-sm font-medium">{title}</p>
+        <p className="text-sm opacity-70">{value || "-"}</p>
+      </div>
+    </div>
+  );
+}
+
+function afterSecondComma(text) {
+  if (!text) return "-";
+  const parts = text.split(",");
+  if (parts.length < 3) return text.trim();
+  return parts.slice(2).join(",").trim();
+}
+
+function PaymentOption({
+  value,
+  title,
+  desc,
+  checked,
+  onChange,
+  disabled = false,
+  badge,
+}) {
+  return (
+    <label
+      className={`
+        flex items-center gap-3 p-3 rounded-xl border transition-all
+        ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-base-200"}
+        ${checked && !disabled ? "border-emerald-500 bg-emerald-50" : "border-base-300"}
+      `}
+    >
+      <input
+        type="radio"
+        name="payment_method"
+        className="radio radio-success"
+        value={value}
+        checked={checked}
+        onChange={onChange}
+        disabled={disabled}
+      />
+      <div className="flex-1">
+        <p className="font-medium">{title}</p>
+        <p className="text-sm opacity-70">{desc}</p>
+      </div>
+      {badge && <span className="badge badge-outline badge-neutral">{badge}</span>}
+    </label>
+  );
+}
 
 export default function DealPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const dealId = searchParams.get("deal");
+  const trxId = searchParams.get("trx");
 
   const [deal, setDeal] = useState(null);
+  const [transaction, setTransaction] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [paying, setPaying] = useState(false);
 
+  // ✅ Load Midtrans Snap script — SEKARANG DI DALAM COMPONENT
   useEffect(() => {
-    if (!dealId) return;
+    // Cek apakah script sudah ada (hindari double load)
+    if (document.querySelector('script[src*="snap.js"]')) {
+      console.log("Midtrans script sudah ada");
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
+    script.setAttribute("data-client-key", import.meta.env.VITE_MIDTRANS_CLIENT_KEY || "SB-Mid-client-XXXX"); // ganti dengan client key sandbox kamu
+    script.async = true;
+
+    script.onload = () => console.log("✅ Midtrans Snap script loaded");
+    script.onerror = () => console.error("❌ Gagal load Midtrans Snap script");
+
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup kalau component unmount
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
+
+  // Fetch deal
+  useEffect(() => {
+    if (!dealId) {
+      setLoading(false);
+      return;
+    }
 
     async function fetchDeal() {
       const { data, error } = await supabase
@@ -33,22 +118,97 @@ export default function DealPage() {
           pickup_location,
           delivery_location,
           pickup_datetime,
-          item_description
+          item_description,
+          carrier:users!deals_carrier_id_fkey (
+            clerk_id,
+            name,
+            avatar_url
+          )
         `)
         .eq("id", dealId)
-        .maybeSingle();
+        .single();
 
-      if (!error) setDeal(data);
+      if (error) {
+        console.error("Error fetching deal:", error);
+        alert("Gagal memuat detail deal");
+      } else {
+        setDeal(data);
+      }
       setLoading(false);
     }
 
     fetchDeal();
   }, [dealId]);
 
-  if (loading) return <p className="p-4">Loading…</p>;
-  if (!deal) return <p className="p-4">Transaksi tidak ditemukan</p>;
+  // Fetch transaction
+  useEffect(() => {
+    if (!trxId) return;
 
-  // badge status
+    async function fetchTransaction() {
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("id", trxId)
+        .single();
+
+      if (!error) setTransaction(data);
+    }
+
+    fetchTransaction();
+  }, [trxId]);
+
+  const handlePay = async () => {
+    if (paying) return;
+    setPaying(true);
+    console.log('ini transkasi', transaction)
+
+    try {
+      const { data, error } = await supabase.functions.invoke("create-midtrans-snap", {
+        body: { transaction_id: transaction?.id },
+      });
+
+      console.log("Transaction ID yang dikirim:", transaction?.id);
+
+      if (error || !data?.snap_token) {
+        console.error("Error atau tidak ada snap_token:", error, data);
+        alert("Gagal membuat pembayaran. Coba lagi.");
+        setPaying(false);
+        return;
+      }
+
+      if (!window.snap) {
+        alert("Midtrans belum siap. Refresh halaman.");
+        setPaying(false);
+        return;
+      }
+
+      window.snap.pay(data.snap_token, {
+        onSuccess: (result) => {
+          console.log("Success:", result);
+          navigate(`/payment-success?order_id=${result.order_id}`);
+        },
+        onPending: (result) => {
+          console.log("Pending:", result);
+          navigate(`/payment-pending?order_id=${result.order_id}`);
+        },
+        onError: () => {
+          alert("Pembayaran gagal");
+        },
+        onClose: () => {
+          console.log("Popup ditutup");
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan");
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  if (loading) return <p className="p-8 text-center">Memuat...</p>;
+  if (!deal) return <p className="p-8 text-center">Deal tidak ditemukan</p>;
+
   const statusColor =
     deal.status === "completed"
       ? "badge-success"
@@ -56,135 +216,125 @@ export default function DealPage() {
       ? "badge-error"
       : "badge-warning";
 
-  return (
-    <div className="min-h-screen bg-base-200 flex flex-col pb-24">
+  const canPay = transaction?.transaction_status === "draft";
 
-      {/* NAVBAR */}
+  return (
+    // ... (UI sama seperti sebelumnya, tidak perlu diulang)
+    <div className="min-h-screen bg-base-200 flex flex-col pb-24">
+      {/* Header */}
       <div className="sticky top-0 z-10 navbar bg-base-100/90 backdrop-blur-xl border-b border-base-300/40">
         <button onClick={() => navigate(-1)} className="btn btn-ghost btn-circle">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+          <ArrowLeft className="w-6 h-6" />
         </button>
-
-        <div className="flex-1 flex items-center justify-between gap-2">
-  <h3 className="text-lg font-bold">
-    Deal Jastip
-  </h3>
-
-  <span className={`badge ${statusColor}`}>
-    {deal.status || "pending"}
-  </span>
-</div>
-
+        <div className="flex-1 flex items-center justify-between gap-2 px-4">
+          <h3 className="text-lg font-bold">Detail Deal</h3>
+          <span className={`badge ${statusColor} badge-lg`}>
+            {deal.status || "pending"}
+          </span>
+        </div>
       </div>
 
       <div className="p-4 flex flex-col gap-4">
+        {/* Carrier Card */}
+        <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 flex items-center gap-4">
+          <div className="avatar">
+            <div className="w-16 rounded-full ring ring-emerald-500 ring-offset-base-100 ring-offset-2">
+              <img
+                src={deal.carrier?.avatar_url || "/avatar-placeholder.png"}
+                alt="Carrier"
+              />
+            </div>
+          </div>
+          <div>
+            <p className="font-semibold text-lg">{deal.carrier?.name || "Carrier"}</p>
+            <p className="text-sm opacity-70">Pengirim Titipan</p>
+          </div>
+        </div>
 
-        {/* TRANSACTION SUMMARY */}
+        {/* Ringkasan */}
         <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40">
           <h2 className="font-semibold text-lg flex items-center gap-2 mb-2">
             <Info className="w-5 h-5 text-emerald-500" />
             Ringkasan Transaksi
           </h2>
-
           <p className="text-sm opacity-70">
-            Pastikan semua detail berikut sudah benar sebelum melanjutkan pembayaran.
+            Pastikan semua detail sudah benar sebelum membayar.
           </p>
         </div>
 
-        {/* ITEM CARD */}
-        <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40">
-          <h2 className="font-semibold text-lg flex items-center gap-2 mb-2">
-            <PackageCheck className="w-5 h-5 text-emerald-500" />
-            Detail Barang Titipan
-          </h2>
-
-          <div className="space-y-2 text-sm">
-            <p className="opacity-70">Nama / Deskripsi Barang</p>
-            <p className="font-medium">
-              {deal.item_description || "-"}
-            </p>
-          </div>
-        </div>
-
-        {/* LOCATION CARD */}
-        <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40">
-          <h2 className="font-semibold text-lg flex items-center gap-2 mb-2">
-            <MapPin className="w-5 h-5 text-emerald-500" />
-            Lokasi & Pengantaran
-          </h2>
-
-          <div className="space-y-3 text-sm">
-
-            <div>
-              <p className="opacity-70">Lokasi Ketemuan</p>
-              <p className="font-medium">
-                {deal.pickup_location || "-"}
-              </p>
-            </div>
-
-            <div>
-              <p className="opacity-70">Lokasi Pengantaran</p>
-              <p className="font-medium">
-                {deal.delivery_location || "-"}
-              </p>
-            </div>
-
-            <div className="flex gap-2">
-              <CalendarClock className="w-4 h-4 mt-0.5 opacity-70" />
-              <div>
-                <p className="opacity-70">Waktu Ketemuan</p>
-                <p className="font-medium">
-                  {deal.pickup_datetime
-                    ? new Date(deal.pickup_datetime).toLocaleString("id-ID", {
-                        weekday: "long",
-                        day: "2-digit",
-                        month: "long",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : "-"}
-                </p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* PAYMENT CARD */}
-        <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40">
-          <h2 className="font-semibold text-lg flex items-center gap-2 mb-2">
-            <Wallet className="w-5 h-5 text-emerald-500" />
-            Biaya & Pembayaran
-          </h2>
-
-          <div className="text-sm">
-            <p className="opacity-70">Ongkos Jastip</p>
-
-            <p className="text-2xl font-extrabold text-emerald-600">
-              {deal.agreed_fee
-                ? Number(deal.agreed_fee).toLocaleString("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
+        {/* Detail Item */}
+        <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 space-y-4">
+          <InfoRow icon={ClipboardList} title="Deskripsi Barang" value={deal.item_description} />
+          <InfoRow icon={MapPin} title="Lokasi Penjemputan" value={afterSecondComma(deal.pickup_location)} />
+          <InfoRow icon={MapPin} title="Lokasi Pengantaran" value={afterSecondComma(deal.delivery_location)} />
+          <InfoRow
+            icon={CalendarClock}
+            title="Waktu Penjemputan"
+            value={
+              deal.pickup_datetime
+                ? new Date(deal.pickup_datetime).toLocaleString("id-ID", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
                   })
-                : "-"}
-            </p>
+                : "-"
+            }
+          />
+        </div>
+
+        {/* Biaya */}
+        <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40">
+          <p className="text-sm opacity-70 mb-1">Total Biaya Jastip</p>
+          <p className="text-3xl font-extrabold text-emerald-600">
+            {deal.agreed_fee
+              ? Number(deal.agreed_fee).toLocaleString("id-ID", {
+                  style: "currency",
+                  currency: "IDR",
+                })
+              : "-"}
+          </p>
+        </div>
+        {/* Metode Pembayaran - hanya muncul jika draft */}
+        {canPay && (
+          <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40">
+            <h2 className="font-semibold text-lg mb-3">Metode Pembayaran</h2>
+            <div className="space-y-2">
+              <PaymentOption
+                value="midtrans"
+                title="Transfer / E-Wallet"
+                desc="GoPay, ShopeePay, QRIS, VA Bank"
+                checked={true}
+                onChange={() => {}}
+                badge="Rekomendasi"
+              />
+              <PaymentOption
+                title="Bayar di Tempat (COD)"
+                desc="Segera hadir"
+                disabled
+              />
+            </div>
+          </div>
+        )}
+      </div>
+      {canPay && (
+        <div className="fixed bottom-4 left-4 right-4 z-20">
+          <div className="bg-base-100/95 backdrop-blur-xl border border-base-300/40 shadow-xl rounded-2xl p-4 flex gap-3">
+            <button className="btn btn-outline flex-1 rounded-xl" onClick={() => navigate(-1)}>
+              Batal
+            </button>
+            <button
+              className="btn btn-success flex-1 rounded-xl"
+              onClick={handlePay}
+              disabled={paying}
+            >
+              {paying ? <span className="loading loading-spinner"></span> : "Bayar Sekarang"}
+            </button>
           </div>
         </div>
-      </div>
-
-      {/* FIXED BOTTOM ACTION BAR */}
-      <div className="fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300/50 p-3 flex gap-2">
-        <button className="btn btn-outline flex-1">
-          Batalkan
-        </button>
-
-        <button className="btn btn-success flex-1">
-          Lanjut ke Pembayaran
-        </button>
-      </div>
-
+      )}
     </div>
   );
 }

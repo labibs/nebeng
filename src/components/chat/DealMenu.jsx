@@ -334,12 +334,32 @@ export default function DealMenu({
         {/* Footer */}
         <div className="p-3 bg-base-200 text-center border-t border-base-300/50">
           {allDone ? (
-            <SlideToUnlock 
-              onComplete={() => {
-                console.log("🚀 lanjut transaksi", dealData);
-                setTimeout(() => {
-                  navigate(`/deal?deal=${parseInt(dealData.id)}`);
-                }, 1500);
+            <SlideToUnlock
+              onComplete={async () => {
+                try {
+                  console.log("🚀 lanjut transaksi", dealData);
+
+                  const { data: trx, error } = await supabase
+                    .from("transactions")
+                    .upsert(
+                      {
+                        deal_id: dealData.id,
+                        gross_amount: dealData.agreed_fee,
+                        transaction_status: "draft",
+                      },
+                      {
+                        onConflict: "deal_id",
+                      }
+                    )
+                    .select()
+                    .single();
+
+                  if (error) throw error;
+
+                  navigate(`/deal?deal=${dealData.id}&trx=${trx.id}`);
+                } catch (err) {
+                  console.error("Gagal membuat / update transaksi:", err.message);
+                }
               }}
             />
           ) : (

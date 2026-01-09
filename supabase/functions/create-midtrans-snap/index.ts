@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { v4 as uuidv4 } from "https://esm.sh/uuid";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,123 +9,133 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle preflight OPTIONS
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders, status: 200 });
   }
 
   try {
     const { transaction_id } = await req.json();
+    if (!transaction_id) throw new Error("transaction_id required");
+    console.log("Cek transaksi ID:", transaction_id);
 
-    console.log('Cek transaksi ID:', transaction_id);
-
-    if (!transaction_id) {
-      throw new Error("transaction_id required");
-    }
-
-    // Ambil data transaksi dari DB (pakai service_role biar bypass RLS)
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Ambil transaksi dari DB
     const { data: trx, error: trxError } = await supabaseAdmin
       .from("transactions")
-      .select("id, deal_id, gross_amount, transaction_status")
+      .select("id, deal_id, gross_amount, transaction_status, snap_token")
       .eq("id", transaction_id)
       .single();
 
-    if (trxError || !trx) {
-      throw new Error("Transaksi tidak ditemukan");
-    }
-
-    if (trx.transaction_status !== 'draft') {
+    if (trxError || !trx) throw new Error("Transaksi tidak ditemukan");
+    if (trx.transaction_status !== "draft")
       throw new Error("Transaksi sudah dibayar atau dibatalkan");
+
+    const isProduction = false;
+    const midtransBaseUrl = isProduction
+      ? "https://app.midtrans.com/snap/v1"
+      : "https://app.sandbox.midtrans.com/snap/v1";
+    const authString = btoa(Deno.env.get("MIDTRANS_SERVER_KEY")! + ":");
+
+    // 1️⃣ Jika snap_token masih valid di DB → return langsung
+    if (trx.snap_token) {
+      console.log("Snap token sudah ada di DB, return token lama.");
+      return new Response(
+        JSON.stringify({ snap_token: trx.snap_token }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // MIDTRANS SNAP API ENDPOINT
-    const isProduction = false; // ubah true kalau live
-    const midtransUrl = isProduction
-      ? "https://app.midtrans.com/snap/v1/transactions"
-      : "https://app.sandbox.midtrans.com/snap/v1/transactions";
+    // 2️⃣ Cek status transaksi di Midtrans
+    let existingMidtransData: any = null;
+    const statusUrl = `https://api${isProduction ? "" : ".sandbox"}.midtrans.com/v2/${transaction_id}/status`;
 
-    const serverKey = Deno.env.get("MIDTRANS_SERVER_KEY")!;
+    const statusResponse = await fetch(statusUrl, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Basic ${authString}`,
+      },
+    });
 
-    // Basic Auth: Base64(serverKey:)
-    const authString = btoa(serverKey + ":");
+    if (statusResponse.ok) {
+      existingMidtransData = await statusResponse.json();
+      console.log("Transaksi ditemukan di Midtrans:", existingMidtransData.transaction_status);
+    } else if (statusResponse.status === 404) {
+      console.log("Order_id belum ada di Midtrans → aman buat baru");
+    } else {
+      console.warn("Error cek status Midtrans:", statusResponse.status, await statusResponse.text());
+    }
+
+    // 3️⃣ Blokir transaksi final
+    const finalStatuses = ["settlement", "capture", "deny"];
+    if (existingMidtransData && finalStatuses.includes(existingMidtransData.transaction_status)) {
+      throw new Error(
+        `Transaksi dengan order_id lama sudah ${existingMidtransData.transaction_status} di Midtrans`
+      );
+    }
+
+    // 4️⃣ Kalau expired / cancel / pending / null → buat order_id baru
+    const midtransOrderId = `trx-${uuidv4().slice(0, 20)}`; // potong UUID
+
+    console.log("Generate Midtrans order_id baru:", midtransOrderId);
 
     const parameter = {
       transaction_details: {
-        order_id: trx.id, // harus unik
-        gross_amount: Number(trx.gross_amount), // SESUAIKAN: dari gross_amount
+        order_id: midtransOrderId,
+        gross_amount: Number(trx.gross_amount),
       },
-      credit_card: {
-        secure: true,
-      },
-      // Opsional: tambah detail customer jika ada data
-      customer_details: {
-        // Anda bisa menambahkan field lain seperti email, phone jika ada di tabel
-      },
-      // Opsional: tambah detail item
+      credit_card: { secure: true },
       item_details: [
         {
           id: trx.deal_id?.toString() || "item-1",
           price: Number(trx.gross_amount),
           quantity: 1,
           name: `Deal ${trx.deal_id || "Item"}`,
-        }
+        },
       ],
+      custom_field1: `original_trx_id: ${trx.id}`,
+      // expiry: { unit: "hours", duration: 2 } // opsional
     };
 
-    const response = await fetch(midtransUrl, {
+    const createResponse = await fetch(`${midtransBaseUrl}/transactions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": `Basic ${authString}`,
+        Accept: "application/json",
+        Authorization: `Basic ${authString}`,
       },
       body: JSON.stringify(parameter),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Midtrans error response:", errorText);
-      throw new Error(`Midtrans error: ${response.status} ${errorText}`);
+    if (!createResponse.ok) {
+      const errorText = await createResponse.text();
+      throw new Error(`Midtrans error: ${createResponse.status} ${errorText}`);
     }
 
-    const data = await response.json();
+    const data = await createResponse.json();
+    if (!data.token) throw new Error("Gagal generate snap token dari Midtrans");
 
-    if (!data.token) {
-      throw new Error("Gagal generate snap token dari Midtrans");
-    }
-
-    // Update snap_token di database (opsional, tapi disarankan)
+    // 5️⃣ Simpan snap_token dan midtrans_order_id ke DB
     const { error: updateError } = await supabaseAdmin
       .from("transactions")
-      .update({ snap_token: data.token })
+      .update({ snap_token: data.token, midtrans_order_id: midtransOrderId })
       .eq("id", transaction_id);
 
-    if (updateError) {
-      console.warn("Gagal update snap_token ke database:", updateError);
-      // Lanjutkan saja, tidak perlu throw error karena token sudah didapat
-    }
+    if (updateError) console.warn("Gagal update snap_token:", updateError);
 
-    // Return snap_token ke frontend
-    return new Response(
-      JSON.stringify({ snap_token: data.token }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ snap_token: data.token }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (err) {
     console.error("Error:", err);
-    return new Response(
-      JSON.stringify({ error: err.message || "Internal error" }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: err.message || "Internal error" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

@@ -94,7 +94,7 @@ serve(async (req) => {
           id: trx.deal_id?.toString() || "item-1",
           price: Number(trx.gross_amount),
           quantity: 1,
-          name: `Deal ${trx.deal_id || "Item"}`,
+          name: `Transaksi ${trx.id || "Item"}`,
         },
       ],
       custom_field1: `original_trx_id: ${trx.id}`,
@@ -122,8 +122,8 @@ serve(async (req) => {
     // 5️⃣ Simpan snap_token dan midtrans_order_id ke DB
     const { error: updateError } = await supabaseAdmin
       .from("transactions")
-      .update({ snap_token: data.token, midtrans_order_id: midtransOrderId })
-      .eq("id", transaction_id);
+      .update({ snap_token: data.token, order_id: midtransOrderId })
+      .eq("id", trx.id);
 
     if (updateError) console.warn("Gagal update snap_token:", updateError);
 

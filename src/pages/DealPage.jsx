@@ -1,6 +1,7 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { handlePay } from "../lib/handlePay";
 import {
   ArrowLeft,
   ClipboardList,
@@ -165,54 +166,54 @@ export default function DealPage() {
     fetchTransaction();
   }, [trxId]);
 
-  const handlePay = async () => {
-    if (paying) return;
-    setPaying(true);
-    console.log('ini transkasi', transaction)
+  // const handlePay = async () => {
+  //   if (paying) return;
+  //   setPaying(true);
+  //   console.log('ini transkasi', transaction)
 
-    try {
-      const { data, error } = await supabase.functions.invoke("create-midtrans-snap", {
-        body: { transaction_id: transaction?.id },
-      });
+  //   try {
+  //     const { data, error } = await supabase.functions.invoke("create-midtrans-snap", {
+  //       body: { transaction_id: transaction?.id },
+  //     });
 
-      console.log("Transaction ID yang dikirim:", transaction?.id);
+  //     console.log("Transaction ID yang dikirim:", transaction?.id);
 
-      if (error || !data?.snap_token) {
-        console.error("Error atau tidak ada snap_token:", error, data);
-        alert("Gagal membuat pembayaran. Coba lagi.");
-        setPaying(false);
-        return;
-      }
+  //     if (error || !data?.snap_token) {
+  //       console.error("Error atau tidak ada snap_token:", error, data);
+  //       alert("Gagal membuat pembayaran. Coba lagi.");
+  //       setPaying(false);
+  //       return;
+  //     }
 
-      if (!window.snap) {
-        alert("Midtrans belum siap. Refresh halaman.");
-        setPaying(false);
-        return;
-      }
+  //     if (!window.snap) {
+  //       alert("Midtrans belum siap. Refresh halaman.");
+  //       setPaying(false);
+  //       return;
+  //     }
 
-      window.snap.pay(data.snap_token, {
-        onSuccess: (result) => {
-          console.log("Success:", result);
-          navigate(`/payment-success?order_id=${result.order_id}`);
-        },
-        onPending: (result) => {
-          console.log("Pending:", result);
-          navigate(`/payment-pending?order_id=${result.order_id}`);
-        },
-        onError: () => {
-          alert("Pembayaran gagal");
-        },
-        onClose: () => {
-          console.log("Popup ditutup");
-        },
-      });
-    } catch (err) {
-      console.error(err);
-      alert("Terjadi kesalahan");
-    } finally {
-      setPaying(false);
-    }
-  };
+  //     window.snap.pay(data.snap_token, {
+  //       onSuccess: (result) => {
+  //         console.log("Success:", result);
+  //         navigate(`/payment-success?order_id=${result.order_id}`);
+  //       },
+  //       onPending: (result) => {
+  //         console.log("Pending:", result);
+  //         navigate(`/payment-pending?order_id=${result.order_id}`);
+  //       },
+  //       onError: () => {
+  //         alert("Pembayaran gagal");
+  //       },
+  //       onClose: () => {
+  //         console.log("Popup ditutup");
+  //       },
+  //     });
+  //   } catch (err) {
+  //     console.error(err);
+  //     alert("Terjadi kesalahan");
+  //   } finally {
+  //     setPaying(false);
+  //   }
+  // };
 
   if (loading) return <p className="p-8 text-center">Memuat...</p>;
   if (!deal) return <p className="p-8 text-center">Deal tidak ditemukan</p>;
@@ -382,7 +383,13 @@ export default function DealPage() {
             </button>
             <button
               className="btn btn-success flex-1 rounded-xl"
-              onClick={handlePay}
+              onClick={() =>
+                handlePay({
+                  transactionId: transaction?.id,
+                  navigate,
+                  setPaying,
+                })
+              }
               disabled={paying}
             >
               {paying ? <span className="loading loading-spinner"></span> : "Bayar Sekarang"}

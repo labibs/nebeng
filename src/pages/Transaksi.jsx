@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { supabase } from "../lib/supabaseClient";
+import { FileText, Wallet } from "lucide-react";
+import { handlePay } from "../lib/handlePay";
+import { useNavigate } from 'react-router-dom'
 import TransaksiHeader from "../components/transaksi/TransaksiHeader";
 
 // ⬆️ sesuaikan path supabase client kamu
@@ -11,6 +14,7 @@ export default function TransaksiPage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -214,9 +218,37 @@ export default function TransaksiPage() {
             }
 
           </span>
-          <span className="text-xs text-base-content/40">
-            Lihat detail →
-          </span>
+          <div className="flex items-center gap-4">
+            {/* Ke halaman Deal */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/deal?deal=${trx.deal?.id}&trx=${trx.id}`);
+              }}
+              className="group flex items-center gap-1 text-green-600 hover:text-green-700 transition"
+              title="Lihat Deal"
+            >
+              <FileText size={22} className="group-hover:scale-110 transition" />
+              {/* <span className="text-xs font-medium">Deal</span> */}
+            </button>
+
+            {/* Ke halaman Pembayaran */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePay({
+                  transactionId: trx.id,
+                  navigate,
+                });
+              }}
+              className="group flex items-center gap-1 text-green-600 hover:text-green-700 transition"
+              title="Pembayaran"
+            >
+              <Wallet size={22} className="group-hover:scale-110 transition" />
+              {/* <span className="text-xs font-medium">Bayar</span> */}
+            </button>
+          </div>
+
         </div>
       </div>
     ))

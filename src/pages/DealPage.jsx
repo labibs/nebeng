@@ -319,7 +319,8 @@ export default function DealPage() {
       ? "badge-error"
       : "badge-warning";
 
-  const canPay = transaction?.transaction_status === "draft";
+  const canPay = ["draft", "pending"].includes(transaction?.transaction_status);
+
   const isCarrierLogin = deal?.carrier_id === clerkId;
   const opponent = isCarrierLogin
   ? deal?.depositor

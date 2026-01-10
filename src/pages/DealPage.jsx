@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { openChat } from "../lib/chatHelper";
+import OpponentSummary from "../components/transaksi/OpponentSummary";
 
 function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
   const [open, setOpen] = useState(false);
@@ -87,6 +89,7 @@ function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
     </div>
   );
 }
+
 
 function InfoRow({ icon: Icon, title, value }) {
   return (
@@ -327,7 +330,42 @@ export default function DealPage() {
   : deal?.carrier;
   const opponentRole = isCarrierLogin ? "Customer" : "Kurir";
   const opponentType = isCarrierLogin ? "Bawa Titipan" : "Nitip Bawakan";
-  const opponentRingkasan = isCarrierLogin ? "Dana dari customer akan diteruskan kepada Anda setelah barang dinyatakan diterima oleh penerima. Pastikan proses pengiriman dilakukan sesuai kesepakatan." : "Pastikan seluruh detail pesanan sudah sesuai sebelum melanjutkan pembayaran. Dana akan diteruskan kepada kurir setelah barang diterima oleh penerima.";
+  
+  const startChatWithDeal = async (deal, currentClerkId) => {
+    // Tentukan lawan chat
+    const isCarrierLogin = deal.carrier_id === currentClerkId;
+    const opponentId = isCarrierLogin ? deal.depositor_id : deal.carrier_id;
+
+    let conversationId;
+
+    // cek apakah sudah ada conversation berdua
+    const { data: participants, error } = await supabase
+      .from("conversation_participants")
+      .select("conversation_id")
+      .in("user_id", [currentClerkId, opponentId]);
+
+    if (participants && participants.length >= 2) {
+      conversationId = participants[0].conversation_id;
+    } else {
+      // buat conversation baru
+      const { data: newConv, error: insertError } = await supabase
+        .from("conversations")
+        .insert({})
+        .select("id")
+        .single();
+
+      conversationId = newConv.id;
+
+      // masukkan peserta
+      await supabase.from("conversation_participants").insert([
+        { conversation_id: conversationId, user_id: currentClerkId },
+        { conversation_id: conversationId, user_id: opponentId },
+      ]);
+    }
+
+    // navigasi ke halaman chat
+    navigate(`/chat/${conversationId}`);
+  };
 
   return (
     // ... (UI sama seperti sebelumnya, tidak perlu diulang)
@@ -423,6 +461,7 @@ export default function DealPage() {
           <button
             className="btn btn-circle btn-ghost text-emerald-600 hover:bg-emerald-100"
             title="Chat"
+            onClick={() => startChatWithDeal(deal, clerkId)}
           >
             <MessageCircle size={22} />
           </button>
@@ -434,10 +473,8 @@ export default function DealPage() {
             <Info className="w-5 h-5 text-emerald-500" />
             Ringkasan Transaksi
           </h2>
-          <p className="text-sm opacity-70">
-            {opponentRingkasan?.length > 60
-              ? opponentRingkasan.slice(0, 60) + "… selengkapnya"
-              : opponentRingkasan}
+          <p className="text-sm opacity-100">
+            <OpponentSummary />
           </p>
 
         </div>
@@ -625,7 +662,7 @@ export default function DealPage() {
         </div>
       )}
       {/* Kurir tidak perlu tombol bayar */}
-      {isCarrierLogin && (
+      {(isCarrierLogin || !canPay) && (
         <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl bg-base-100 shadow-sm p-3 border border-base-300">
           {/* Left section */}
           <div className="flex items-center gap-3">
@@ -647,15 +684,15 @@ export default function DealPage() {
           {/* Right section */}
           <div className="text-right">
             <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${
-                  transaction?.status === "paid"
+                  transaction?.transaction_status === "paid"
                     ? "bg-emerald-100 text-emerald-800"
-                    : transaction?.status === "pending"
+                    : transaction?.transaction_status === "pending"
                     ? "bg-yellow-100 text-yellow-800"
-                    : transaction?.status === "failed"
+                    : transaction?.transaction_status === "failed"
                     ? "bg-red-100 text-red-800"
                     : "bg-gray-100 text-gray-700"
                 }`}>
-                  {transaction?.status?.toUpperCase() || "DRAFT"}
+                  {transaction?.transaction_status?.toUpperCase() || "DRAFT"}
                 </span>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { formatDistanceToNow } from 'date-fns';
 import { id as localeId } from 'date-fns/locale/id';
+import { openChat } from '../lib/chatHelper';
 
 export default function ChatInbox() {
   const navigate = useNavigate();
@@ -328,11 +329,11 @@ export default function ChatInbox() {
     };
   }, [currentUserId]);
 
-  const openChat = (convId, opponent) => {
-    navigate(`/chat/${convId}`, {
-      state: { recipient: { name: opponent.name, imageUrl: opponent.avatar_url } },
-    });
-  };
+  // const openChat = (convId, opponent) => {
+  //   navigate(`/chat/${convId}`, {
+  //     state: { recipient: { name: opponent.name, imageUrl: opponent.avatar_url } },
+  //   });
+  // };
 
   return (
   <div className="min-h-screen bg-gradient-to-br from-[#e8f5e9] via-[#f0f8f1] to-[#d9f0e0] dark:from-[#1e293b] dark:via-[#0f172a] dark:to-[#1e293b] text-base-content flex flex-col">
@@ -472,7 +473,7 @@ export default function ChatInbox() {
           {conversations.map((conv) => (
             <div key={conv.conversationId}>
               <button
-                onClick={() => openChat(conv.conversationId, conv.opponent)}
+                onClick={() => openChat(conv.conversationId, conv.opponent, navigate)}
                 className="w-full flex items-center gap-4 px-4 py-4 hover:bg-base-200/30 dark:hover:bg-base-700/30 transition text-left"
               >
                 <div className="avatar">

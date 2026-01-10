@@ -31,7 +31,7 @@ serve(async (req) => {
       .single();
 
     if (trxError || !trx) throw new Error("Transaksi tidak ditemukan");
-    if (trx.transaction_status !== "draft")
+    if (trx.transaction_status !== "draft" && trx.transaction_status !== "pending")
       throw new Error("Transaksi sudah dibayar atau dibatalkan");
 
     const isProduction = false;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { supabase } from "../lib/supabaseClient";
-import { FileText, Wallet } from "lucide-react";
+import { FileText, Wallet, BaggageClaim} from "lucide-react";
 import { handlePay } from "../lib/handlePay";
 import { useNavigate } from 'react-router-dom'
 import TransaksiHeader from "../components/transaksi/TransaksiHeader";
@@ -219,6 +219,18 @@ export default function TransaksiPage() {
 
           </span>
           <div className="flex items-center gap-4">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                // navigasi ke halaman live tracking, kirim deal + trx sebagai query
+                navigate(`/tracking?deal=${trx.deal?.id}&trx=${trx.id}`);
+              }}
+              className="group flex items-center gap-1 text-blue-600 hover:text-blue-700 transition"
+              title="Live Tracking"
+            >
+              <BaggageClaim size={22} className="group-hover:scale-110 transition" />
+              {/* <span className="text-xs font-medium">Tracking</span> */}
+            </button>
             {/* Ke halaman Deal */}
             <button
               onClick={(e) => {
@@ -241,7 +253,7 @@ export default function TransaksiPage() {
                   navigate,
                 });
               }}
-              className="group flex items-center gap-1 text-green-600 hover:text-green-700 transition"
+              className="group flex items-center gap-1 text-orange-600 hover:text-orange-700 transition"
               title="Pembayaran"
             >
               <Wallet size={22} className="group-hover:scale-110 transition" />

@@ -99,6 +99,8 @@ serve(async (req) => {
       ],
       custom_field1: `original_trx_id: ${trx.id}`,
       // expiry: { unit: "hours", duration: 2 } // opsional
+
+      finish_redirect_url: `https://nebeng.vercel.app/deal?deal=${trx.deal_id}&trx=${trx.id}`,
     };
 
     const createResponse = await fetch(`${midtransBaseUrl}/transactions`, {

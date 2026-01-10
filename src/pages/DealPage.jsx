@@ -1,15 +1,92 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useUser } from "@clerk/clerk-react";
 import { supabase } from "../lib/supabaseClient";
 import { handlePay } from "../lib/handlePay";
 import {
-  ArrowLeft,
+  MessageCircle,
   ClipboardList,
-  PackageCheck,
+  Plus, 
+  Minus,
   MapPin,
   CalendarClock,
   Info,
 } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
+function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
+  const [open, setOpen] = useState(false);
+
+  const toggle = () => setOpen(!open);
+
+  return (
+    <div className="border-b border-base-300/40 py-2">
+      <div className="flex justify-between items-start gap-3 cursor-pointer" onClick={toggle}>
+        <div className="flex gap-3 items-start">
+          <Icon className="w-5 h-5 text-emerald-500 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium">{title}</p>
+            <p className="text-sm opacity-70">{value || "-"}</p>
+          </div>
+        </div>
+
+        {/* Tombol + / - */}
+        <div className="text-emerald-500 mt-1">
+          {open ? <Minus size={18} /> : <Plus size={18} />}
+        </div>
+      </div>
+
+      {/* Collapse Content */}
+      {open && (
+        <div className="mt-2 pl-8 space-y-2">
+          {type === "photos" && extraData?.length > 0 && (
+            <div className="flex gap-2">
+              {extraData.slice(0, 3).map((url, i) => (
+                <img
+                  key={i}
+                  src={url}
+                  alt={`Item ${i + 1}`}
+                  className="w-24 h-24 object-cover rounded-lg border border-base-300"
+                />
+              ))}
+            </div>
+          )}
+
+          {type === "location" && extraData && (
+            <div className="space-y-2">
+              {/* Link ke Google Maps */}
+              <a
+                href={`https://www.google.com/maps?q=${extraData.lat},${extraData.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-emerald-600 hover:underline mb-1"
+              >
+                Lihat di Google Maps
+              </a>
+
+              {/* Peta Leaflet */}
+              <div className="w-full h-40 rounded-lg overflow-hidden">
+                <MapContainer
+                  center={[extraData.lat, extraData.lng]}
+                  zoom={15}
+                  scrollWheelZoom={false}
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <Marker position={[extraData.lat, extraData.lng]}>
+                    <Popup>{extraData.address}</Popup>
+                  </Marker>
+                </MapContainer>
+              </div>
+            </div>
+          )}
+
+        </div>
+      )}
+    </div>
+  );
+}
 
 function InfoRow({ icon: Icon, title, value }) {
   return (
@@ -75,6 +152,14 @@ export default function DealPage() {
   const [transaction, setTransaction] = useState(null);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
+  const { user, isLoaded } = useUser();
+  const [clerkId, setClerkId] = useState(null);
+
+  useEffect(() => {
+      if (isLoaded && user) {
+        setClerkId(user.id);
+      }
+    }, [isLoaded, user]);
 
   // ✅ Load Midtrans Snap script — SEKARANG DI DALAM COMPONENT
   useEffect(() => {
@@ -115,12 +200,21 @@ export default function DealPage() {
         .select(`
           id,
           status,
+          carrier_id,
+          depositor_id,
           agreed_fee,
           pickup_location,
           delivery_location,
           pickup_datetime,
           item_description,
+          item_photos,
           carrier:users!deals_carrier_id_fkey (
+            clerk_id,
+            name,
+            avatar_url
+          ),
+
+          depositor:users!fk_deals_depositor (
             clerk_id,
             name,
             avatar_url
@@ -226,6 +320,13 @@ export default function DealPage() {
       : "badge-warning";
 
   const canPay = transaction?.transaction_status === "draft";
+  const isCarrierLogin = deal?.carrier_id === clerkId;
+  const opponent = isCarrierLogin
+  ? deal?.depositor
+  : deal?.carrier;
+  const opponentRole = isCarrierLogin ? "Customer" : "Kurir";
+  const opponentType = isCarrierLogin ? "Bawa Titipan" : "Nitip Bawakan";
+  const opponentRingkasan = isCarrierLogin ? "Dana dari customer akan diteruskan kepada Anda setelah barang dinyatakan diterima oleh penerima. Pastikan proses pengiriman dilakukan sesuai kesepakatan." : "Pastikan seluruh detail pesanan sudah sesuai sebelum melanjutkan pembayaran. Dana akan diteruskan kepada kurir setelah barang diterima oleh penerima.";
 
   return (
     // ... (UI sama seperti sebelumnya, tidak perlu diulang)
@@ -254,7 +355,8 @@ export default function DealPage() {
               {/* Info Lokasi */}
               <div className="flex-1 min-w-0">
                 <span className="badge badge-primary badge-sm font-medium">
-                  {deal.post?.type === "titip" ? "Mau Titip" : "Bisa Bawa"}
+                    {opponentType}
+                  
                 </span>
                 <div className="flex items-center gap-2 text-sm text-base-content/80">
                   <span className="font-semibold">
@@ -292,19 +394,37 @@ export default function DealPage() {
 
       <div className="p-4 flex flex-col gap-4">
         {/* Carrier Card */}
-        <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 flex items-center gap-4">
-          <div className="avatar">
-            <div className="w-16 rounded-full ring ring-emerald-500 ring-offset-base-100 ring-offset-2">
-              <img
-                src={deal.carrier?.avatar_url || "/avatar-placeholder.png"}
-                alt="Carrier"
-              />
+        <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 flex items-center justify-between">
+          {/* Kiri: Avatar + Info */}
+          <div className="flex items-center gap-4 min-w-0">
+            {/* Avatar */}
+            <div className="avatar">
+              <div className="w-16 rounded-full ring ring-emerald-500 ring-offset-base-100 ring-offset-2">
+                <img
+                  src={opponent?.avatar_url || "/avatar-placeholder.png"}
+                  alt="User"
+                />
+              </div>
+            </div>
+
+            {/* Info */}
+            <div className="min-w-0">
+              <p className="font-semibold text-lg truncate">
+                {opponent?.name || "-"}
+              </p>
+              <p className="text-sm opacity-70">
+                {opponentRole}
+              </p>
             </div>
           </div>
-          <div>
-            <p className="font-semibold text-lg">{deal.carrier?.name || "Carrier"}</p>
-            <p className="text-sm opacity-70">Pengirim Titipan</p>
-          </div>
+
+          {/* Kanan: Icon Chat */}
+          <button
+            className="btn btn-circle btn-ghost text-emerald-600 hover:bg-emerald-100"
+            title="Chat"
+          >
+            <MessageCircle size={22} />
+          </button>
         </div>
 
         {/* Ringkasan */}
@@ -314,15 +434,47 @@ export default function DealPage() {
             Ringkasan Transaksi
           </h2>
           <p className="text-sm opacity-70">
-            Pastikan semua detail sudah benar sebelum membayar.
+            {opponentRingkasan?.length > 60
+              ? opponentRingkasan.slice(0, 60) + "… selengkapnya"
+              : opponentRingkasan}
           </p>
+
         </div>
 
         {/* Detail Item */}
         <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 space-y-4">
-          <InfoRow icon={ClipboardList} title="Deskripsi Barang" value={deal.item_description} />
-          <InfoRow icon={MapPin} title="Lokasi Penjemputan" value={afterSecondComma(deal.pickup_location)} />
-          <InfoRow icon={MapPin} title="Lokasi Pengantaran" value={afterSecondComma(deal.delivery_location)} />
+          <InfoRowCollapse
+            icon={ClipboardList}
+            title="Deskripsi Barang"
+            value={deal.item_description}
+            type="photos"
+            extraData={deal.item_photos}
+          />
+
+          <InfoRowCollapse
+            icon={MapPin}
+            title="Lokasi Penjemputan"
+            value={afterSecondComma(deal.pickup_location)}
+            type="location"
+            extraData={{
+              lat: parseFloat(deal.pickup_location.split(",")[0]),
+              lng: parseFloat(deal.pickup_location.split(",")[1]),
+              address: deal.pickup_location.split(",").slice(2).join(","),
+            }}
+          />
+
+          <InfoRowCollapse
+            icon={MapPin}
+            title="Lokasi Pengantaran"
+            value={afterSecondComma(deal.delivery_location)}
+            type="location"
+            extraData={{
+              lat: parseFloat(deal.delivery_location.split(",")[0]),
+              lng: parseFloat(deal.delivery_location.split(",")[1]),
+              address: deal.delivery_location.split(",").slice(2).join(","),
+            }}
+          />
+
           <InfoRow
             icon={CalendarClock}
             title="Waktu Penjemputan"
@@ -342,8 +494,9 @@ export default function DealPage() {
         </div>
 
         {/* Biaya */}
-        <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40">
-          <p className="text-sm opacity-70 mb-1">Total Biaya Jastip</p>
+        {isCarrierLogin && (
+        <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 space-y-3">
+          <p className="text-sm opacity-70">Penghasilan dari Jastip</p>
           <p className="text-3xl font-extrabold text-emerald-600">
             {deal.agreed_fee
               ? Number(deal.agreed_fee).toLocaleString("id-ID", {
@@ -352,9 +505,82 @@ export default function DealPage() {
                 })
               : "-"}
           </p>
+
+          {/* Perincian biaya */}
+          <div className="text-sm text-gray-600 space-y-1">
+            <div className="flex justify-between">
+              <span>Biaya Penanganan</span>
+              <span>Rp 0</span>
+            </div>
+            <div className="flex justify-between font-semibold">
+              <span>Total yang diterima</span>
+              <span>
+                {deal.agreed_fee
+                  ? Number(deal.agreed_fee).toLocaleString("id-ID", {
+                      style: "currency",
+                      currency: "IDR",
+                    })
+                  : "-"}
+              </span>
+            </div>
+          </div>
+
+          {/* <p className="text-xs text-gray-400 mt-1">
+            Pembayaran dari customer akan diterima setelah barang diterima.
+          </p> */}
         </div>
+        )}
+
+        {!isCarrierLogin && (
+          <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 space-y-3">
+            <p className="text-sm opacity-70">Total Biaya Jastip</p>
+            <p className="text-3xl font-extrabold text-emerald-600">
+              {deal.agreed_fee
+                ? Number(deal.agreed_fee).toLocaleString("id-ID", {
+                    style: "currency",
+                    currency: "IDR",
+                  })
+                : "-"}
+            </p>
+
+            {/* Perincian biaya */}
+            <div className="text-sm text-gray-600 space-y-1">
+              <div className="flex justify-between">
+                <span>Biaya Barang</span>
+                <span>
+                  {deal.item_fee
+                    ? Number(deal.item_fee).toLocaleString("id-ID", {
+                        style: "currency",
+                        currency: "IDR",
+                      })
+                    : "-"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Biaya Penanganan</span>
+                <span>Rp 0</span>
+              </div>
+              <div className="flex justify-between font-semibold">
+                <span>Total</span>
+                <span>
+                  {deal.agreed_fee
+                    ? Number(deal.agreed_fee).toLocaleString("id-ID", {
+                        style: "currency",
+                        currency: "IDR",
+                      })
+                    : "-"}
+                </span>
+              </div>
+            </div>
+
+            {/* <p className="text-xs text-gray-400 mt-1">
+              Dana akan diteruskan ke kurir setelah barang diterima.
+            </p> */}
+          </div>
+
+        )}
         {/* Metode Pembayaran - hanya muncul jika draft */}
-        {canPay && (
+        {canPay && !isCarrierLogin && (
           <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40">
             <h2 className="font-semibold text-lg mb-3">Metode Pembayaran</h2>
             <div className="space-y-2">
@@ -375,7 +601,7 @@ export default function DealPage() {
           </div>
         )}
       </div>
-      {canPay && (
+      {canPay && !isCarrierLogin && (
         <div className="fixed bottom-4 left-4 right-4 z-20">
           <div className="bg-base-100/95 backdrop-blur-xl border border-base-300/40 shadow-xl rounded-2xl p-4 flex gap-3">
             <button className="btn btn-outline flex-1 rounded-xl" onClick={() => navigate(-1)}>
@@ -394,6 +620,42 @@ export default function DealPage() {
             >
               {paying ? <span className="loading loading-spinner"></span> : "Bayar Sekarang"}
             </button>
+          </div>
+        </div>
+      )}
+      {/* Kurir tidak perlu tombol bayar */}
+      {isCarrierLogin && (
+        <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl bg-base-100 shadow-sm p-3 border border-base-300">
+          {/* Left section */}
+          <div className="flex items-center gap-3">
+            {/* Ikon pengguna */}
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 11h18M5 15h4m6 0h4M3 19h18" />
+              </svg>
+            </div>
+            
+            {/* Content */}
+            <div>
+              <div className="flex items-center gap-2"> 
+                <span className="text-xs font-medium text-gray-100">Status Pembayaran</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Right section */}
+          <div className="text-right">
+            <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${
+                  transaction?.status === "paid"
+                    ? "bg-emerald-100 text-emerald-800"
+                    : transaction?.status === "pending"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : transaction?.status === "failed"
+                    ? "bg-red-100 text-red-800"
+                    : "bg-gray-100 text-gray-700"
+                }`}>
+                  {transaction?.status?.toUpperCase() || "DRAFT"}
+                </span>
           </div>
         </div>
       )}

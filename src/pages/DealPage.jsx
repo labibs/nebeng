@@ -124,7 +124,7 @@ function PaymentOption({
       className={`
         flex items-center gap-3 p-3 rounded-xl border transition-all
         ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-base-200"}
-        ${checked && !disabled ? "border-emerald-500 bg-green-400" : "border-base-300"}
+        ${checked && !disabled ? "border-emerald-500 " : "border-base-300"}
       `}
     >
       <input
@@ -140,7 +140,7 @@ function PaymentOption({
         <p className="font-medium">{title}</p>
         <p className="text-sm opacity-70">{desc}</p>
       </div>
-      {badge && <span className="badge badge-outline badge-neutral">{badge}</span>}
+      {badge && <span className="badge badge-outline badge-success">{badge}</span>}
     </label>
   );
 }

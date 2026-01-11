@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { supabase } from "../lib/supabaseClient";
-import { FileText, Wallet, BaggageClaim} from "lucide-react";
+import { FileText, Wallet, BaggageClaim, Truck, MapPin} from "lucide-react";
 import { handlePay } from "../lib/handlePay";
 import { useNavigate } from 'react-router-dom'
 import LiveTrackingModal from "../components/transaksi/LiveTrackingModal";
@@ -159,19 +159,22 @@ export default function TransaksiPage() {
           </div>
         ) : (
           rows.map((trx) => (
+          
             <div
               key={trx.id}
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/deal?deal=${trx.deal?.id}&trx=${trx.id}`);
               }}
-              className="cursor-pointer border border-base-300/30 dark:border-base-700/30 rounded-2xl p-4 bg-base-100 hover:bg-base-200/30 transition"
+              className="cursor-pointer rounded-2xl bg-base-100 border border-base-300/30
+                        hover:bg-base-200/30 transition overflow-hidden"
             >
-              {/* Header */}
-              <div className="flex items-center justify-between mb-3">
+              {/* ================= HEADER ================= */}
+              <div className="px-4 pt-4 flex items-center justify-between">
                 <span className="text-xs font-medium px-3 py-1 rounded-full bg-base-200 text-base-content/70">
                   {new Date(trx.created_at).toLocaleDateString("id-ID")}
                 </span>
+
                 <DealStatusBadge
                   dealStatus={trx.deal.status}
                   transactionStatus={trx.transaction_status}
@@ -180,45 +183,40 @@ export default function TransaksiPage() {
                 />
               </div>
 
-              {/* Body */}
-              <div className="flex items-center justify-between gap-4">
+              {/* ================= BODY ================= */}
+              <div className="p-4 flex items-center justify-between gap-4">
+                {/* Left */}
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="avatar">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-base-200 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-base-200">
                       <img
-                        src={
-                          trx.deal?.post?.item_photo ||
-                          "/default-avatar.png"
-                        }
+                        src={trx.deal?.post?.item_photo || "/default-avatar.png"}
                         alt=""
                       />
                     </div>
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-sm text-base-content/60 truncate">
+                    <p className="text-xs text-base-content/60">
                       {trx.deal?.carrier_id === clerkId
-                    ? 'Bawa Titipan'
-                    : 'Nitip Bawakan' }
+                        ? "Bawa Titipan"
+                        : "Nitip Bawakan"}
                     </p>
-                    <h3 className="font-semibold truncate">
+                    <p className="font-semibold truncate">
                       {trx.deal?.item_description}
-                    </h3>
+                    </p>
                     <p className="text-sm text-base-content/60 truncate">
-                      {trx.deal?.post?.from_city} →{" "}
-                      {trx.deal?.post?.to_city}
+                      {trx.deal?.post?.from_city} → {trx.deal?.post?.to_city}
                     </p>
                   </div>
                 </div>
 
-                {/* Amount */}
+                {/* Right */}
                 <div className="text-right">
-                  <p className="font-bold text-green-600">
+                  <p className="font-bold text-emerald-600">
                     Rp{" "}
                     {Number(
-                      trx.gross_amount ??
-                        trx.deal?.agreed_fee ??
-                        0
+                      trx.gross_amount ?? trx.deal?.agreed_fee ?? 0
                     ).toLocaleString("id-ID")}
                   </p>
                   <p className="text-xs text-base-content/50">
@@ -227,61 +225,61 @@ export default function TransaksiPage() {
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="mt-4 pt-3 border-t border-base-300/20 dark:border-base-700/20 flex justify-between items-center">
+              {/* ================= FOOTER ================= */}
+              <div className="px-4 pb-4 flex items-center justify-between border-t border-base-300/20">
                 <span className="text-xs text-base-content/50">
-                  
                   {trx.deal?.carrier_id === clerkId
-                    ? `Customer : ${trx.deal?.depositor?.name ?? "-"}`
-                    : `Kurir : ${trx.deal?.carrier?.name ?? "-"}`
-                  }
-
+                    ? `Customer: ${trx.deal?.depositor?.name ?? "-"}`
+                    : `Kurir: ${trx.deal?.carrier?.name ?? "-"}`}
                 </span>
-                <div className="flex items-center gap-4">
-                  { trx.deal?.delivery_status === "running" && (
 
+                <div className="flex items-center gap-3">
+                  {/* Live tracking icon (ringkas) */}
+                  {/* {trx.deal?.delivery_status === "running" && (
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setSelectedDeal(trx.deal);
                         openLiveTracking();
                       }}
-                      className="group flex items-center gap-1 text-blue-600 hover:text-blue-700 transition"
+                      className="text-blue-600 hover:text-blue-700"
                       title="Live Tracking"
-                      >
-                      <BaggageClaim size={22} className="group-hover:scale-110 transition" />
-                      {/* <span className="text-xs font-medium">Tracking</span> */}
+                    >
+                      <BaggageClaim size={20} />
                     </button>
-                  )}
-                  {/* Ke halaman Deal */}
-                  {/* <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/deal?deal=${trx.deal?.id}&trx=${trx.id}`);
-                    }}
-                    className="group flex items-center gap-1 text-green-600 hover:text-green-700 transition"
-                    title="Lihat Deal"
-                  >
-                    <FileText size={22} className="group-hover:scale-110 transition" />
-                   
-                  </button> */}
-
-                  {/* Ke halaman Pembayaran */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePay({
-                        transactionId: trx.id,
-                        navigate,
-                      });
-                    }}
-                    className="group flex items-center gap-1 text-orange-600 hover:text-orange-700 transition"
-                    title="Pembayaran"
-                  >
-                    <Wallet size={22} className="group-hover:scale-110 transition" />
-                    {/* <span className="text-xs font-medium">Bayar</span> */}
-                  </button>
+                  )} */}
                 </div>
               </div>
+
+              {/* ================= EXTEND (RUNNING ONLY) ================= */}
+              {trx.deal?.delivery_status === "running" && (
+                <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3
+                                animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-emerald-700">
+                      <Truck className="w-5 h-5" />
+                      <div>
+                        <p className="text-sm font-semibold">Sedang Mengantar</p>
+                        <p className="text-xs opacity-70">
+                          Kurir dalam perjalanan
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedDeal(trx.deal);
+                        openLiveTracking();
+                      }}
+                      className="btn btn-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      <MapPin className="w-4 h-4" />
+                      Posisi Kurir
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))
         )}

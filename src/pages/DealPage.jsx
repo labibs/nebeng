@@ -11,7 +11,9 @@ import {
   MapPin,
   CalendarClock,
   Info,
-  Truck
+  Truck,
+  MapPinHouse,
+  CarFront
 } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -369,6 +371,7 @@ export default function DealPage() {
 
   const canPay = ["draft", "pending"].includes(transaction?.transaction_status);
   const paid = ["paid"].includes(transaction?.transaction_status);
+  const running = ["running"].includes(deal?.delivery_status);
   const delivered = ["delivered"].includes(deal?.delivery_status);
 
   const isCarrierLogin = deal?.carrier_id === clerkId;
@@ -541,6 +544,60 @@ export default function DealPage() {
                   <MapPin className="w-4 h-4" />
                   Posisi Kurir
                 </button>
+              </div>
+            </div>
+          )}
+          {(deal?.delivery_status === "draft" && transaction?.transaction_status ==="paid" && !isCarrierLogin ) && (
+            <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3 animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center justify-between gap-3">
+                {/* Status */}
+                <div className="flex items-center gap-2 text-emerald-700">
+                  <CarFront className="w-5 h-5" />
+                  <div>
+                    <p className="text-sm font-semibold">
+                      Sedang Menunggu
+                    </p>
+                    <p className="text-xs opacity-70">
+                      Persiapan keberangkatan
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action */}
+                {/* <button
+                  onClick={() => openLiveTracking(deal.id)}
+                  className="btn btn-sm bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                >
+                  <MapPin className="w-4 h-4" />
+                  Posisi Kurir
+                </button> */}
+              </div>
+            </div>
+          )}
+          {(deal?.delivery_status === "delivered" && !isCarrierLogin ) && (
+            <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3 animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center justify-between gap-3">
+                {/* Status */}
+                <div className="flex items-center gap-2 text-emerald-700">
+                  <MapPinHouse className="w-5 h-5" />
+                  <div>
+                    <p className="text-sm font-semibold">
+                      Tiba Ditujuan
+                    </p>
+                    <p className="text-xs opacity-70">
+                      Barang sudah diterima
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action */}
+                {/* <button
+                  onClick={() => openLiveTracking(deal.id)}
+                  className="btn btn-sm bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                >
+                  <MapPin className="w-4 h-4" />
+                  Posisi Kurir
+                </button> */}
               </div>
             </div>
           )}
@@ -779,7 +836,7 @@ export default function DealPage() {
         </div>
       )}
       {/* Kurir tidak perlu tombol bayar */}
-      {(!isCarrierLogin && paid) && (
+      {(!isCarrierLogin && running) && (
         <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl bg-base-100 shadow-sm p-3 border border-base-300">
            <SlideToDelivered
               status={deal.delivery_status}
@@ -796,7 +853,7 @@ export default function DealPage() {
         </div>
       )}
     </div>
-          {(isCarrierLogin && delivered) && (
+      {(isCarrierLogin && delivered) && (
         <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl bg-base-100 shadow-sm p-3 border border-base-300">
           <SlideToDelivered
               status={deal.delivery_status}

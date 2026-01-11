@@ -11,11 +11,14 @@ import {
   MapPin,
   CalendarClock,
   Info,
+  Truck
 } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { openChat } from "../lib/chatHelper";
 import OpponentSummary from "../components/transaksi/OpponentSummary";
+import LiveTrackingModal from "../components/transaksi/LiveTrackingModal";
+import SlideToRunning from "../components/transaksi/SlideToRunning";
+import SlideToDelivered from "../components/transaksi/SlideToDelivered";
 
 function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
   const [open, setOpen] = useState(false);
@@ -55,6 +58,10 @@ function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
             </div>
           )}
 
+          {type === "text" && extraData && (
+            <p className="text-sm opacity-70">{extraData}</p>
+          )}
+
           {type === "location" && extraData && (
             <div className="space-y-2">
               {/* Link ke Google Maps */}
@@ -86,19 +93,6 @@ function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
 
         </div>
       )}
-    </div>
-  );
-}
-
-
-function InfoRow({ icon: Icon, title, value }) {
-  return (
-    <div className="flex gap-3 items-start">
-      <Icon className="w-5 h-5 text-emerald-500 mt-0.5" />
-      <div>
-        <p className="text-sm font-medium">{title}</p>
-        <p className="text-sm opacity-70">{value || "-"}</p>
-      </div>
     </div>
   );
 }
@@ -157,6 +151,8 @@ export default function DealPage() {
   const [paying, setPaying] = useState(false);
   const { user, isLoaded } = useUser();
   const [clerkId, setClerkId] = useState(null);
+  const [selectedDealId, setSelectedDealId] = useState(null);
+  const [showTrackingModal, setShowTrackingModal] = useState(false);
 
   useEffect(() => {
       if (isLoaded && user) {
@@ -211,6 +207,8 @@ export default function DealPage() {
           pickup_datetime,
           item_description,
           item_photos,
+          notes,
+          delivery_status,
           carrier:users!deals_carrier_id_fkey (
             clerk_id,
             name,
@@ -246,6 +244,8 @@ export default function DealPage() {
     fetchDeal();
   }, [dealId]);
 
+  
+
   // Fetch transaction
   useEffect(() => {
     if (!trxId) return;
@@ -263,54 +263,98 @@ export default function DealPage() {
     fetchTransaction();
   }, [trxId]);
 
-  // const handlePay = async () => {
-  //   if (paying) return;
-  //   setPaying(true);
-  //   console.log('ini transkasi', transaction)
+  const handleStartDelivery = async () => {
+    // 1. Update status deal
+    const { error } = await supabase
+      .from("deals")
+      .update({ delivery_status: "running" })
+      .eq("id", deal.id)
+      .eq("carrier_id", deal.carrier_id);
 
-  //   try {
-  //     const { data, error } = await supabase.functions.invoke("create-midtrans-snap", {
-  //       body: { transaction_id: transaction?.id },
-  //     });
+    if (error) {
+      console.error("Gagal mulai pengantaran:", error);
+      return;
+    }
 
-  //     console.log("Transaction ID yang dikirim:", transaction?.id);
+    // 2. Mulai live tracking
+    startLiveTracking();
+  };
 
-  //     if (error || !data?.snap_token) {
-  //       console.error("Error atau tidak ada snap_token:", error, data);
-  //       alert("Gagal membuat pembayaran. Coba lagi.");
-  //       setPaying(false);
-  //       return;
-  //     }
+  let trackingInterval = null;
 
-  //     if (!window.snap) {
-  //       alert("Midtrans belum siap. Refresh halaman.");
-  //       setPaying(false);
-  //       return;
-  //     }
+  const startLiveTracking = () => {
+    if (!navigator.geolocation) return;
 
-  //     window.snap.pay(data.snap_token, {
-  //       onSuccess: (result) => {
-  //         console.log("Success:", result);
-  //         navigate(`/payment-success?order_id=${result.order_id}`);
-  //       },
-  //       onPending: (result) => {
-  //         console.log("Pending:", result);
-  //         navigate(`/payment-pending?order_id=${result.order_id}`);
-  //       },
-  //       onError: () => {
-  //         alert("Pembayaran gagal");
-  //       },
-  //       onClose: () => {
-  //         console.log("Popup ditutup");
-  //       },
-  //     });
-  //   } catch (err) {
-  //     console.error(err);
-  //     alert("Terjadi kesalahan");
-  //   } finally {
-  //     setPaying(false);
-  //   }
-  // };
+    const sendLocation = () => {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+
+          await supabase
+            .from("deal_live_locations")
+            .upsert({
+              deal_id: deal.id,          // BIGINT
+              courier_id: deal.carrier_id, // TEXT (clerk_id)
+              lat: latitude,
+              lng: longitude,
+              updated_at: new Date(),
+            });
+        },
+        (err) => {
+          console.error("GPS error:", err);
+        },
+        { enableHighAccuracy: true }
+      );
+    };
+
+    // kirim pertama langsung
+    sendLocation();
+
+    // interval tiap 1 menit
+    trackingInterval = setInterval(sendLocation, 60_000);
+  };
+
+  const handleDelivered = async () => {
+    // 1. Update status deal
+    const { error } = await supabase
+      .from("deals")
+      .update({ delivery_status: "delivered" })
+      .eq("id", deal.id)
+      .eq("carrier_id", deal.carrier_id);
+
+    if (error) {
+      console.error("Gagal diterima:", error);
+      return;
+    }
+
+    // 2. Mulai live tracking
+    stopLiveTracking();
+  };
+
+  const stopLiveTracking = async () => {
+    try {
+      const { error } = await supabase
+        .from("deal_live_locations")
+        .delete()
+        .eq("deal_id", deal.id);
+
+      if (error) {
+        console.error("Gagal menghentikan live tracking:", error);
+      }
+    } catch (err) {
+      console.error("Stop tracking exception:", err);
+    }
+  };
+
+  const openLiveTracking = (dealId) => {
+    setSelectedDealId(dealId);
+    setShowTrackingModal(true);
+  };
+
+  const closeLiveTracking = () => {
+    setShowTrackingModal(false);
+    setSelectedDealId(null);
+  };
 
   if (loading) return <p className="p-8 text-center">Memuat...</p>;
   if (!deal) return <p className="p-8 text-center">Deal tidak ditemukan</p>;
@@ -323,6 +367,8 @@ export default function DealPage() {
       : "badge-warning";
 
   const canPay = ["draft", "pending"].includes(transaction?.transaction_status);
+  const paid = ["paid"].includes(transaction?.transaction_status);
+  const delivered = ["delivered"].includes(deal?.delivery_status);
 
   const isCarrierLogin = deal?.carrier_id === clerkId;
   const opponent = isCarrierLogin
@@ -368,7 +414,7 @@ export default function DealPage() {
   };
 
   return (
-    // ... (UI sama seperti sebelumnya, tidak perlu diulang)
+    <>
     <div className="min-h-screen bg-base-200 flex flex-col pb-24">
       {/* Header */}
       <div className="sticky top-0 z-10 navbar bg-base-100/90 backdrop-blur-xl border-b border-base-300/40">
@@ -433,38 +479,68 @@ export default function DealPage() {
 
       <div className="p-4 flex flex-col gap-4">
         {/* Carrier Card */}
-        <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 flex items-center justify-between">
-          {/* Kiri: Avatar + Info */}
-          <div className="flex items-center gap-4 min-w-0">
-            {/* Avatar */}
-            <div className="avatar">
-              <div className="w-16 rounded-full ring ring-emerald-500 ring-offset-base-100 ring-offset-2">
-                <img
-                  src={opponent?.avatar_url || "/avatar-placeholder.png"}
-                  alt="User"
-                />
+        <div className="rounded-2xl bg-base-100 shadow-lg border border-base-300/40 overflow-hidden">
+          {/* CARD UTAMA */}
+          <div className="p-4 flex items-center justify-between">
+            {/* Kiri */}
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="avatar">
+                <div className="w-16 rounded-full ring ring-emerald-500 ring-offset-base-100 ring-offset-2">
+                  <img
+                    src={opponent?.avatar_url || "/avatar-placeholder.png"}
+                    alt="User"
+                  />
+                </div>
+              </div>
+
+              <div className="min-w-0">
+                <p className="font-semibold text-lg truncate">
+                  {opponent?.name || "-"}
+                </p>
+                <p className="text-sm opacity-70">
+                  {opponentRole}
+                </p>
               </div>
             </div>
 
-            {/* Info */}
-            <div className="min-w-0">
-              <p className="font-semibold text-lg truncate">
-                {opponent?.name || "-"}
-              </p>
-              <p className="text-sm opacity-70">
-                {opponentRole}
-              </p>
-            </div>
+            {/* Kanan */}
+            <button
+              className="btn btn-circle btn-ghost text-emerald-600 hover:bg-emerald-100"
+              title="Chat"
+              onClick={() => startChatWithDeal(deal, clerkId)}
+            >
+              <MessageCircle size={22} />
+            </button>
           </div>
 
-          {/* Kanan: Icon Chat */}
-          <button
-            className="btn btn-circle btn-ghost text-emerald-600 hover:bg-emerald-100"
-            title="Chat"
-            onClick={() => startChatWithDeal(deal, clerkId)}
-          >
-            <MessageCircle size={22} />
-          </button>
+          {/* EXTEND CARD – MUNCUL SAAT RUNNING */}
+          {(deal?.delivery_status === "running" && !isCarrierLogin ) && (
+            <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3 animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center justify-between gap-3">
+                {/* Status */}
+                <div className="flex items-center gap-2 text-emerald-700">
+                  <Truck className="w-5 h-5" />
+                  <div>
+                    <p className="text-sm font-semibold">
+                      Sedang Mengantar
+                    </p>
+                    <p className="text-xs opacity-70">
+                      Kurir dalam perjalanan
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action */}
+                <button
+                  onClick={() => openLiveTracking(deal.id)}
+                  className="btn btn-sm bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                >
+                  <MapPin className="w-4 h-4" />
+                  Posisi Kurir
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Ringkasan */}
@@ -513,7 +589,7 @@ export default function DealPage() {
             }}
           />
 
-          <InfoRow
+          <InfoRowCollapse
             icon={CalendarClock}
             title="Waktu Penjemputan"
             value={
@@ -528,9 +604,11 @@ export default function DealPage() {
                   })
                 : "-"
             }
+            type="text"
+            extraData={deal.notes}
           />
         </div>
-
+            
         {/* Biaya */}
         {isCarrierLogin && (
         <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 space-y-3">
@@ -662,7 +740,7 @@ export default function DealPage() {
         </div>
       )}
       {/* Kurir tidak perlu tombol bayar */}
-      {(isCarrierLogin || !canPay) && (
+      {(isCarrierLogin && !paid) && (
         <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl bg-base-100 shadow-sm p-3 border border-base-300">
           {/* Left section */}
           <div className="flex items-center gap-3">
@@ -697,6 +775,43 @@ export default function DealPage() {
           </div>
         </div>
       )}
+      {/* Kurir tidak perlu tombol bayar */}
+      {(!isCarrierLogin && paid) && (
+        <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl bg-base-100 shadow-sm p-3 border border-base-300">
+           <SlideToDelivered
+              status={deal.delivery_status}
+              onComplete={handleDelivered}
+            />
+        </div>
+      )}
+      {(isCarrierLogin && paid) && (
+        <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl bg-base-100 shadow-sm p-3 border border-base-300">
+          <SlideToRunning 
+            status={deal.delivery_status}
+            onComplete={handleStartDelivery} 
+          />
+        </div>
+      )}
     </div>
+          {(isCarrierLogin && delivered) && (
+        <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl bg-base-100 shadow-sm p-3 border border-base-300">
+          <SlideToDelivered
+              status={deal.delivery_status}
+              onComplete={handleDelivered}
+            />
+        </div>
+      )}
+      {showTrackingModal && (
+      <LiveTrackingModal
+        dealId={selectedDealId}
+        deal={deal}
+        open={openLiveTracking}
+        onClose={closeLiveTracking}
+      />
+    )}
+  </> 
   );
 }
+
+
+

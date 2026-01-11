@@ -6,6 +6,7 @@ import { handlePay } from "../lib/handlePay";
 import { useNavigate } from 'react-router-dom'
 import LiveTrackingModal from "../components/transaksi/LiveTrackingModal";
 import TransaksiHeader from "../components/transaksi/TransaksiHeader";
+import DealStatusBadge from "../components/common/DealStatusBadge";
 
 // ⬆️ sesuaikan path supabase client kamu
 
@@ -171,16 +172,12 @@ export default function TransaksiPage() {
                 <span className="text-xs font-medium px-3 py-1 rounded-full bg-base-200 text-base-content/70">
                   {new Date(trx.created_at).toLocaleDateString("id-ID")}
                 </span>
-                
-                <span
-                  className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                    trx.transaction_status === "settlement"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-orange-100 text-orange-700"
-                  }`}
-                >
-                  {trx.transaction_status?.toUpperCase()}
-                </span>
+                <DealStatusBadge
+                  dealStatus={trx.deal.status}
+                  transactionStatus={trx.transaction_status}
+                  deliveryStatus={trx.deal.delivery_status}
+                  size="sm"
+                />
               </div>
 
               {/* Body */}

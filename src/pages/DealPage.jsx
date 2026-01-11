@@ -19,6 +19,7 @@ import OpponentSummary from "../components/transaksi/OpponentSummary";
 import LiveTrackingModal from "../components/transaksi/LiveTrackingModal";
 import SlideToRunning from "../components/transaksi/SlideToRunning";
 import SlideToDelivered from "../components/transaksi/SlideToDelivered";
+import DealStatusBadge from "../components/common/DealStatusBadge";
 
 function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
   const [open, setOpen] = useState(false);
@@ -469,10 +470,12 @@ export default function DealPage() {
               </div>
             </div>
           </div>
-
-          <span className={`badge badge-md ${statusColor}`}>
-            {deal.status === "completed" ? "deal" : deal.status || "pending"}
-          </span>
+          <DealStatusBadge
+            dealStatus={deal.status}
+            transactionStatus={transaction?.transaction_status}
+            deliveryStatus={deal.delivery_status}
+            size="sm"
+          />
 
         </div>
       </div>
@@ -649,7 +652,7 @@ export default function DealPage() {
 
         {!isCarrierLogin && (
           <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 space-y-3">
-            <p className="text-sm opacity-70">Total Biaya Jastip</p>
+            <p className="text-sm opacity-70">Total Biaya Nebeng</p>
             <p className="text-3xl font-extrabold text-emerald-600">
               {deal.agreed_fee
                 ? Number(deal.agreed_fee).toLocaleString("id-ID", {
@@ -677,7 +680,7 @@ export default function DealPage() {
                 <span>Rp 0</span>
               </div>
               <div className="flex justify-between font-semibold">
-                <span>Total</span>
+                <span>Biaya Nitip</span>
                 <span>
                   {deal.agreed_fee
                     ? Number(deal.agreed_fee).toLocaleString("id-ID", {

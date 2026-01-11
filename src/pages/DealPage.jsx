@@ -376,7 +376,7 @@ export default function DealPage() {
   ? deal?.depositor
   : deal?.carrier;
   const opponentRole = isCarrierLogin ? "Customer" : "Kurir";
-  const opponentType = isCarrierLogin ? "Bawa Titipan" : "Nitip Bawakan";
+  const opponentType = isCarrierLogin ? "Bawa" : "Nitip";
   
   const startChatWithDeal = async (deal, currentClerkId) => {
     // Tentukan lawan chat

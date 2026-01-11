@@ -440,10 +440,13 @@ export default function DealPage() {
 
               {/* Info Lokasi */}
               <div className="flex-1 min-w-0">
-                <span className="badge badge-primary badge-sm font-medium">
-                    {opponentType}
-                  
-                </span>
+                <DealStatusBadge
+                  dealStatus={deal.status}
+                  transactionStatus={transaction?.transaction_status}
+                  deliveryStatus={deal.delivery_status}
+                  size="sm"
+                />
+
                 <div className="flex items-center gap-2 text-sm text-base-content/80">
                   <span className="font-semibold">
                     {deal.post?.from_city || "-"}
@@ -470,13 +473,10 @@ export default function DealPage() {
               </div>
             </div>
           </div>
-          <DealStatusBadge
-            dealStatus={deal.status}
-            transactionStatus={transaction?.transaction_status}
-            deliveryStatus={deal.delivery_status}
-            size="sm"
-          />
-
+          <span className="badge badge-primary badge-sm font-medium">
+              {opponentType}
+          </span>
+          
         </div>
       </div>
 

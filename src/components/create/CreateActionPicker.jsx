@@ -2,7 +2,7 @@ const actions = [
   { key: "nitip_bawakan", icon: "🧳", title: "Nitip Bawakan", desc: "Barang sudah ada" },
   { key: "nitip_belikan", icon: "🛍️", title: "Nitip Belikan", desc: "Minta dibelikan" },
   { key: "bawa_titipan", icon: "🚚", title: "Bawa Titipan", desc: "Saya yang bawa" },
-  { key: "warung", icon: "🏪", title: "Tambah Warung", desc: "Warung fisik / rekomendasi" },
+  { key: "warung", icon: "🏪", title: "Tambah Toko", desc: "Toko sendiri / rekomendasi" },
   { key: "content", icon: "🎥", title: "Buat Konten", desc: "Video pendek / afiliator" },
 ];
 

@@ -34,7 +34,7 @@ export default function MarketProductCard() {
         {/* Posted By */}
         <div className="flex items-center gap-1.5 text-xs text-white/90">
                 <div className="w-7 h-7 rounded-full bg-white/80 text-black flex items-center justify-center text-[10px]">
-                <div className="w-8 h-8 text-lg">🛵</div>
+                <div className="ps-0.5 w-8 h-8 text-lg">🛵</div>
 
                 </div>
                 <span className="text-[11px]">Kurir</span>

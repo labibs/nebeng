@@ -14,7 +14,7 @@ export default function MarketPromoBanner() {
           </p>
 
           <button className="btn btn-sm mt-3 bg-white text-green-700 hover:bg-white/90 border-none rounded-full">
-            Coba Nitip Belikan 
+            Coba nitip beliin sekarang
           </button>
         </div>
 

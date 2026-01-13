@@ -2,7 +2,8 @@ import { useState } from 'react'
 import CreateActionPicker from '../components/create/CreateActionPicker';
 import CreateNitipBawakan from '../components/create/CreateNitipBawakan';
 import CreateNitipBelikan from '../components/create/CreateNitipBelikan';
-import CreateBawaTitipan from '../components/create/CreateBawaTitipan';
+import CreateCariBoncengan from '../components/create/CreateCariBoncengan';
+import CreatePerjalanan from '../components/create/CreatePerjalanan';
 import CreateWarung from '../components/create/CreateWarung';
 import CreateContent from '../components/create/CreateContent';
 
@@ -24,7 +25,8 @@ export default function CreatePost() {
 
       {action === "nitip_bawakan" && <CreateNitipBawakan onBack={() => setAction(null)} />}
       {action === "nitip_belikan" && <CreateNitipBelikan onBack={() => setAction(null)} />}
-      {action === "bawa_titipan" && <CreateBawaTitipan onBack={() => setAction(null)} />}
+      {action === "cari_boncengan" && <CreateCariBoncengan onBack={() => setAction(null)} />}
+      {action === "perjalanan" && <CreatePerjalanan onBack={() => setAction(null)} />}
       {action === "content" && <CreateContent onBack={() => setAction(null)} />}
       {action === "warung" && <CreateWarung onBack={() => setAction(null)} />}
     </div>

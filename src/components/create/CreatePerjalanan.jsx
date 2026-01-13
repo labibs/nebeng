@@ -3,7 +3,7 @@ import { useUser } from "@clerk/clerk-react";
 import { supabase } from "../../lib/supabaseClient";
 
 
-export default function CreateBawaTitipan({ onBack }) {
+export default function CreatePerjalanan({ onBack }) {
   const { user } = useUser();
   const [form, setForm] = useState({
     from_city: "",

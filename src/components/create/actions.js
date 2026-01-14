@@ -26,8 +26,8 @@ export const actions = [
   {
     key: "perjalanan",
     icon: "🚚",
-    title: "Sedang Perjalanan",
-    desc: "Bersedia dititipan & mboncengin",
+    title: "Dalam Perjalanan",
+    desc: "Terima titipan & boncengan",
     mode: "offer",
     capabilities: {
       barang: true,

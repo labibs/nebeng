@@ -168,7 +168,7 @@ export default function CreateNitipBawakan({ onBack }) {
               <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
                 <p className="text-xs opacity-60 mb-1">Barangnya apa?</p>
                 <textarea
-                  placeholder="Contoh: Nasi Padang, Kopi Literan"
+                  placeholder="Contoh: Buku, Krupuk dll"
                   value={form.item_description}
                   onChange={(e) =>
                     setForm({ ...form, item_description: e.target.value })

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowUp, Check, ClipboardCheck } from "lucide-react";
+import { ArrowUp, Check, ClipboardCheck, SearchAlertIcon, SearchCheckIcon } from "lucide-react";
 
 export default function SlideToPosting({ onComplete }) {
   const [done, setDone] = useState(false);
@@ -45,8 +45,8 @@ export default function SlideToPosting({ onComplete }) {
             <div className="absolute inset-0 flex items-center justify-center
                             text-xs font-medium z-10">
               <span className="relative z-10 opacity-90 flex items-center gap-2">
-                Klik untuk posting
-                <ClipboardCheck className="w-4 h-4" />
+                Cari orang yang searah
+                <SearchCheckIcon className="w-6 h-6" />
               </span>
             </div>
           )}

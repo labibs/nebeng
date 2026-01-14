@@ -34,7 +34,7 @@ export default function MarketPicker({ label, value, onSelect }) {
       <div
         className={`
           fixed inset-0 z-[9999]
-          bg-white dark:bg-slate-900
+          bg-gradient-to-br from-green-100 to-emerald-200 dark:from-slate-900 dark:to-slate-800
           transition-transform duration-300 ease-out
           ${open ? "translate-x-0 " : "translate-x-full"}
         `}

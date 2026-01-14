@@ -22,7 +22,7 @@ export default function MarketPicker({ label, value, onSelect }) {
       {/* TRIGGER */}
       <div
         onClick={() => setOpen(true)}
-        className="p-4 rounded-b-2xl border border-b-gray-10 cursor-pointer bg-white/70 dark:bg-white/5"
+        className="p-4 rounded-b-2xl border-none cursor-pointer bg-white/70 dark:bg-white/5"
       >
         <p className="text-xs opacity-60">{label}</p>
         <p className="font-medium text-sm">
@@ -36,19 +36,30 @@ export default function MarketPicker({ label, value, onSelect }) {
           fixed inset-0 z-[9999]
           bg-white dark:bg-slate-900
           transition-transform duration-300 ease-out
-          ${open ? "translate-x-0" : "translate-x-full"}
+          ${open ? "translate-x-0 " : "translate-x-full"}
         `}
       >
-        <div className="fixed top-0 left-0 right-0 z-10
-                        flex items-center gap-3
-                        px-4 py-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur">
-          <button
-            onClick={() => setOpen(false)}
-            className="p-2 rounded-full bg-white shadow text-black"
-          >
-            <ArrowLeft />
-          </button>
+        <div className="fixed inset-0 flex flex-col">
+          {/* HEADER FIXED */}
+          <div className="shrink-0">
+            <div className="pointer-events-auto flex items-start gap-3 mb-2 pt-6 px-4 pb-2">
+              <button
+                onClick={() => setOpen(false)}
+                className="bg-white rounded-full p-3 shadow-lg text-black"
+              >
+                <ArrowLeft size={20} />
+              </button>
 
+              <div className="flex flex-col">
+                <h3 className="text-base font-semibold leading-tight">
+                  Silahkan Dipilih
+                </h3>
+                <p className="text-xs opacity-70">
+                 Lihat & Cari kamu sukanya yang mana ?.
+                </p>
+              </div>
+            </div>
+          </div>
           {/* <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50" />
             <input
@@ -60,7 +71,7 @@ export default function MarketPicker({ label, value, onSelect }) {
                          text-black focus:outline-none"
             />
           </div> */}
-        </div>
+        
 
         {/* <div className="pt-24 px-4 space-y-2 pb-10">
           {filtered.map((item) => (
@@ -87,7 +98,11 @@ export default function MarketPicker({ label, value, onSelect }) {
             </p>
           )}
         </div> */}
-        <MarketPage />
+        {/* CONTENT SCROLL */}
+          <div className="flex-1 overflow-y-auto">
+            <MarketPage />
+          </div>
+        </div>
       </div>
     </>
   )

@@ -26,7 +26,7 @@ export default function MarketPicker({ label, value, onSelect }) {
       >
         <p className="text-xs opacity-60">{label}</p>
         <p className="font-medium text-sm">
-          {value || "Cari dan pilih dari market"}
+          {value || "Liat barang di Market sapa tau ada yang suka"}
         </p>
       </div>
 

@@ -112,7 +112,7 @@ export default function CreateNitipBelikan({ onBack }) {
             Nitip Beliin
           </h3>
           <p className="text-xs opacity-70">
-           Posting tujuanmu di sini, biar ketemu orang yang searah dan sekalian belikan barang yang kamu mau.
+           Posting barang yang kamu mau, biar ketemu orang searah yang bisa sekalian beliin.
           </p>
         </div>
       </div>
@@ -125,7 +125,7 @@ export default function CreateNitipBelikan({ onBack }) {
   >
     {/* ===== MODE MANUAL ===== */}
     <div className="w-1/2 px-4 py-3">
-      <p className="text-xs opacity-60 mb-1">Barangnya apa?</p>
+      <p className="text-xs opacity-60 mb-1">Mau nitip beli apa?</p>
 
       <textarea
         placeholder="Ketik manual, contoh : Mie Ayam Adipala"

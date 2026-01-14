@@ -112,7 +112,51 @@ export default function CreateNitipBawakan({ onBack }) {
           </p>
         </div>
       </div>
+      <div
+          className="rounded-2xl border-dashed border-2
+                    overflow-hidden
+                    hover:bg-emerald-50 dark:hover:bg-white/5 transition"
+        >
+          {/* AREA FOTO */}
+          <div
+            className="relative h-40 cursor-pointer flex items-center justify-center"
+            onClick={() => fileRef.current.click()}
+          >
+            {preview ? (
+              <img
+                src={preview}
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              />
+            ) : (
+              <span className="text-sm opacity-60 px-6 text-center">
+                + Upload foto yang mau ditampilkan di beranda
+              </span>
+            )}
+          </div>
 
+          {/* Divider */}
+          <div className="border-t border-white/10" />
+
+          {/* TEXTAREA (AMAN) */}
+          <textarea
+            placeholder="Utarakan maksudmu di sini..."
+            value={form.description}
+            onChange={(e) =>
+              setForm({ ...form, description: e.target.value })
+            }
+            rows={2}
+            className="w-full bg-transparent resize-none
+                      px-4 py-3 text-sm
+                      focus:outline-none placeholder:opacity-60"
+          />
+        </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={handleImage}
+        />
         <LocationPicker label="Dari mana ?" value={fromLocation} onSelect={setFromLocation} />
         <LocationPicker label="Ke mana ?" value={toLocation} onSelect={setToLocation} />
   
@@ -216,51 +260,7 @@ export default function CreateNitipBawakan({ onBack }) {
               </select>
             </div>
           </div>
-        <div
-          className="rounded-2xl border-dashed border-2
-                    overflow-hidden
-                    hover:bg-emerald-50 dark:hover:bg-white/5 transition"
-        >
-          {/* AREA FOTO */}
-          <div
-            className="relative h-40 cursor-pointer flex items-center justify-center"
-            onClick={() => fileRef.current.click()}
-          >
-            {preview ? (
-              <img
-                src={preview}
-                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-              />
-            ) : (
-              <span className="text-sm opacity-60 px-6 text-center">
-                + Upload foto yang mau ditampilkan di beranda
-              </span>
-            )}
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-white/10" />
-
-          {/* TEXTAREA (AMAN) */}
-          <textarea
-            placeholder="Utarakan maksudmu di sini..."
-            value={form.description}
-            onChange={(e) =>
-              setForm({ ...form, description: e.target.value })
-            }
-            rows={2}
-            className="w-full bg-transparent resize-none
-                      px-4 py-3 text-sm
-                      focus:outline-none placeholder:opacity-60"
-          />
-        </div>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={handleImage}
-        />
+        
 
         <SlideToPosting onComplete={submit} />
 

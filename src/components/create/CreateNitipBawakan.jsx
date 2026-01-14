@@ -94,176 +94,177 @@ export default function CreateNitipBawakan({ onBack }) {
     };
 
     return (
-      <div className="space-y-4 mb-15">
-        <div className="pointer-events-auto flex items-start gap-3 mb-5">
-        <button
-          onClick={onBack}
-          className="bg-white rounded-full p-3 shadow-lg text-black"
-        >
-          <ArrowLeft size={20} />
-        </button>
-
-        <div className="flex flex-col">
-          <h3 className="text-base font-semibold leading-tight">
-            Nitip Bawain
-          </h3>
-          <p className="text-xs opacity-70">
-           Posting tujuanmu di sini, biar ketemu orang yang searah dan sekalian bawain barangmu.
-          </p>
-        </div>
-      </div>
-      <div
-          className="rounded-2xl border-dashed border-2
-                    overflow-hidden
-                    hover:bg-emerald-50 dark:hover:bg-white/5 transition"
-        >
-          {/* AREA FOTO */}
-          <div
-            className="relative h-40 cursor-pointer flex items-center justify-center"
-            onClick={() => fileRef.current.click()}
-          >
-            {preview ? (
-              <img
-                src={preview}
-                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-              />
-            ) : (
-              <span className="text-sm opacity-60 px-6 text-center">
-                + Upload foto yang mau ditampilkan di beranda
-              </span>
-            )}
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-white/10" />
-
-          {/* TEXTAREA (AMAN) */}
-          <textarea
-            placeholder="Utarakan maksudmu di sini..."
-            value={form.description}
-            onChange={(e) =>
-              setForm({ ...form, description: e.target.value })
-            }
-            rows={2}
-            className="w-full bg-transparent resize-none
-                      px-4 py-3 text-sm
-                      focus:outline-none placeholder:opacity-60"
-          />
-        </div>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={handleImage}
-        />
-        <LocationPicker label="Dari mana ?" value={fromLocation} onSelect={setFromLocation} />
-        <LocationPicker label="Ke mana ?" value={toLocation} onSelect={setToLocation} />
-  
-        {/* Bawain apa */}
-        <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
-          <p className="text-xs opacity-60 mb-1">Barangnya apa?</p>
-
-          <textarea
-            placeholder="Contoh: Nasi Padang, Kopi Literan"
-            value={form.item_description}
-            onChange={(e) =>
-              setForm({ ...form, item_description: e.target.value })
-            }
-            className="w-full bg-transparent resize-none
-                      text-sm font-semibold placeholder:font-normal
-                      focus:outline-none"
-            rows={2}
-          />
-        </div>
-
-
-        <div className="grid grid-cols-2 gap-3">
-          {/* Harga barang */}
-          <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
-            <p className="text-xs opacity-60 mb-1">Harga barangnya kisaran berapa ?</p>
-            <div className="flex items-center gap-1">
-              <span className="text-sm opacity-60">Rp</span>
-              <input
-                type="text"
-                placeholder="10.000"
-                value={formatRupiah(form.price)}
-                onChange={(e) => {
-                  const raw = e.target.value.replace(/\D/g, "");
-                  setForm({ ...form, price: raw });
-                }}
-                className="w-full bg-transparent
-                          text-sm font-semibold
-                          placeholder:font-normal
-                          focus:outline-none"
-              />
-            </div>
-          </div>
-
-          {/* Ongkos jastip */}
-          <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
-            <p className="text-xs opacity-60 mb-1">Mau ngasi ongkos berapa ?</p>
-
-            <div className="flex items-center gap-1">
-              <span className="text-sm opacity-60">Rp</span>
-              <input
-                type="text"
-                placeholder="10.000"
-                value={formatRupiah(form.fee)}
-                onChange={(e) => {
-                  const raw = e.target.value.replace(/\D/g, "");
-                  setForm({ ...form, fee: raw });
-                }}
-                className="w-full bg-transparent
-                          text-sm font-semibold
-                          placeholder:font-normal
-                          focus:outline-none"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-            {/* Tanggal jemput */}
-            <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
-              <p className="text-xs opacity-60 mb-1">Mau dijemput kapan?</p>
-
-              <input
-                type="date"
-                value={form.travel_date}
-                onChange={(e) =>
-                  setForm({ ...form, travel_date: e.target.value })
-                }
-                className="w-full bg-transparent
-                          text-sm font-semibold
-                          focus:outline-none"
-              />
-            </div>
-
-            {/* Armada */}
-            <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
-              <p className="text-xs opacity-60 mb-1">Mau dijemput pakai apa?</p>
-
-              <select
-                value={form.armada}
-                onChange={(e) =>
-                  setForm({ ...form, armada: e.target.value })
-                }
-                className="w-full bg-transparent
-                          text-sm font-semibold
-                          focus:outline-none"
+      <>
+        <div className="fixed inset-0 flex flex-col mb-2 pt-6 px-4 pb-2">
+          <div className="shrink-0">
+            <div className="pointer-events-auto flex items-start gap-3 mb-5">
+              <button
+                onClick={onBack}
+                className="bg-white rounded-full p-3 shadow-lg text-black"
               >
-                <option value="motor">Motor</option>
-                <option value="mobil">Mobil</option>
-                {/* <option value="bus">Bus</option>
-                <option value="kereta">Kereta</option> */}
-              </select>
+                <ArrowLeft size={20} />
+              </button>
+
+              <div className="flex flex-col">
+                <h3 className="text-base font-semibold leading-tight">
+                  Nitip Bawain
+                </h3>
+                <p className="text-xs opacity-70">
+                Posting tujuanmu di sini, biar ketemu orang yang searah dan sekalian bawain barangmu.
+                </p>
+              </div>
             </div>
           </div>
+          <div className="flex-1 overflow-y-auto space-y-4 pb-20">
+            <div
+                className="rounded-2xl border-dashed border-2
+                          overflow-hidden
+                          hover:bg-emerald-50 dark:hover:bg-white/5 transition"
+              >
+                {/* AREA FOTO */}
+                <div
+                  className="relative h-40 cursor-pointer flex items-center justify-center"
+                  onClick={() => fileRef.current.click()}
+                >
+                  {preview ? (
+                    <img
+                      src={preview}
+                      className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                    />
+                  ) : (
+                    <span className="text-sm opacity-60 px-6 text-center">
+                      + Upload foto yang mau ditampilkan di beranda
+                    </span>
+                  )}
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-white/10" />
+
+                {/* TEXTAREA (AMAN) */}
+                <textarea
+                  placeholder="Utarakan maksudmu di sini..."
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
+                  rows={2}
+                  className="w-full bg-transparent resize-none
+                            px-4 py-3 text-sm
+                            focus:outline-none placeholder:opacity-60"
+                />
+              </div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleImage}
+              />
+              <LocationPicker label="Dari mana ?" value={fromLocation} onSelect={setFromLocation} />
+              <LocationPicker label="Ke mana ?" value={toLocation} onSelect={setToLocation} />
         
+              {/* Bawain apa */}
+              <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
+                <p className="text-xs opacity-60 mb-1">Barangnya apa?</p>
+                <textarea
+                  placeholder="Contoh: Nasi Padang, Kopi Literan"
+                  value={form.item_description}
+                  onChange={(e) =>
+                    setForm({ ...form, item_description: e.target.value })
+                  }
+                  className="w-full bg-transparent resize-none
+                            text-sm font-semibold placeholder:font-normal
+                            focus:outline-none"
+                  rows={2}
+                />
+              </div>
 
-        <SlideToPosting onComplete={submit} />
+              <div className="grid grid-cols-2 gap-3">
+                {/* Harga barang */}
+                <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
+                  <p className="text-xs opacity-60 mb-1">Harga barangnya kisaran berapa ?</p>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm opacity-60">Rp</span>
+                    <input
+                      type="text"
+                      placeholder="10.000"
+                      value={formatRupiah(form.price)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, "");
+                        setForm({ ...form, price: raw });
+                      }}
+                      className="w-full bg-transparent
+                                text-sm font-semibold
+                                placeholder:font-normal
+                                focus:outline-none"
+                    />
+                  </div>
+                </div>
 
-      </div>
+                {/* Ongkos jastip */}
+                <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
+                  <p className="text-xs opacity-60 mb-1">Mau ngasi ongkos berapa ?</p>
+
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm opacity-60">Rp</span>
+                    <input
+                      type="text"
+                      placeholder="10.000"
+                      value={formatRupiah(form.fee)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, "");
+                        setForm({ ...form, fee: raw });
+                      }}
+                      className="w-full bg-transparent
+                                text-sm font-semibold
+                                placeholder:font-normal
+                                focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                  {/* Tanggal jemput */}
+                  <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
+                    <p className="text-xs opacity-60 mb-1">Mau dijemput kapan?</p>
+
+                    <input
+                      type="date"
+                      value={form.travel_date}
+                      onChange={(e) =>
+                        setForm({ ...form, travel_date: e.target.value })
+                      }
+                      className="w-full bg-transparent
+                                text-sm font-semibold
+                                focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Armada */}
+                  <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
+                    <p className="text-xs opacity-60 mb-1">Mau dijemput pakai apa?</p>
+
+                    <select
+                      value={form.armada}
+                      onChange={(e) =>
+                        setForm({ ...form, armada: e.target.value })
+                      }
+                      className="w-full bg-transparent
+                                text-sm font-semibold
+                                focus:outline-none"
+                    >
+                      <option value="motor">Motor</option>
+                      <option value="mobil">Mobil</option>
+                      {/* <option value="bus">Bus</option>
+                      <option value="kereta">Kereta</option> */}
+                    </select>
+                  </div>
+                </div>
+              <SlideToPosting onComplete={submit} />
+            </div>
+          </div>
+      </>
     );
   }

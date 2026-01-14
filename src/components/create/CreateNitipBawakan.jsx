@@ -16,11 +16,11 @@ export default function CreateNitipBawakan({ onBack }) {
   
     const [form, setForm] = useState({
       item_description: "",
-  description: "",
-  price: "",
-  fee: "",
-  travel_date: "",
-  armada: "motor",
+      description: "",
+      price: "",
+      fee: "",
+      travel_date: "",
+      armada: "motor",
     });
   
     const [fromLocation, setFromLocation] = useState(null);
@@ -158,7 +158,7 @@ export default function CreateNitipBawakan({ onBack }) {
 
           {/* Ongkos jastip */}
           <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
-            <p className="text-xs opacity-60 mb-1">Ongkos bawain mau berapa ?</p>
+            <p className="text-xs opacity-60 mb-1">Mau ngasi ongkos berapa ?</p>
 
             <div className="flex items-center gap-1">
               <span className="text-sm opacity-60">Rp</span>
@@ -180,84 +180,80 @@ export default function CreateNitipBawakan({ onBack }) {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-  {/* Tanggal jemput */}
-  <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
-    <p className="text-xs opacity-60 mb-1">Mau dijemput kapan?</p>
+            {/* Tanggal jemput */}
+            <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
+              <p className="text-xs opacity-60 mb-1">Mau dijemput kapan?</p>
 
-    <input
-      type="date"
-      value={form.travel_date}
-      onChange={(e) =>
-        setForm({ ...form, travel_date: e.target.value })
-      }
-      className="w-full bg-transparent
-                 text-sm font-semibold
-                 focus:outline-none"
-    />
-  </div>
+              <input
+                type="date"
+                value={form.travel_date}
+                onChange={(e) =>
+                  setForm({ ...form, travel_date: e.target.value })
+                }
+                className="w-full bg-transparent
+                          text-sm font-semibold
+                          focus:outline-none"
+              />
+            </div>
 
-  {/* Armada */}
-  <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
-    <p className="text-xs opacity-60 mb-1">Mau dijemput pakai apa?</p>
+            {/* Armada */}
+            <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
+              <p className="text-xs opacity-60 mb-1">Mau dijemput pakai apa?</p>
 
-    <select
-      value={form.armada}
-      onChange={(e) =>
-        setForm({ ...form, armada: e.target.value })
-      }
-      className="w-full bg-transparent
-                 text-sm font-semibold
-                 focus:outline-none"
-    >
-      <option value="motor">Motor</option>
-      <option value="mobil">Mobil</option>
-      <option value="bus">Bus</option>
-      <option value="kereta">Kereta</option>
-    </select>
-  </div>
-</div>
-
-
+              <select
+                value={form.armada}
+                onChange={(e) =>
+                  setForm({ ...form, armada: e.target.value })
+                }
+                className="w-full bg-transparent
+                          text-sm font-semibold
+                          focus:outline-none"
+              >
+                <option value="motor">Motor</option>
+                <option value="mobil">Mobil</option>
+                {/* <option value="bus">Bus</option>
+                <option value="kereta">Kereta</option> */}
+              </select>
+            </div>
+          </div>
         <div
-  className="rounded-2xl border-dashed border-2
-             overflow-hidden
-             hover:bg-emerald-50 dark:hover:bg-white/5 transition"
->
-  {/* AREA FOTO */}
-  <div
-    className="relative h-40 cursor-pointer flex items-center justify-center"
-    onClick={() => fileRef.current.click()}
-  >
-    {preview ? (
-      <img
-        src={preview}
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-      />
-    ) : (
-      <span className="text-sm opacity-60 px-6 text-center">
-        + Upload foto yang mau ditampilkan di beranda
-      </span>
-    )}
-  </div>
+          className="rounded-2xl border-dashed border-2
+                    overflow-hidden
+                    hover:bg-emerald-50 dark:hover:bg-white/5 transition"
+        >
+          {/* AREA FOTO */}
+          <div
+            className="relative h-40 cursor-pointer flex items-center justify-center"
+            onClick={() => fileRef.current.click()}
+          >
+            {preview ? (
+              <img
+                src={preview}
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              />
+            ) : (
+              <span className="text-sm opacity-60 px-6 text-center">
+                + Upload foto yang mau ditampilkan di beranda
+              </span>
+            )}
+          </div>
 
-  {/* Divider */}
-  <div className="border-t border-white/10" />
+          {/* Divider */}
+          <div className="border-t border-white/10" />
 
-  {/* TEXTAREA (AMAN) */}
-  <textarea
-    placeholder="Utarakan maksudmu di sini..."
-    value={form.description}
-    onChange={(e) =>
-      setForm({ ...form, description: e.target.value })
-    }
-    rows={2}
-    className="w-full bg-transparent resize-none
-               px-4 py-3 text-sm
-               focus:outline-none placeholder:opacity-60"
-  />
-</div>
-
-
+          {/* TEXTAREA (AMAN) */}
+          <textarea
+            placeholder="Utarakan maksudmu di sini..."
+            value={form.description}
+            onChange={(e) =>
+              setForm({ ...form, description: e.target.value })
+            }
+            rows={2}
+            className="w-full bg-transparent resize-none
+                      px-4 py-3 text-sm
+                      focus:outline-none placeholder:opacity-60"
+          />
+        </div>
         <input
           ref={fileRef}
           type="file"

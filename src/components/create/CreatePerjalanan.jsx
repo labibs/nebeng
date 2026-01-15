@@ -168,7 +168,7 @@ export default function CreatePerjalanan({ onBack }) {
               <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
                 <p className="text-xs opacity-60 mb-1">Infoin barang / orang yang mau kamu kasih tebengan ?</p>
                 <textarea
-                  placeholder="Contoh: Orang mau berangkat kerja, sekolah / barang maximal 10 kg"
+                  placeholder="Contoh: Berangkat kerja/sekolah, atau bawa barang maksimal 10 kg"
                   value={form.item_description}
                   onChange={(e) =>
                     setForm({ ...form, item_description: e.target.value })

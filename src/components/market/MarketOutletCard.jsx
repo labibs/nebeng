@@ -89,11 +89,7 @@ export default function MarketOutletCard({ outlet }) {
             )}
 
 
-          <OutletRouteViewer
-            open={openRoute}
-            setOpen={setOpenRoute}
-            outletId={outlet.id}
-            />
+          
 
         {status === 'milik' && (<button
             onClick={() => setOpenMaps(true)}
@@ -103,6 +99,14 @@ export default function MarketOutletCard({ outlet }) {
             Maps
             </button>
             )}
+            
+
+        </div>
+        <OutletRouteViewer
+            open={openRoute}
+            setOpen={setOpenRoute}
+            outletId={outlet.id}
+            />
             <GoogleMapsPointViewer
                 open={openMaps}
                 setOpen={setOpenMaps}
@@ -113,9 +117,8 @@ export default function MarketOutletCard({ outlet }) {
 
                 title={outlet.name}
                 />
-
-        </div>
       </div>
     </div>
+    
   );
 }

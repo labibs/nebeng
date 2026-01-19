@@ -2,7 +2,7 @@ import { actions } from "./actions";
 
 export default function CreateActionPicker({ onSelect }) {
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-2 gap-4 mb-15">
       {actions.map(action => (
         <button
           key={action.key}

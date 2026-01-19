@@ -51,5 +51,19 @@ export const actions = [
     title: "Tambah Outlet",
     desc: "Outlet sendiri / rekomendasi",
     mode: "business"
-  }
+  },
+  {
+  key: "keliling",
+  icon: "🛺",
+  title: "Jualan Keliling",
+  desc: "Pantau rute penjual & pesan sebelum sampai",
+  mode: "keliling",
+  features: [
+    "Lihat rute realtime",
+    "Order di perjalanan",
+    "Scan barcode saat sampai",
+    "Notifikasi mendekati lokasi"
+  ]
+}
+
 ];

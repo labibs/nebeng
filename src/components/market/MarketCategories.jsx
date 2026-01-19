@@ -7,6 +7,7 @@ const categories = [
   "Pakaian",
   "Perkakas",
   "Material",
+  "Jasa"
 ];
 
 export default function MarketCategories() {

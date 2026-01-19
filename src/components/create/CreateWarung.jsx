@@ -6,10 +6,12 @@ import { uploadPostImage } from "../../lib/uploadPostImage";
 import { ArrowLeft, MapPin } from "lucide-react";
 import SlideToPosting from "./SlideToPosting";
 import LocationPicker from "./LocationPicker";
+import SlideToCreate from "./SlideToCreate";
 
 export default function CreateWarung({ onBack }) {
   const { user } = useUser();
   const fileRef = useRef(null);
+  const docRef = useRef(null);
 
   // ===== STATE =====
 
@@ -17,18 +19,33 @@ export default function CreateWarung({ onBack }) {
 
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [docFile, setDocFile] = useState(null);
+  const [docPreview, setDocPreview] = useState(null);
+  const [location, setLocation] = useState(null);
+  const [fromLocation, setFromLocation] = useState(null);
+  const [toLocation, setToLocation] = useState(null);
+
+  const categories = [
+    "Makanan",
+    "Obat",
+    "Sembako",
+    "Pakaian",
+    "Perkakas",
+    "Material",
+    "Jasa"
+  ];
 
   const [form, setForm] = useState({
     name: "",
-    category: "",
+    category: "Makanan",
     visibility: "public",
+    status: "milik",
+
+    // data khusus pemilik
+    owner_phone: "",
+    owner_note: "",
   });
 
-  const [location, setLocation] = useState({
-    latitude: null,
-    longitude: null,
-    address: "",
-  });
 
   // ===== HANDLER IMAGE =====
 
@@ -40,16 +57,24 @@ export default function CreateWarung({ onBack }) {
     setPreview(URL.createObjectURL(f));
   };
 
+  const handleDoc = (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+
+    if (!f.type.startsWith("image/")) {
+      alert("Dokumen harus berupa foto");
+      return;
+    }
+
+    setDocFile(f);
+    setDocPreview(URL.createObjectURL(f));
+  };
+
   // ===== VALIDASI =====
 
   const validate = () => {
     if (!form.name) {
       alert("Nama warung wajib diisi");
-      return false;
-    }
-
-    if (!location.latitude) {
-      alert("Tentukan lokasi warung dulu");
       return false;
     }
 
@@ -64,6 +89,7 @@ export default function CreateWarung({ onBack }) {
     setLoading(true);
 
     let imageUrl = null;
+    let dokumenUrl = null;
 
     if (file) {
       imageUrl = await uploadPostImage(file, {
@@ -73,19 +99,37 @@ export default function CreateWarung({ onBack }) {
       });
     }
 
+    // dokumen kepemilikan
+    if (form.status === "milik" && docFile) {
+      dokumenUrl = await uploadPostImage(docFile, {
+        format: "webp",
+        quality: 0.8,
+        width: 1000,
+      });
+    }
+
     await supabase.from("warungs").insert({
-      owner_clerk_id: user.id,
+      created_by_clerk_id: user.id,
 
       name: form.name,
       category: form.category,
+      status: form.status,
 
       image_url: imageUrl,
+      dokumen_url: dokumenUrl,
+
       visibility: form.visibility,
 
-      // 🔥 FIELD BARU
-      latitude: location.latitude,
-      longitude: location.longitude,
-      address: location.address,
+      latitude: location?.lat || null,
+      longitude: location?.lng || null,
+      address: location?.address || null,
+
+      // kalau bukan milik → simpan rute
+      from_lat: fromLocation?.lat || null,
+      from_lng: fromLocation?.lng || null,
+
+      to_lat: toLocation?.lat || null,
+      to_lng: toLocation?.lng || null,
     });
 
     setLoading(false);
@@ -139,7 +183,7 @@ export default function CreateWarung({ onBack }) {
               />
             ) : (
               <span className="text-sm opacity-60 px-6 text-center">
-                + Upload foto outlet / etalase utama
+                + Upload foto outlet / etalase utama 
               </span>
             )}
           </div>
@@ -156,7 +200,7 @@ export default function CreateWarung({ onBack }) {
         {/* NAMA WARUNG */}
         <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
           <p className="text-xs opacity-60 mb-1">
-            Nama Outlet
+            Namanya apa ?
           </p>
 
           <input
@@ -168,52 +212,39 @@ export default function CreateWarung({ onBack }) {
             className="w-full bg-transparent text-sm font-semibold focus:outline-none"
           />
         </div>
-
-        {/* KATEGORI */}
-        <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
-          <p className="text-xs opacity-60 mb-1">
-            Kategori
-          </p>
-
-          <input
-            placeholder="kopi, jajan, sembako, dll"
-            value={form.category}
-            onChange={(e) =>
-              setForm({ ...form, category: e.target.value })
-            }
-            className="w-full bg-transparent text-sm font-semibold focus:outline-none"
+          <LocationPicker
+            label="Lokasi dimana ?"
+            value={location}
+            onSelect={setLocation}
           />
-        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {/* Tanggal jemput */}
+          <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
+            <p className="text-xs opacity-60 mb-1">Kategori</p>
 
-        {/* 📍 LOCATION PICKER */}
-        <div className="rounded-2xl border bg-white/70 dark:bg-white/5 p-3">
-
-          <div className="flex items-center gap-2 mb-2">
-            <MapPin size={16} className="opacity-60" />
-            <span className="text-xs opacity-70">
-              Lokasi Warung
-            </span>
+            <select
+              value={form.category}
+              onChange={(e) =>
+                setForm({ ...form, category: e.target.value })
+              }
+              className="w-full bg-transparent
+                        text-sm font-semibold
+                        focus:outline-none"
+            >
+              
+              {categories.map((cat, index) => (
+                <option key={index} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <LocationPicker
-            value={location}
-            onChange={setLocation}
-          />
+          {/* Armada */}
+          <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
+            <p className="text-xs opacity-60 mb-1">Visibilitas</p>
 
-          {location.address && (
-            <p className="text-xs mt-2 opacity-70">
-              {location.address}
-            </p>
-          )}
-        </div>
-
-        {/* VISIBILITY */}
-        <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
-          <p className="text-xs opacity-60 mb-2">
-            Visibilitas
-          </p>
-
-          <select
+            <select
             value={form.visibility}
             onChange={(e) =>
               setForm({ ...form, visibility: e.target.value })
@@ -223,10 +254,104 @@ export default function CreateWarung({ onBack }) {
             <option value="public">Publik</option>
             <option value="private">Pribadi</option>
           </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3">
+
+          {/* STATUS SELECT */}
+          <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
+            <p className="text-xs opacity-60 mb-1">Status</p>
+
+            <select
+              value={form.status}
+              onChange={(e) =>
+                setForm({ ...form, status: e.target.value })
+              }
+              className="w-full bg-transparent text-sm font-semibold focus:outline-none"
+            >
+              <option value="milik">Milik Saya</option>
+              <option value="kurir">Bisa nitip ke saya</option>
+              <option value="pembeli">Beliin / Anterin ke outlet ini</option>
+            </select>
+          </div>
+
+          {/* ====== JIKA MILIK SAYA ====== */}
+          {form.status === "milik" && (
+            <>
+              <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
+                <p className="text-xs opacity-60 mb-1">
+                  Nomor Pemilik (opsional)
+                </p>
+
+                <input
+                  placeholder="Contoh: 0812xxxx"
+                  value={form.owner_phone}
+                  onChange={(e) =>
+                    setForm({ ...form, owner_phone: e.target.value })
+                  }
+                  className="w-full bg-transparent text-sm font-semibold focus:outline-none"
+                />
+              </div>
+
+              <div
+                className="rounded-2xl border-dashed border-2
+                          overflow-hidden
+                          hover:bg-emerald-50 dark:hover:bg-white/5 transition"
+              >
+                <p className="text-xs opacity-60 mb-1 py-3 px-4">
+                  Dokumen Kepemilikan (opsional)
+                </p>
+                <div
+                  className="relative h-56 cursor-pointer flex items-center justify-center"
+                  onClick={() => docRef.current.click()}
+                >
+                  {docPreview ? (
+                    <img
+                      src={docPreview}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-sm opacity-60 px-6 text-center">
+                      + Upload dokumen kepemilikan (foto)
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <input
+                ref={docRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleDoc}
+              />
+
+            </>
+          )}
+
+
+          {/* ====== JIKA BUKAN MILIK ====== */}
+          {form.status !== "milik" && (
+            <>
+              <LocationPicker
+                label="Dari mana ?"
+                value={fromLocation}
+                onSelect={setFromLocation}
+              />
+
+              <LocationPicker
+                label="Ke mana ?"
+                value={toLocation}
+                onSelect={setToLocation}
+              />
+            </>
+          )}
+
         </div>
 
         {/* ACTION */}
-        <SlideToPosting
+        <SlideToCreate
           loading={loading}
           onComplete={submit}
         />

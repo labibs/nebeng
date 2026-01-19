@@ -17,9 +17,22 @@ export const actions = [
   {
     key: "cari_boncengan",
     icon: "🛵",
-    title: "Cari Boncengan",
+    title: "Nyari Boncengan",
     desc: "Nebeng searah",
     mode: "request"
+  },
+  {
+    key: "tukang",
+    icon: "👷",
+    title: "Nyari Tukang",
+    desc: "Mendatangkan & Bawain ke tukang",
+    mode: "keliling",
+    features: [
+      "Lihat rute realtime",
+      "Order di perjalanan",
+      "Scan barcode saat sampai",
+      "Notifikasi mendekati lokasi"
+    ]
   },
 
   // ===== OFFER (sedang perjalanan) =====
@@ -35,16 +48,22 @@ export const actions = [
       boncengan: true
     }
   },
+  {
+    key: "keliling",
+    icon: "🛺",
+    title: "Jualan Keliling",
+    desc: "Pantau rute & pesan sebelum sampai",
+    mode: "keliling",
+    features: [
+      "Lihat rute realtime",
+      "Order di perjalanan",
+      "Scan barcode saat sampai",
+      "Notifikasi mendekati lokasi"
+    ]
+  },
 
   // ===== LAINNYA =====
-  {
-    key: "content",
-    icon: "🎥",
-    title: "Buat Konten",
-    desc: "Video pendek / afiliator",
-    mode: "content",
-    attachableOffers: ["nitip_bawakan", "nitip_belikan", "cari_boncengan"]
-  },
+  
   {
     key: "warung",
     icon: "🏪",
@@ -53,17 +72,14 @@ export const actions = [
     mode: "business"
   },
   {
-  key: "keliling",
-  icon: "🛺",
-  title: "Jualan Keliling",
-  desc: "Pantau rute penjual & pesan sebelum sampai",
-  mode: "keliling",
-  features: [
-    "Lihat rute realtime",
-    "Order di perjalanan",
-    "Scan barcode saat sampai",
-    "Notifikasi mendekati lokasi"
-  ]
-}
+    key: "content",
+    icon: "🎥",
+    title: "Buat Konten",
+    desc: "Video pendek / afiliator",
+    mode: "content",
+    attachableOffers: ["nitip_bawakan", "nitip_belikan", "cari_boncengan"]
+  },
+  
+  
 
 ];

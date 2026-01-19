@@ -3,6 +3,7 @@ import MarketCategories from "../components/market/MarketCategories";
 import MarketQuickIcons from "../components/market/MarketQuickIcons";
 import MarketPromoBanner from "../components/market/MarketPromoBanner";
 import MarketSection from "../components/market/MarketSection";
+import MarketOutletList from "../components/market/MarketOutletList";
 
 export default function MarketPage() {
   return (
@@ -13,7 +14,7 @@ export default function MarketPage() {
       <MarketQuickIcons />
       <MarketPromoBanner />
       <div className="px-4 space-y-6 pb-10">
-        <MarketSection title="Popular Item" />
+        <MarketOutletList title="Daftar Outlet" />
         <MarketSection title="Trending Item" />
       </div>
     </div>

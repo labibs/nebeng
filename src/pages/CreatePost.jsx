@@ -6,6 +6,7 @@ import CreateCariBoncengan from '../components/create/CreateCariBoncengan';
 import CreatePerjalanan from '../components/create/CreatePerjalanan';
 import CreateWarung from '../components/create/CreateWarung';
 import CreateContent from '../components/create/CreateContent';
+import CreateJualanKeliling from '../components/create/CreateJualanKeliling';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CreatePost() {
@@ -63,6 +64,10 @@ export default function CreatePost() {
 
             {action === "warung" && (
               <CreateWarung onBack={() => setAction(null)} />
+            )}
+
+            {action === "keliling" && (
+              <CreateJualanKeliling onBack={() => setAction(null)} />
             )}
           </motion.div>
         )}

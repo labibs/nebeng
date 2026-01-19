@@ -102,7 +102,9 @@ export default function MarketOutletCard({ outlet }) {
             
 
         </div>
-        <OutletRouteViewer
+        
+      </div>
+      <OutletRouteViewer
             open={openRoute}
             setOpen={setOpenRoute}
             outletId={outlet.id}
@@ -117,8 +119,9 @@ export default function MarketOutletCard({ outlet }) {
 
                 title={outlet.name}
                 />
-      </div>
     </div>
     
   );
+  
 }
+

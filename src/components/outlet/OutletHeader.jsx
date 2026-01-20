@@ -6,7 +6,7 @@ export default function OutletHeader() {
 
   return (
     
-    <div className="shrink-0 mb-2 pt-6 px-4 pb-2">
+    <div className="shrink-0 mb-0 pt-6 px-4 pb-0">
       <div className="pointer-events-auto flex items-start gap-3 mb-5">
         <button
           onClick={() => navigate(-1)}

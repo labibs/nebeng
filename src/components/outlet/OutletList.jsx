@@ -92,7 +92,7 @@ export default function OutletList({
       <div
         ref={scrollRef}
         className="
-          flex gap-3 px-4 py-2
+          flex gap-3 px-4 py-0
           overflow-x-auto
           snap-x snap-mandatory
           scrollbar-hide

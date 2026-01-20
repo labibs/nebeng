@@ -25,7 +25,7 @@ export const actions = [
     key: "tukang",
     icon: "👷",
     title: "Nyari Tukang",
-    desc: "Mendatangkan & Bawain ke tukang",
+    desc: "Manggil & anterin",
     mode: "keliling",
     features: [
       "Lihat rute realtime",
@@ -52,7 +52,7 @@ export const actions = [
     key: "keliling",
     icon: "🛺",
     title: "Jualan Keliling",
-    desc: "Pantau rute & pesan sebelum sampai",
+    desc: "Pantau rute & preorder",
     mode: "keliling",
     features: [
       "Lihat rute realtime",

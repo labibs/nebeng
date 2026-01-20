@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { SignedIn, SignedOut } from '@clerk/clerk-react'
+import { AnimatePresence } from "framer-motion";
 
 import SyncUser from './components/SyncUser' // ✅ WAJIB
 import MainLayout from './layouts/MainLayout'
@@ -15,6 +16,7 @@ import ChatRoom from './components/chat/ChatRoom'
 import Profile from './pages/Profile'
 import Transaksi from './pages/Transaksi'
 import Market from './pages/Market'
+import Outlet from './pages/Outlet'
 import BottomNav from './components/BottomNav'
 import DealPage from './pages/DealPage'
 
@@ -30,7 +32,7 @@ function App() {
         {/* USER SUDAH LOGIN */}
         {/* ===================== */}
         <SignedIn>
-          
+          <AnimatePresence mode="wait">
             <Routes>
               <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
@@ -39,6 +41,7 @@ function App() {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/transaksi" element={<Transaksi />} />
                 <Route path="/market" element={<Market />} />
+                <Route path="/outlet" element={<Outlet />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
               <Route element={<ChatLayout />}>
@@ -49,7 +52,7 @@ function App() {
               {/* Redirect semua route tidak dikenal ke home */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-          
+          </AnimatePresence>
         </SignedIn>
 
         {/* ===================== */}

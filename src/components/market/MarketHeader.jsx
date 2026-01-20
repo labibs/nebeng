@@ -1,29 +1,47 @@
+import { Store } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 export default function MarketHeader() {
+  const navigate = useNavigate();
+
   return (
-    <div className="px-4 pt-4 space-y-4">
+    <>
+      {/* Top Bar (NORMAL) */}
+      <div className="px-4 pt-4 pb-2">
+        <div className="flex items-center justify-between">
 
-      {/* Top Bar: Location + Logo */}
-      <div className="flex items-center justify-between">
-        {/* Location */}
-        <div className="flex items-center gap-2 text-sm opacity-80">
-          📍 <span>Tritih Lor, Jeruklegi</span>
+          {/* Location */}
+          <div className="flex items-center gap-2 text-sm opacity-80">
+             <button
+              onClick={() => navigate("/outlet")}
+              className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full bg-primary/10 text-primary"
+            >
+              <Store size={22} />
+              Outlet Saya
+            </button>
+          </div>
+
+          {/* Right Actions */}
+          <div className="flex items-center gap-3">
+           
+
+            <img
+              src="./pwa-64x64.png"
+              alt="Nebeng"
+              className="w-10 h-10 object-cover rounded-xl"
+            />
+          </div>
         </div>
-
-        {/* App Logo */}
-        <img
-          src="./pwa-64x64.png"
-          alt="Nebeng"
-          className="w-11 h-11 object-cover"
-        />
       </div>
 
-      {/* Search */}
-      <input
-        type="text"
-        placeholder="Cari Outlet atau Produk"
-        className="input input-bordered w-full rounded-full"
-      />
-    </div>
+      {/* Search (FIXED / STICKY) */}
+      <div className="sticky top-0 z-40 px-4 pb-3 pt-2 bg-gradient-to-b from-white/80 via-white/60 to-white/0 backdrop-blur-md dark:from-slate-900/80 dark:via-slate-900/60 dark:to-slate-900/0">
+        <input
+          type="text"
+          placeholder="Cari Outlet atau Produk"
+          className="input input-bordered w-full rounded-full"
+        />
+      </div>
+    </>
   );
 }
-

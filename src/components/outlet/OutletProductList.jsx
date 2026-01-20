@@ -48,7 +48,7 @@ export default function OutletProductList({ outlet }) {
         {/* outlet dipilih tapi belum ada produk */}
         {!loading && products.length === 0 && (
           <div className="col-span-2 text-center space-y-2">
-            <p className="text-sm opacity-60">
+            <p className="text-sm p-4 border rounded-xl text-center opacity-60">
               Belum ada produk di outlet ini, silahkan klik tombol +
             </p>
             

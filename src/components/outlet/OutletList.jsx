@@ -108,7 +108,7 @@ export default function OutletList({
               className={`
                 snap-start w-[85%] sm:w-[45%] flex-shrink-0
                 cursor-pointer transition
-                ${isActive ? "ring-2 ring-primary rounded-xl" : ""}
+                ${isActive ? "ring-2 ring-primary rounded-2xl" : ""}
               `}
             >
               <MarketOutletCard outlet={outlet} />

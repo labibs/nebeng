@@ -35,7 +35,7 @@ export default function MarketHeader() {
       </div>
 
       {/* Search (FIXED / STICKY) */}
-      <div className="sticky top-0 z-40 px-4 pb-3 pt-2 bg-gradient-to-b from-white/80 via-white/60 to-white/0 backdrop-blur-md dark:from-slate-900/80 dark:via-slate-900/60 dark:to-slate-900/0">
+      <div className="sticky top-0 z-40 px-4 pb-3 pt-2 ">
         <input
           type="text"
           placeholder="Cari Outlet atau Produk"

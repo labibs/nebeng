@@ -7,7 +7,10 @@ export default function OutletProductList({ outlet }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!outlet) return;
+    if (!outlet) {
+      setProducts([]);
+      return;
+    }
 
     const loadProducts = async () => {
       setLoading(true);
@@ -18,20 +21,19 @@ export default function OutletProductList({ outlet }) {
         .eq("warung_id", outlet.id)
         .order("created_at", { ascending: false });
 
-      if (!error) setProducts(data || []);
+      if (error) {
+        console.error(error);
+      } else {
+        setProducts(data || []);
+      }
+
       setLoading(false);
     };
 
     loadProducts();
   }, [outlet]);
 
-  if (!outlet) {
-    return (
-      <div className="text-sm opacity-60 text-center">
-        Pilih outlet untuk melihat dan menambah produk
-      </div>
-    );
-  }
+  if (!outlet) return null;
 
   return (
     <div className="space-y-3">
@@ -40,18 +42,21 @@ export default function OutletProductList({ outlet }) {
       </h3>
 
       <div className="grid grid-cols-2 gap-3">
-        {/* produk */}
         {products.map((product) => (
           <OutletProductCard key={product.id} product={product} />
         ))}
 
-        {/* outlet dipilih tapi belum ada produk */}
         {!loading && products.length === 0 && (
-          <div className="col-span-2 text-center space-y-2">
+          <div className="col-span-2">
             <p className="text-sm p-4 border rounded-xl text-center opacity-60">
               Belum ada produk di outlet ini, silahkan klik tombol + Tambah Produk
             </p>
-            
+          </div>
+        )}
+
+        {loading && (
+          <div className="col-span-2 text-center text-sm opacity-60">
+            Memuat produk...
           </div>
         )}
       </div>

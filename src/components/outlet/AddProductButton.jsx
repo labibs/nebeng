@@ -10,12 +10,12 @@ export default function AddProductButton() {
         px-3 py-2
         rounded-full
         shadow-lg
-        text-[11px] font-medium
+        text-[13px] font-medium
         hover:bg-primary/90
         transition
       "
     >
-      <Plus size={14} />
+      <Plus size={16} />
       Tambah Produk
     </button>
   );

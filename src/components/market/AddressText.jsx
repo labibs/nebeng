@@ -3,7 +3,7 @@ import { useState } from "react";
 export default function AddressText({ address = "" }) {
   const [showAll, setShowAll] = useState(false);
 
-  const MAX = 30;
+  const MAX = 20;
   const isLong = address.length > MAX;
 
   const textToShow = !isLong
@@ -14,7 +14,7 @@ export default function AddressText({ address = "" }) {
 
   return (
     <p className="text-xs opacity-80">
-      📍 {textToShow}
+      {textToShow}
 
       {isLong && (
         <span

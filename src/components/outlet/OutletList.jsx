@@ -9,11 +9,11 @@ export default function OutletList({
   onSelectOutlet,
   selectedOutletId,
 }) {
-  console.log("OutletList rendered with clerkId:", clerkId);
   const [outlets, setOutlets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+
   const scrollRef = useRef(null);
   const totalPage = Math.ceil(total / LIMIT);
 
@@ -41,11 +41,15 @@ export default function OutletList({
 
     if (error) {
       console.error(error);
-      setLoading(false);
-      return;
+    } else {
+      setOutlets(data || []);
+
+      // ✅ auto select outlet pertama di halaman
+      if (!selectedOutletId && data?.length) {
+        onSelectOutlet(data[0]);
+      }
     }
 
-    setOutlets(data || []);
     setLoading(false);
   }
 
@@ -58,6 +62,7 @@ export default function OutletList({
     if (!scrollRef.current) return;
 
     const cardWidth = scrollRef.current.firstChild?.offsetWidth || 0;
+
     scrollRef.current.scrollTo({
       left: cardWidth * index,
       behavior: "smooth",
@@ -66,28 +71,20 @@ export default function OutletList({
     setPage(index + 1);
   };
 
-  if (!outlets.length) return null;
-
-  if (loading) {
+  if (loading && outlets.length === 0) {
     return <p className="text-sm opacity-60">Memuat outlet...</p>;
   }
 
-  if (!outlets.length) {
+  if (!loading && outlets.length === 0) {
     return (
       <div className="p-4 border rounded-xl text-center opacity-60">
-        Kamu belum punya outlet
+        Kamu belum punya outlet, klik tombol + dan pilih Tambah Outlet
       </div>
     );
   }
 
   return (
     <div className="relative">
-      {/* ===== HEADER ===== */}
-      {/* <div className="flex justify-between items-center mb-3 mt-3 px-4">
-        <h2 className="font-bold text-lg">Outlet saya</h2>
-        <button className="text-sm text-success">Semua</button>
-      </div> */}
-
       {/* ===== HORIZONTAL SCROLL ===== */}
       <div
         ref={scrollRef}

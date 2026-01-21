@@ -19,6 +19,7 @@ import Market from './pages/Market'
 import Outlet from './pages/Outlet'
 import BottomNav from './components/BottomNav'
 import DealPage from './pages/DealPage'
+import DetailOutlet from './pages/DetailOutlet';
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
                 <Route path="/transaksi" element={<Transaksi />} />
                 <Route path="/market" element={<Market />} />
                 <Route path="/outlet" element={<Outlet />} />
+                <Route path="/outlet/:id" element={<DetailOutlet />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
               <Route element={<ChatLayout />}>

@@ -23,9 +23,12 @@ export default function MarketOutletCard({ outlet }) {
     image_url,
     address,
     status,
+    owner,
     latitude,
     longitude
   } = outlet;
+
+  // console.log("Outlet di MarketOutletCard:", outlet);
 
   const iconByStatus = () => {
     if (status === "kurir") return "🛵";
@@ -40,43 +43,7 @@ export default function MarketOutletCard({ outlet }) {
     return "Official";
   };
 
-  const handleDeleteOutlet = async (id) => {
-    const result = await Swal.fire({
-      title: "Hapus Outlet?",
-      text: "Outlet yang dihapus tidak bisa dikembalikan",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Ya, hapus",
-      cancelButtonText: "Batal",
-      reverseButtons: true,
-    });
-
-    if (!result.isConfirmed) return;
-
-    const { error } = await supabase
-      .from("warungs")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
-      Swal.fire({
-        title: "Gagal",
-        text: error.message || "Outlet gagal dihapus",
-        icon: "error",
-      });
-      return;
-    }
-
-    await Swal.fire({
-      title: "Berhasil",
-      text: "Outlet berhasil dihapus",
-      icon: "success",
-      timer: 1200,
-      showConfirmButton: false,
-    });
-
-    onBack(); // balik ke halaman sebelumnya
-  };
+  
 
   return (
     <div className="relative h-48 rounded-2xl overflow-hidden shadow-lg group">
@@ -99,24 +66,46 @@ export default function MarketOutletCard({ outlet }) {
         </div>
 
         {/* menu kanan */}
-        {isOutletPage && (
+        {/* {isOutletPage && (
           <OutletActionMenu
             onEdit={() => navigate(`/outlet/${id}/edit`)}
             onDelete={() => handleDeleteOutlet(id)}
           />
-        )}
+        )} */}
           
       </div>
 
 
       <div className="absolute bottom-0 z-10 p-3 w-full text-white">
         <div className="flex items-center gap-1 cursor-pointer " >
-          <div className="w-9 h-9 ps-[-3] rounded-full bg-black/60 text-white backdrop-blur capitalize flex items-center justify-center font-bold" onClick={() => {
-              navigate(`/outlet/${id}`);
-            
-          }}>
-          N
-          </div>
+          <div
+              onClick={() => navigate(`/outlet/${id}`)}
+              className="
+                w-9 h-9
+                rounded-full
+                bg-black/60
+                text-white
+                backdrop-blur
+                flex items-center justify-center
+                font-bold
+                overflow-hidden
+                cursor-pointer
+                active:scale-95
+                transition
+              "
+            >
+              {owner?.avatar_url ? (
+                <img
+                  src={owner?.avatar_url}
+                  alt="Avatar Pemilik"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="capitalize">
+                  {owner?.full_name?.charAt(0) || "?"}
+                </span>
+              )}
+            </div>
           <div className="flex-1">
             <h3
               className={`

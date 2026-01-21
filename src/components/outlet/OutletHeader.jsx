@@ -20,7 +20,7 @@ export default function OutletHeader() {
             Outlet Saya
           </h3>
           <p className="text-xs opacity-70">
-          Disini kamu bisa menambahkan produk yang kamu jual di outletmu
+          Disini kamu bisa melihat dan menambahkan produk yang kamu jual di outletmu
           </p>
         </div>
       </div>

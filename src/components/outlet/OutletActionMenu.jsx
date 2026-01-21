@@ -17,7 +17,7 @@ function OutletActionMenu({ onEdit, onDelete }) {
   }, []);
 
   return (
-    <div ref={ref} className="absolute top-3 right-3 z-20">
+    <div ref={ref} className="absolute top-5 right-3 z-20">
       <button
         onClick={() => setOpen(!open)}
         className="w-7 h-7 rounded-full bg-black/60 text-white

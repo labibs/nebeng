@@ -33,11 +33,17 @@ export default function OutletList({
 
     // data
     const { data, error } = await supabase
-      .from("warungs")
-      .select("*")
-      .eq("created_by_clerk_id", clerkId)
-      .order("created_at", { ascending: false })
-      .range(from, to);
+    .from("warungs")
+    .select(`
+      *,
+      owner:users!warungs_created_by_clerk_id_fkey (
+        avatar_url,
+        name
+      )
+    `)
+    .eq("created_by_clerk_id", clerkId)
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
     if (error) {
       console.error(error);
@@ -52,6 +58,8 @@ export default function OutletList({
 
     setLoading(false);
   }
+
+  console.log("Outlet di OutletList:", outlets);
 
   useEffect(() => {
     if (clerkId) loadOutlets(page);

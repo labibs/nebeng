@@ -29,7 +29,13 @@ export default function MarketOutletList({ title }) {
 
     const { data, error } = await supabase
       .from("warungs")
-      .select("*")
+      .select(`
+        *,
+        owner:users!warungs_created_by_clerk_id_fkey (
+          avatar_url,
+          name
+        )
+      `)
       .order("created_at", { ascending: false })
       .range(from, to);
 

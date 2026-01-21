@@ -33,7 +33,8 @@ export default function MarketOutletCard({ outlet }) {
 
   const keteranganByStatus = () => {
     if (status === "kurir") return "Bisa nitip ke saya";
-    if (status === "pembeli") return "Beliin / anterin ke sini";
+    if (status === "pembeli" && category === "Jasa") return "Anterin ke sini";
+    if (status === "pembeli" && category !== "Jasa") return "Beliin ke sini";
     return "Official";
   };
 

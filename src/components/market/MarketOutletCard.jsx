@@ -1,16 +1,18 @@
 import { useState } from "react";
-import AddressText from "./AddressText";
-import OutletRouteViewer from "./OutletRouteViewer";
 import { MapPin, Route } from "lucide-react";
-import GoogleMapsPointViewer from "../GoogleMapsViewer";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
+import GoogleMapsPointViewer from "../GoogleMapsViewer";
+import AddressText from "./AddressText";
+import OutletRouteViewer from "./OutletRouteViewer";
 import OutletActionMenu from "../outlet/OutletActionMenu";
+import Swal from "sweetalert2";
 
 export default function MarketOutletCard({ outlet }) {
   const [openRoute, setOpenRoute] = useState(false);
   const [openMaps, setOpenMaps] = useState(false);
   const navigate = useNavigate();
+  const onBack = () => navigate(-1);
   const location = useLocation();
   const isOutletPage = location.pathname === "/outlet";
 
@@ -39,16 +41,42 @@ export default function MarketOutletCard({ outlet }) {
   };
 
   const handleDeleteOutlet = async (id) => {
-    if (!confirm("Yakin hapus outlet ini?")) return;
+    const result = await Swal.fire({
+      title: "Hapus Outlet?",
+      text: "Outlet yang dihapus tidak bisa dikembalikan",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, hapus",
+      cancelButtonText: "Batal",
+      reverseButtons: true,
+    });
 
-    await supabase
+    if (!result.isConfirmed) return;
+
+    const { error } = await supabase
       .from("warungs")
       .delete()
       .eq("id", id);
 
-    // refresh list / invalidate query
-  };
+    if (error) {
+      Swal.fire({
+        title: "Gagal",
+        text: error.message || "Outlet gagal dihapus",
+        icon: "error",
+      });
+      return;
+    }
 
+    await Swal.fire({
+      title: "Berhasil",
+      text: "Outlet berhasil dihapus",
+      icon: "success",
+      timer: 1200,
+      showConfirmButton: false,
+    });
+
+    onBack(); // balik ke halaman sebelumnya
+  };
 
   return (
     <div className="relative h-48 rounded-2xl overflow-hidden shadow-lg group">

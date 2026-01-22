@@ -153,6 +153,7 @@ export default function DetailOutlet() {
       <div className="px-4 space-y-4">
         <OutletInfoCard outlet={outlet} isOwner={isOwner} user={user} />
         <CategoryChips
+          isOwner={isOwner}
           outletId={outlet.id}
           categories={categories}
           onSelect={(categoryId) => {
@@ -185,6 +186,7 @@ export default function DetailOutlet() {
           <ProductGrid 
             products={products} 
             isOwner={isOwner} 
+            categories={categories}
             onAddProduct={() => setOpenAddProduct(true)} />
         )}
         <AddProductBottomSheet

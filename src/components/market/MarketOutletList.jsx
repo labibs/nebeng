@@ -66,7 +66,7 @@ export default function MarketOutletList({ title }) {
 
   return (
     <div className="relative">
-        <div className="flex justify-between items-center mb-3 mt-3">
+        <div className="flex justify-between items-center mb-2 mt-3">
         <h2 className="font-bold text-lg">{title}</h2>
         <button className="text-sm text-success">Semua</button>
       </div>

@@ -1,8 +1,10 @@
-import MarketProductCard from "../market/MarketProductCard";
+import Outlet from "../../pages/Outlet";
+import OutletProductCard from "../outlet/OutletProductCard";
 
 export default function ProductGrid({
   products = [],
   isOwner,
+  categories = [],
   onAddProduct,
 }) {
   return (
@@ -24,7 +26,7 @@ export default function ProductGrid({
 
       <div className="grid grid-cols-2 gap-3">
         {products.map((product) => (
-          <MarketProductCard key={product.id} product={product} />
+          <OutletProductCard key={product.id} product={product} isOwner={isOwner} categories={categories} />
         ))}
       </div>
     </div>

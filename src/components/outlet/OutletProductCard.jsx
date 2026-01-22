@@ -1,4 +1,11 @@
-export default function OutletProductCard({ product }) {
+import { useState } from "react";
+import ProductActionMenu from "../detailOutlet/ProductActionMenu";
+import ProductForm from "../detailOutlet/ProductForm";
+import BottomSheet from "../BottomSheet";
+
+export default function OutletProductCard({ product, isOwner, categories = [] }) {
+  const [openEdit, setOpenEdit] = useState(false);
+
   return (
     <div className="relative h-48 rounded-2xl overflow-hidden shadow-md group">
 
@@ -19,18 +26,13 @@ export default function OutletProductCard({ product }) {
       {/* Gradient */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-      {/* Edit / Action */}
-      <button
-        className="
-          absolute top-3 right-3 z-10
-          w-8 h-8 rounded-full
-          bg-white/80 backdrop-blur
-          flex items-center justify-center
-          text-sm
-        "
-      >
-        ✏️
-      </button>
+      {isOwner && (
+        <ProductActionMenu
+          product={product}
+          onEdit={() => setOpenEdit(true)}
+          onDelete={(p) => console.log("delete", p.id)}
+        />
+      )}
 
       {/* Content */}
       <div className="absolute bottom-0 z-10 p-3 w-full text-white">
@@ -61,6 +63,17 @@ export default function OutletProductCard({ product }) {
       <div className="absolute top-3 left-3 z-10 text-[10px] px-2 py-0.5 rounded-full bg-black/60 text-white backdrop-blur">
         Produk
       </div>
+      {openEdit && (
+        <BottomSheet onClose={() => setOpenEdit(false)}>
+          <ProductForm
+            mode="edit"
+            initialData={product}
+            categories={categories}
+            onSubmit={handleUpdateProduct}
+            onClose={() => setOpenEdit(false)}
+          />
+        </BottomSheet>
+      )}
     </div>
   );
 }

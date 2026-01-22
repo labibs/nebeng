@@ -13,6 +13,8 @@ export default function Outlet() {
   const [outlets, setOutlets] = useState([]);
   const [selectedOutlet, setSelectedOutlet] = useState(null);
 
+  const isOwner = selectedOutlet && user && selectedOutlet.created_by_clerk_id === user.id;
+
   useEffect(() => {
     if (!user) return;
 
@@ -57,7 +59,7 @@ export default function Outlet() {
           onSelectOutlet={setSelectedOutlet}
         />
 
-        <OutletProductList outlet={selectedOutlet} />
+        <OutletProductList outlet={selectedOutlet} isOwner={isOwner} />
       </div>
 
       {selectedOutlet && <AddProductButton outlet={selectedOutlet} />}

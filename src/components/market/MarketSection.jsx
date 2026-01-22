@@ -7,7 +7,7 @@ export default function MarketSection({ title, products = [] }) {
     <div>
       <div className="flex justify-between items-center mb-3">
         <h2 className="font-bold text-lg">{title}</h2>
-        <button className="text-sm text-success">See all</button>
+        <button className="text-sm text-success">Semua</button>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

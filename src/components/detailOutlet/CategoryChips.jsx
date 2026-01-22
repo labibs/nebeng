@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import AddCategoryBottomSheet from "./AddCategorryBottomSheet";
 
-export default function CategoryChips({ outletId, categories = [], loading, onCreated }) {
+export default function CategoryChips({ isOwner, outletId, categories = [], loading, onCreated }) {
   const [activeId, setActiveId] = useState(null);
   const [openAdd, setOpenAdd] = useState(false);
 
@@ -18,7 +18,7 @@ export default function CategoryChips({ outletId, categories = [], loading, onCr
   return (
     <>
       <div className="flex gap-2 overflow-x-auto pb-1">
-        {categories.length === 0 && (
+        {categories.length === 0 && isOwner && (
           <button
             onClick={() => setOpenAdd(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-full
@@ -45,7 +45,7 @@ export default function CategoryChips({ outletId, categories = [], loading, onCr
           </button>
         ))}
 
-        {categories.length > 0 && (
+        {categories.length > 0 && isOwner && (
           <button
             onClick={() => setOpenAdd(true)}
             className="flex items-center gap-1 px-3 py-2 rounded-full

@@ -62,10 +62,10 @@ export default function MarketPage() {
       <MarketCategories />
       <MarketQuickIcons />
       <MarketPromoBanner />
-      <div className="px-4 space-y-6 pb-10">
+      <div className="px-4 space-y-3 pb-10">
         <MarketOutletList title="Daftar Outlet" />
         <MarketSection
-          title="Produk Terbaru"
+          title="Daftar Produk"
           products={products}
       />
       </div>

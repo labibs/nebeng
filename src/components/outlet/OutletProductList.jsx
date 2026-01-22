@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import OutletProductCard from "./OutletProductCard";
 
-export default function OutletProductList({ outlet }) {
+export default function OutletProductList({ outlet, isOwner }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -43,7 +43,7 @@ export default function OutletProductList({ outlet }) {
 
       <div className="grid grid-cols-2 gap-3">
         {products.map((product) => (
-          <OutletProductCard key={product.id} product={product} />
+          <OutletProductCard key={product.id} product={product} isOwner={isOwner} />
         ))}
 
         {!loading && products.length === 0 && (

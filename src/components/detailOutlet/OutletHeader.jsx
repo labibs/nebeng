@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import OutletActionMenu from "../outlet/OutletActionMenu";
 
 export default function OutletHeader({outlet, isOwner}) {
   const navigate = useNavigate();
@@ -26,6 +27,12 @@ export default function OutletHeader({outlet, isOwner}) {
             {isOwner ? 'Disini kamu bisa mengedit tampilan, menghapus dan menambahkan produk yang kamu jual di outletmu' : 'Pilih produk yang ingin kamu beli di outlet ini'}
           </p>
         </div>
+        {isOwner && (
+        <OutletActionMenu
+          onEdit={() => navigate(`/outlet/${outlet.id}/edit`)}
+          onDelete={() => handleDeleteOutlet(outlet.id)}
+        />
+      )}
       </div>
     </div>
   );

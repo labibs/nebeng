@@ -1,35 +1,32 @@
-import ProductCard from "./ProductCard";
+import MarketProductCard from "../market/MarketProductCard";
 
-const products = [
-	{
-		id: 1,
-		name: "Nike Air Jordan 1 Retro High OG",
-		price: 650,
-		rating: 3.8,
-		image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db",
-	},
-	{
-		id: 2,
-		name: "Nike Dunk Low Retro GS",
-		price: 360,
-		rating: 3.5,
-		image: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77",
-	},
-];
+export default function ProductGrid({
+  products = [],
+  isOwner,
+  onAddProduct,
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-between items-center">
+        <p className="text-sm opacity-60">
+          {products.length}+ produk
+        </p>
 
-export default function ProductGrid() {
-	return (
-		<div className="space-y-3">
-			<div className="flex justify-between items-center">
-				<p className="text-sm opacity-60">100+ products</p>
-				<button className="text-sm">Sort & filter</button>
-			</div>
+        {isOwner && (
+          <button
+            onClick={onAddProduct}
+            className="btn btn-sm btn-outline rounded-full"
+          >
+            + Produk
+          </button>
+        )}
+      </div>
 
-			<div className="grid grid-cols-2 gap-3">
-				{products.map((product) => (
-					<ProductCard key={product.id} product={product} />
-				))}
-			</div>
-		</div>
-	);
+      <div className="grid grid-cols-2 gap-3">
+        {products.map((product) => (
+          <MarketProductCard key={product.id} product={product} />
+        ))}
+      </div>
+    </div>
+  );
 }

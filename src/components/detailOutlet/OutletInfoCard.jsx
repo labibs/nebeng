@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 import { MessageCircle } from "lucide-react";
 import AddressText from "../market/AddressText";
-import OutletActionMenu from "../outlet/OutletActionMenu";
 import Swal from "sweetalert2";
 
 export default function OutletInfoCard({outlet, isOwner, user}) {
@@ -87,12 +86,7 @@ export default function OutletInfoCard({outlet, isOwner, user}) {
         alt="Outlet Banner"
         className="w-full h-40 object-cover"
       />
-      {isOwner && (
-        <OutletActionMenu
-          onEdit={() => navigate(`/outlet/${outlet.id}/edit`)}
-          onDelete={() => handleDeleteOutlet(outlet.id)}
-        />
-      )}
+      
       <div className="p-4 space-y-3">
         <div className="flex items-center gap-3">
           <div
@@ -153,7 +147,7 @@ export default function OutletInfoCard({outlet, isOwner, user}) {
         </div>
 
         <div className="flex items-center justify-between bg-green-100 rounded-xl p-3">
-          <p className="text-sm text-amber-950">Free shipping for members on orders $50+</p>
+          <p className="text-sm text-amber-950">{outlet.description}</p>
           <button className="btn btn-xs btn-primary">Get Code</button>
         </div>
       </div>

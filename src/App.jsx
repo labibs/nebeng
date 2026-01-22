@@ -44,13 +44,13 @@ function App() {
                 <Route path="/transaksi" element={<Transaksi />} />
                 <Route path="/market" element={<Market />} />
                 <Route path="/outlet" element={<Outlet />} />
-                <Route path="/outlet/:id" element={<DetailOutlet />} />
-                <Route path="/outlet/:id/edit" element={<EditOutlet />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
               <Route element={<ChatLayout />}>
                 <Route path="/chat/:conversationId" element={<ChatRoom />} />
                 <Route path="/deal" element={<DealPage />} />
+                <Route path="/outlet/:id" element={<DetailOutlet />} />
+                <Route path="/outlet/:id/edit" element={<EditOutlet />} />
               </Route>
 
               {/* Redirect semua route tidak dikenal ke home */}

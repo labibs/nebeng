@@ -1,6 +1,8 @@
 import MarketProductCard from "./MarketProductCard";
 
-export default function MarketSection({ title }) {
+export default function MarketSection({ title, products = [] }) {
+  if (!products.length) return null;
+
   return (
     <div>
       <div className="flex justify-between items-center mb-3">
@@ -9,8 +11,12 @@ export default function MarketSection({ title }) {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <MarketProductCard />
-        <MarketProductCard />
+        {products.map((product) => (
+          <MarketProductCard
+            key={product.id}
+            product={product}
+          />
+        ))}
       </div>
     </div>
   );

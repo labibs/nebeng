@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient"; 
 import { motion } from "framer-motion";
 import MarketHeader from "../components/market/MarketHeader";
 import MarketCategories from "../components/market/MarketCategories";
@@ -7,6 +9,41 @@ import MarketSection from "../components/market/MarketSection";
 import MarketOutletList from "../components/market/MarketOutletList";
 
 export default function MarketPage() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  async function loadProducts() {
+    setLoading(true);
+
+    const { data, error } = await supabase
+      .from("warung_products")
+      .select(`
+        id,
+        name,
+        estimated_price,
+        image_url,
+        rating,
+        is_estimated,
+        created_by_clerk_id,
+        created_at,
+        warung:warungs (
+          name,
+          category,
+          status
+        )
+      `)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (!error) setProducts(data || []);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+
   return (
     <motion.div
         className="min-h-screen bg-base-100 "
@@ -27,7 +64,10 @@ export default function MarketPage() {
       <MarketPromoBanner />
       <div className="px-4 space-y-6 pb-10">
         <MarketOutletList title="Daftar Outlet" />
-        <MarketSection title="Trending Item" />
+        <MarketSection
+          title="Produk Terbaru"
+          products={products}
+      />
       </div>
     </div>
     </motion.div>

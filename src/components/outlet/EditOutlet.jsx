@@ -43,6 +43,7 @@ export default function EditOutlet() {
 
   const [form, setForm] = useState({
     name: "",
+    description: "",
     category: "Makanan",
     visibility: "public",
     status: "milik",
@@ -67,6 +68,7 @@ export default function EditOutlet() {
       // prefill form
       setForm({
         name: data.name || "",
+        description: data.description || "",
         category: data.category || "Makanan",
         visibility: data.visibility || "public",
         status: data.status || "milik",
@@ -156,6 +158,7 @@ export default function EditOutlet() {
       .from("warungs")
       .update({
         name: form.name,
+        description: form.description,
         category: form.category,
         status: form.status,
         visibility: form.visibility,
@@ -243,18 +246,32 @@ export default function EditOutlet() {
 
             {/* NAMA WARUNG */}
             <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
-            <p className="text-xs opacity-60 mb-1">
-                Namanya apa ?
-            </p>
+              <p className="text-xs opacity-60 mb-1">
+                  Namanya apa ?
+              </p>
 
-            <input
-                placeholder="Contoh: Warung Bu Siti"
-                value={form.name}
-                onChange={(e) =>
-                setForm({ ...form, name: e.target.value })
-                }
-                className="w-full bg-transparent text-sm font-semibold focus:outline-none"
-            />
+              <input
+                  placeholder="Contoh: Warung Bu Siti"
+                  value={form.name}
+                  onChange={(e) =>
+                  setForm({ ...form, name: e.target.value })
+                  }
+                  className="w-full bg-transparent text-sm font-semibold focus:outline-none"
+              />
+            </div>
+             <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
+              <p className="text-xs opacity-60 mb-1">
+                  Penjelasan
+              </p>
+
+              <input
+                  placeholder="Contoh: Bisa dititipkan ke orang yang sedang menuju ke tempatmu."
+                  value={form.description}
+                  onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                  }
+                  className="w-full bg-transparent text-sm font-semibold focus:outline-none"
+              />
             </div>
             <LocationPicker
                 label="Lokasi dimana ?"

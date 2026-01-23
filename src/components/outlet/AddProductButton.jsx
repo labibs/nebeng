@@ -1,10 +1,12 @@
-import { Plus } from "lucide-react";
+import { PackageCheckIcon, StoreIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export default function AddProductButton() {
+export default function AddProductButton({outlet}) {
+  const navigate = useNavigate();
   return (
     <button
       className="
-        fixed bottom-20 right-4
+        fixed bottom-25 right-4
         flex items-center gap-1.5
         bg-primary text-white
         px-3 py-2
@@ -14,9 +16,10 @@ export default function AddProductButton() {
         hover:bg-primary/90
         transition
       "
+      onClick={() => navigate(`/outlet/${outlet.id}`)}
     >
-      <Plus size={16} />
-      Tambah Produk
+      <PackageCheckIcon size={16} />
+      Kelola {outlet.name}
     </button>
   );
 }

@@ -94,29 +94,28 @@ export default function DetailOutlet() {
       .eq("warung_id", outletId)
       .order("created_at", { ascending: false });
 
-  if (categoryId) {
-    query = query.eq("category_id", categoryId);
+    if (categoryId) {
+      query = query.eq("category_id", categoryId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("loadProducts error:", error);
+      setProducts([]);
+    } else {
+      // flatten lokasi biar enak dipakai di card
+      const mapped = (data || []).map((p) => ({
+        ...p,
+        city: p.warung?.city,
+        district: p.warung?.district,
+      }));
+
+      setProducts(mapped);
+    }
+
+    setProductLoading(false);
   }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error("loadProducts error:", error);
-    setProducts([]);
-  } else {
-    // flatten lokasi biar enak dipakai di card
-    const mapped = (data || []).map((p) => ({
-      ...p,
-      city: p.warung?.city,
-      district: p.warung?.district,
-    }));
-
-    setProducts(mapped);
-  }
-
-  setProductLoading(false);
-}
-
 
   useEffect(() => {
     if (id) loadOutletById(id);
@@ -135,7 +134,15 @@ export default function DetailOutlet() {
     loadProducts({ outletId: id });
   }, [id]);
 
-  console.log('ketegori id', activeCategoryId);
+  function handleUpdateProduct(updated) {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === updated.id ? updated : p))
+    );
+  }
+
+  function handleDeleteProduct(id) {
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+  }
 
   if (loading) return <div className="p-4">Loading...</div>;
   if (!outlet) return <div className="p-4">Outlet tidak ditemukan</div>;
@@ -185,9 +192,13 @@ export default function DetailOutlet() {
         ) : (
           <ProductGrid 
             products={products} 
+            outletId={outlet.id}
             isOwner={isOwner} 
             categories={categories}
-            onAddProduct={() => setOpenAddProduct(true)} />
+            onAddProduct={() => setOpenAddProduct(true)} 
+            onUpdate={handleUpdateProduct}
+            onDelete={handleDeleteProduct}
+          />
         )}
         <AddProductBottomSheet
           open={openAddProduct}

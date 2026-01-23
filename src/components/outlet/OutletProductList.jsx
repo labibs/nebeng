@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
-import OutletProductCard from "./OutletProductCard";
+import MarketProductCard from "../market/MarketProductCard";
 
 export default function OutletProductList({ outlet, isOwner }) {
   const [products, setProducts] = useState([]);
@@ -43,13 +43,13 @@ export default function OutletProductList({ outlet, isOwner }) {
 
       <div className="grid grid-cols-2 gap-3">
         {products.map((product) => (
-          <OutletProductCard key={product.id} product={product} isOwner={isOwner} />
+          <MarketProductCard key={product.id} product={product} isOwner={isOwner} />
         ))}
 
         {!loading && products.length === 0 && (
           <div className="col-span-2">
             <p className="text-sm p-4 border rounded-xl text-center opacity-60">
-              Belum ada produk di outlet ini, silahkan klik tombol + Tambah Produk
+              Belum ada produk di outlet ini
             </p>
           </div>
         )}

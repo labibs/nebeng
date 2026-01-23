@@ -1,11 +1,49 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../../lib/supabaseClient";
 import OutletActionMenu from "../outlet/OutletActionMenu";
+import Swal from "sweetalert2";
 
 export default function OutletHeader({outlet, isOwner}) {
   const navigate = useNavigate();
 
-  console.log(isOwner);
+  const handleDeleteOutlet = async (id) => {
+      const result = await Swal.fire({
+        title: "Hapus Outlet?",
+        text: "Outlet yang dihapus tidak bisa dikembalikan",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Ya, hapus",
+        cancelButtonText: "Batal",
+        reverseButtons: true,
+      });
+  
+      if (!result.isConfirmed) return;
+  
+      const { error } = await supabase
+        .from("warungs")
+        .delete()
+        .eq("id", id);
+  
+      if (error) {
+        Swal.fire({
+          title: "Gagal",
+          text: error.message || "Outlet gagal dihapus",
+          icon: "error",
+        });
+        return;
+      }
+  
+      await Swal.fire({
+        title: "Berhasil",
+        text: "Outlet berhasil dihapus",
+        icon: "success",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+  
+      onBack(); // balik ke halaman sebelumnya
+    };
 
   return (
     

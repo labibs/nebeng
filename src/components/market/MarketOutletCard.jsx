@@ -1,12 +1,9 @@
 import { useState } from "react";
-import { MapPin, Route } from "lucide-react";
+import { Route } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { supabase } from "../../lib/supabaseClient";
 import GoogleMapsPointViewer from "../GoogleMapsViewer";
 import AddressText from "./AddressText";
 import OutletRouteViewer from "./OutletRouteViewer";
-import OutletActionMenu from "../outlet/OutletActionMenu";
-import Swal from "sweetalert2";
 
 export default function MarketOutletCard({ outlet }) {
   const [openRoute, setOpenRoute] = useState(false);

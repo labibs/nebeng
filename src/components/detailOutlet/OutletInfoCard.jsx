@@ -2,49 +2,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 import { MessageCircle } from "lucide-react";
 import AddressText from "../market/AddressText";
-import Swal from "sweetalert2";
 
 export default function OutletInfoCard({outlet, isOwner, user}) {
   const navigate = useNavigate();
   
-  const handleDeleteOutlet = async (id) => {
-    const result = await Swal.fire({
-      title: "Hapus Outlet?",
-      text: "Outlet yang dihapus tidak bisa dikembalikan",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Ya, hapus",
-      cancelButtonText: "Batal",
-      reverseButtons: true,
-    });
-
-    if (!result.isConfirmed) return;
-
-    const { error } = await supabase
-      .from("warungs")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
-      Swal.fire({
-        title: "Gagal",
-        text: error.message || "Outlet gagal dihapus",
-        icon: "error",
-      });
-      return;
-    }
-
-    await Swal.fire({
-      title: "Berhasil",
-      text: "Outlet berhasil dihapus",
-      icon: "success",
-      timer: 1200,
-      showConfirmButton: false,
-    });
-
-    onBack(); // balik ke halaman sebelumnya
-  };
-
   const startChatWith = async (selectedUser) => {
     const currentUserId = user.id;
     const currentClerkId = outlet.created_by_clerk_id;

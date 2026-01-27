@@ -183,7 +183,7 @@ export default function CreateWarung({ onBack }) {
               />
             ) : (
               <span className="text-sm opacity-60 px-6 text-center">
-                + Upload foto outlet / etalase utama 
+                + Upload foto outlet / etalase utama
               </span>
             )}
           </div>
@@ -212,11 +212,11 @@ export default function CreateWarung({ onBack }) {
             className="w-full bg-transparent text-sm font-semibold focus:outline-none"
           />
         </div>
-          <LocationPicker
-            label="Lokasi dimana ?"
-            value={location}
-            onSelect={setLocation}
-          />
+        <LocationPicker
+          label="Lokasi dimana ?"
+          value={location}
+          onSelect={setLocation}
+        />
         <div className="grid grid-cols-2 gap-3">
           {/* Tanggal jemput */}
           <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
@@ -231,7 +231,7 @@ export default function CreateWarung({ onBack }) {
                         text-sm font-semibold
                         focus:outline-none"
             >
-              
+
               {categories.map((cat, index) => (
                 <option key={index} value={cat}>
                   {cat}
@@ -245,15 +245,15 @@ export default function CreateWarung({ onBack }) {
             <p className="text-xs opacity-60 mb-1">Visibilitas</p>
 
             <select
-            value={form.visibility}
-            onChange={(e) =>
-              setForm({ ...form, visibility: e.target.value })
-            }
-            className="w-full bg-transparent text-sm font-semibold focus:outline-none"
-          >
-            <option value="public">Publik</option>
-            <option value="private">Pribadi</option>
-          </select>
+              value={form.visibility}
+              onChange={(e) =>
+                setForm({ ...form, visibility: e.target.value })
+              }
+              className="w-full bg-transparent text-sm font-semibold focus:outline-none"
+            >
+              <option value="public">Publik</option>
+              <option value="private">Pribadi</option>
+            </select>
           </div>
         </div>
 

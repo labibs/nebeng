@@ -55,6 +55,9 @@ export default function CategoryChips({
                     : "bg-base-100 hover:bg-base-200"
                   }`}
               >
+                {cat.icon && (
+                  <span className="text-md">{cat.icon}</span>
+                )}
                 {cat.name}
               </button>
             </div>

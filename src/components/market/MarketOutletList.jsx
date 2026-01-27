@@ -20,18 +20,38 @@ export default function MarketOutletList({ title, search = "", category = null }
     loadOutlets(1, search, category);
   }, [search, category]);
 
+  async function searchWarungsWithMatchingProducts(keyword) {
+    const { data } = await supabase
+      .from("warung_products")
+      .select("warung_id")
+      .ilike("name", `%${keyword}%`);
+    return [...new Set(data?.map((item) => item.warung_id) || [])];
+  }
+
   const loadOutlets = async (currentPage, keyword = "", category = null) => {
     setLoading(true);
 
     const from = (currentPage - 1) * LIMIT;
     const to = from + LIMIT - 1;
 
+    // 1. Cari warung ID yang produknya cocok dengan keyword
+    let relatedIds = [];
+    if (keyword) {
+      relatedIds = await searchWarungsWithMatchingProducts(keyword);
+    }
+
+    // 2. Query dasar
     let countQuery = supabase
       .from("warungs")
       .select("*", { count: "exact", head: true });
 
+    // Filter Keyword (Nama Warung OR Punya Produk Cocok)
     if (keyword) {
-      countQuery = countQuery.ilike("name", `%${keyword}%`);
+      if (relatedIds.length > 0) {
+        countQuery = countQuery.or(`name.ilike.%${keyword}%,id.in.(${relatedIds.join(",")})`);
+      } else {
+        countQuery = countQuery.ilike("name", `%${keyword}%`);
+      }
     }
 
     if (category) {
@@ -55,8 +75,17 @@ export default function MarketOutletList({ title, search = "", category = null }
       .order("created_at", { ascending: false })
       .range(from, to);
 
+    // Apply logic yang sama untuk dataQuery
     if (keyword) {
-      dataQuery = dataQuery.ilike("name", `%${keyword}%`);
+      if (relatedIds.length > 0) {
+        dataQuery = dataQuery.or(`name.ilike.%${keyword}%,id.in.(${relatedIds.join(",")})`);
+      } else {
+        dataQuery = dataQuery.ilike("name", `%${keyword}%`);
+      }
+    }
+
+    if (category) {
+      dataQuery = dataQuery.eq("category", category);
     }
 
     if (category) {

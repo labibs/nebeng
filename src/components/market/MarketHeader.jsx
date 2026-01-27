@@ -1,4 +1,4 @@
-import { Store, Search } from "lucide-react";
+import { Store, Search, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function MarketHeader({ search, onSearchChange }) {
@@ -28,18 +28,7 @@ export default function MarketHeader({ search, onSearchChange }) {
       {/* Search */}
       <div className="sticky top-0 z-40 px-4 pb-3 pt-2 backdrop-blur">
         <div className="relative">
-          <Search
-            size={18}
-            className="
-              absolute left-4 top-1/2 -translate-y-1/2
-              text-gray-500
-              dark:text-gray-300
-              peer-focus:text-gray-700
-              dark:peer-focus:text-white
-              transition-colors
-              pointer-events-none
-            "
-          />
+
 
           <input
             type="text"
@@ -50,11 +39,27 @@ export default function MarketHeader({ search, onSearchChange }) {
               peer
               input input-bordered
               w-full rounded-full
-              pl-11
+              pl-3 pr-10
               bg-white
               dark:bg-base-100
             "
           />
+
+          {search && (
+            <button
+              onClick={() => onSearchChange("")}
+              className="
+                absolute right-3 top-1/2 -translate-y-1/2
+                p-1 rounded-full
+                bg-gray-200 dark:bg-gray-700
+                text-gray-500 dark:text-gray-300
+                hover:bg-gray-300 dark:hover:bg-gray-600
+                transition-colors
+              "
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
       </div>
     </>

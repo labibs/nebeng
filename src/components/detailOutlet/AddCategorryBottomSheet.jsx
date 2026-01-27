@@ -1,14 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function AddCategoryBottomSheet({
   open,
   onClose,
   outletId,
+  mode = "create",
+  initialData = null,
   onCreated,
+  onUpdated,
 }) {
   const [categoryName, setCategoryName] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (open && mode === "edit" && initialData) {
+      setCategoryName(initialData.name);
+    } else if (open && mode === "create") {
+      setCategoryName("");
+    }
+  }, [open, mode, initialData]);
 
   if (!open) return null;
 
@@ -17,25 +28,44 @@ export default function AddCategoryBottomSheet({
 
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from("categories")
-      .insert({
-        warung_id: outletId,
-        name: categoryName.trim(),
-      })
-      .select()
-      .single();
+    if (mode === "edit") {
+      const { data, error } = await supabase
+        .from("categories")
+        .update({ name: categoryName.trim() })
+        .eq("id", initialData.id)
+        .select()
+        .single();
 
-    setLoading(false);
+      setLoading(false);
 
-    if (error) {
-      alert(error.message);
-      return;
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      onUpdated?.(data);
+      onClose();
+    } else {
+      const { data, error } = await supabase
+        .from("categories")
+        .insert({
+          warung_id: outletId,
+          name: categoryName.trim(),
+        })
+        .select()
+        .single();
+
+      setLoading(false);
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      onCreated?.(data);
+      setCategoryName("");
+      onClose();
     }
-
-    onCreated?.(data);
-    setCategoryName("");
-    onClose();
   };
 
   return (
@@ -55,7 +85,7 @@ export default function AddCategoryBottomSheet({
         {/* CONTENT */}
         <div className="px-6 pb-6">
           <h3 className="text-lg font-bold text-center mb-4">
-            Tambah Etalase
+            {mode === "edit" ? "Edit Etalase" : "Tambah Etalase"}
           </h3>
 
           <div className="relative">
@@ -75,7 +105,7 @@ export default function AddCategoryBottomSheet({
             <div className="mt-4 p-4 bg-emerald-50 dark:bg-emerald-900/30
                             rounded-2xl border border-emerald-200 dark:border-emerald-800">
               <p className="text-sm text-base-content/80 text-center">
-                📦 Etalase <b>{categoryName}</b> akan ditambahkan ke warung ini
+                📦 Etalase <b>{categoryName}</b> akan {mode === "edit" ? "diperbarui" : "ditambahkan ke warung ini"}
               </p>
             </div>
           )}
@@ -96,7 +126,7 @@ export default function AddCategoryBottomSheet({
             className="flex-1 btn btn-success btn-lg rounded-2xl
                        text-white font-bold shadow-lg disabled:opacity-50"
           >
-            Simpan
+            {loading ? "Menyimpan..." : "Simpan"}
           </button>
         </div>
       </div>

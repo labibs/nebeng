@@ -60,7 +60,7 @@ export default function OutletProductCard({
       <div className="absolute top-3 left-3 z-10 text-[10px]
                       px-2 py-0.5 rounded-full
                       bg-black/60 text-white backdrop-blur">
-        Produk
+        {categories.find((c) => c.id === product.category_id)?.name || "Produk"}
       </div>
 
       {/* Edit BottomSheet */}

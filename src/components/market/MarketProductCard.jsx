@@ -1,4 +1,5 @@
-export default function MarketProductCard({ product }) {
+export default function MarketProductCard({ product, categories = [] }) {
+  console.log("Categories di MarketProductCard:", categories);
   return (
     <div className="relative h-48 rounded-2xl overflow-hidden shadow-lg group">
 
@@ -21,12 +22,11 @@ export default function MarketProductCard({ product }) {
       </button>
 
       {/* Estimation Badge */}
-      {product.is_estimated && (
-        <div className="absolute top-3 left-3 z-10 text-[10px]
-                        px-2 py-0.5 rounded-full bg-black/60 text-white">
-          Estimasi
-        </div>
-      )}
+      {/* Category Badge */}
+      <div className="absolute top-3 left-3 z-10 text-[10px]
+                      px-2 py-0.5 rounded-full bg-black/60 text-white">
+        {product.category_name || categories.find((c) => c.id === product.category_id)?.name || "Produk"}
+      </div>
 
       {/* Content */}
       <div className="absolute bottom-0 z-10 p-3 w-full text-white">

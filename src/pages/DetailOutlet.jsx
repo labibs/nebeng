@@ -82,6 +82,7 @@ export default function DetailOutlet() {
         estimated_price,
         image_url,
         rating,
+        category_id,
         is_estimated,
         created_by_clerk_id,
         created_at,
@@ -146,7 +147,7 @@ export default function DetailOutlet() {
 
   if (loading) return <div className="p-4">Loading...</div>;
   if (!outlet) return <div className="p-4">Outlet tidak ditemukan</div>;
-  
+
   return (
     <motion.div
       className="min-h-screen bg-base-100 pb-24"
@@ -155,7 +156,7 @@ export default function DetailOutlet() {
       exit={{ x: "-100%", opacity: 0 }}
       transition={{ type: "tween", ease: "easeOut", duration: 0.35 }}
     >
-      <OutletHeader outlet={outlet} isOwner={isOwner}/>
+      <OutletHeader outlet={outlet} isOwner={isOwner} />
 
       <div className="px-4 space-y-4">
         <OutletInfoCard outlet={outlet} isOwner={isOwner} user={user} />
@@ -190,13 +191,13 @@ export default function DetailOutlet() {
             ))}
           </div>
         ) : (
-          <ProductGrid 
-            products={products} 
+          <ProductGrid
+            products={products}
             outletId={outlet.id}
-            isOwner={isOwner} 
+            isOwner={isOwner}
             categories={categories}
-            onAddProduct={() => setOpenAddProduct(true)} 
-            onUpdate={handleUpdateProduct}
+            onAddProduct={() => setOpenAddProduct(true)}
+            onUpdateProduct={handleUpdateProduct}
             onDelete={handleDeleteProduct}
           />
         )}

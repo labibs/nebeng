@@ -18,7 +18,10 @@ export default function ProductForm({
   // autofill saat edit
   useEffect(() => {
     if (mode === "edit") {
-      setSelectedCategory(initialData.category_id || "");
+      setSelectedCategory(initialData.category_id ? String(initialData.category_id) : "");
+      if (initialData.image_url) {
+        setPreview(initialData.image_url);
+      }
     }
   }, [mode, initialData, setSelectedCategory]);
 
@@ -29,6 +32,7 @@ export default function ProductForm({
       estimated_price: price,
       category_id: selectedCategory,
       imageFile,
+      image_url: initialData.image_url,
     });
     setLoading(false);
   }
@@ -67,6 +71,7 @@ export default function ProductForm({
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="select select-lg w-full bg-base-200 text-center"
           >
+            <option value="" disabled>Pilih Kategori</option>
             {categories.map((c) => (
               <option key={c.id} value={String(c.id)}>
                 {c.name}
@@ -140,7 +145,7 @@ export default function ProductForm({
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!name || !price || !selectedCategory || loading}
+            disabled={!name || !price || !selectedCategory || (mode === "create" && !imageFile) || loading}
             className="flex-1 btn btn-success btn-lg rounded-2xl text-white font-bold disabled:opacity-50"
           >
             {loading ? "Menyimpan..." : "Simpan"}

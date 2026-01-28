@@ -1,7 +1,12 @@
+import { useNavigate } from "react-router-dom";
 export default function MarketProductCard({ product, categories = [] }) {
-  console.log("Categories di MarketProductCard:", categories);
+
+  const navigate = useNavigate();
+
   return (
-    <div className="relative h-48 rounded-2xl overflow-hidden shadow-lg group">
+    <div
+      onClick={() => navigate(`/product/${product.id}`)}
+      className="relative h-48 rounded-2xl overflow-hidden shadow-lg group">
 
       {/* Image */}
       <img

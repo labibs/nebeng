@@ -21,6 +21,8 @@ import BottomNav from './components/BottomNav'
 import DealPage from './pages/DealPage'
 import DetailOutlet from './pages/DetailOutlet';
 import EditOutlet from './components/outlet/EditOutlet';
+import DetailProduct from './components/detailProduct/DetailProduct';
+import DetailImage from './components/detailProduct/DetailImage';
 
 function App() {
   return (
@@ -51,6 +53,8 @@ function App() {
                 <Route path="/deal" element={<DealPage />} />
                 <Route path="/outlet/:id" element={<DetailOutlet />} />
                 <Route path="/outlet/:id/edit" element={<EditOutlet />} />
+                <Route path="/product/:id" element={<DetailProduct />} />
+                <Route path="/product/:id/image" element={<DetailImage />} />
               </Route>
 
               {/* Redirect semua route tidak dikenal ke home */}

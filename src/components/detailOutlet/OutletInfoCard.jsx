@@ -3,9 +3,9 @@ import { supabase } from "../../lib/supabaseClient";
 import { MessageCircle } from "lucide-react";
 import AddressText from "../market/AddressText";
 
-export default function OutletInfoCard({outlet, isOwner, user}) {
+export default function OutletInfoCard({ outlet, isOwner, user }) {
   const navigate = useNavigate();
-  
+
   const startChatWith = async (selectedUser) => {
     const currentUserId = user.id;
     const currentClerkId = outlet.created_by_clerk_id;
@@ -47,12 +47,12 @@ export default function OutletInfoCard({outlet, isOwner, user}) {
         alt="Outlet Banner"
         className="w-full h-40 object-cover"
       />
-      
+
       <div className="p-4 space-y-3">
         <div className="flex items-center gap-3">
           <div
-              onClick={() => navigate(`/outlet/${id}`)}
-              className="
+            onClick={() => navigate(`/outlet/${id}`)}
+            className="
                 w-9 h-9
                 rounded-full
                 bg-black/60
@@ -65,19 +65,19 @@ export default function OutletInfoCard({outlet, isOwner, user}) {
                 active:scale-95
                 transition
               "
-            >
-              {outlet?.owner?.avatar_url ? (
-                <img
-                  src={outlet?.owner?.avatar_url}
-                  alt="Avatar Pemilik"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="capitalize">
-                  {outlet?.owner?.name?.charAt(0) || "?"}
-                </span>
-              )}
-            </div>
+          >
+            {outlet?.owner?.avatar_url ? (
+              <img
+                src={outlet?.owner?.avatar_url}
+                alt="Avatar Pemilik"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="capitalize">
+                {outlet?.owner?.name?.charAt(0) || "?"}
+              </span>
+            )}
+          </div>
           <div className="flex-1">
             <p className="font-semibold">{outlet.name}</p>
             <p className="text-xs opacity-60"><AddressText address={outlet.address} /></p>
@@ -101,7 +101,7 @@ export default function OutletInfoCard({outlet, isOwner, user}) {
               "
             >
               <MessageCircle size={20} />
-              
+
             </button>
           )}
 
@@ -109,7 +109,7 @@ export default function OutletInfoCard({outlet, isOwner, user}) {
 
         <div className="flex items-center justify-between bg-green-100 rounded-xl p-3">
           <p className="text-sm text-amber-950">{outlet.description}</p>
-          <button className="btn btn-xs btn-primary">Get Code</button>
+          <button className="btn btn-xs btn-primary">Ikuti</button>
         </div>
       </div>
     </div>

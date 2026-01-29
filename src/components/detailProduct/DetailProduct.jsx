@@ -245,8 +245,8 @@ export default function DetailProduct() {
                     <div className="text-right">
                         {product.warung_status !== 'milik' && (
                             <button onClick={() => setOpenRoute(true)}
-                                className="flex items-center gap-1 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors border dark:border-slate-700 shadow-sm">
-                                <Route size={14} className="stroke-indigo-600" />
+                                className="flex items-center gap-1 bg-green-50 dark:bg-slate-800 text-green-600 px-3 py-2 rounded-full hover:bg-green-100 transition-colors border dark:border-slate-700 shadow-sm">
+                                <Route size={14} className="stroke-green-600" />
                                 <span className="text-sm font-semibold">Cek Rute</span>
                             </button>
                         )}
@@ -318,7 +318,7 @@ export default function DetailProduct() {
                         </button>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                    <div className="bg-green-100 dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
                         {/* Outlet Info */}
                         <div className="p-4 bg-gray-50/50 dark:bg-slate-800/50 flex items-center gap-3">
                             <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm">
@@ -366,9 +366,8 @@ export default function DetailProduct() {
 
             {/* BOTTOM ACTION */}
             {user?.id !== product.owner_id && (
-                <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-br from-green-100 to-emerald-200
-        dark:from-slate-900 dark:to-slate-800
-        transition-transform px-4 py-3 flex gap-3 z-50 shadow-sm dark:border-slate-800">
+                <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900
+                           px-4 py-3 flex gap-3 z-50 shadow-sm dark:border-slate-800">
 
                     {/* Chat */}
                     <button

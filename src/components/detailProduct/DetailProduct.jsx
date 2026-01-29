@@ -274,11 +274,11 @@ export default function DetailProduct() {
                     {/* Rating Summary */}
                     <div className="flex items-center gap-3 mb-4">
                         <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                            {product.rating || 0}
+                            {product.rating || 5}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
                             <div>⭐⭐⭐⭐⭐</div>
-                            <div>{product.review_count || 0} ulasan</div>
+                            <div>{product.review_count || 2} ulasan</div>
                         </div>
                     </div>
 

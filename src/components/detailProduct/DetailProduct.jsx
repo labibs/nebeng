@@ -138,19 +138,19 @@ export default function DetailProduct() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-white">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+            <div className="min-h-screen flex items-center justify-center bg-base-100 dark:bg-slate-900">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white" />
             </div>
         );
     }
 
     if (!product) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-4">
-                <p className="text-gray-500">Produk tidak ditemukan</p>
+            <div className="min-h-screen flex flex-col items-center justify-center bg-base-100 dark:bg-slate-900 gap-4">
+                <p className="text-gray-500 dark:text-gray-400">Produk tidak ditemukan</p>
                 <button
                     onClick={() => navigate(-1)}
-                    className="text-blue-600 hover:underline"
+                    className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
                     Kembali
                 </button>
@@ -173,11 +173,11 @@ export default function DetailProduct() {
 
     return (
         <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 500 }}
-            className="pb-24 bg-white min-h-screen"
+            className="min-h-screen bg-base-100 pb-24"
+            initial={{ x: "100%", opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: "-100%", opacity: 0 }}
+            transition={{ type: "tween", ease: "easeOut", duration: 0.35 }}
         >
 
             {/* HEADER */}
@@ -194,16 +194,16 @@ export default function DetailProduct() {
                     className="w-full h-full object-cover"
                 />
             </div>
-            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent backdrop-blur-[1px]" />
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-base-100 dark:from-slate-900 to-transparent backdrop-blur-[1px]" />
             {/* PRODUCT TITLE SECTION */}
             <div className="px-4 pt-4 pb-2">
                 {/* Category */}
-                <div className="flex items-center justify-between text-sm text-gray-500 mb-1">
+                <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-1">
                     <span className="font-medium">{product.category_name}</span>
 
                     {/* Price */}
                     <div className="text-right">
-                        <p className="text-xl font-bold text-gray-900 leading-none">
+                        <p className="text-xl font-bold text-gray-900 dark:text-white leading-none">
                             Rp {Number(product.estimated_price || 0).toLocaleString("id-ID")}
                         </p>
                         {product.is_estimated && (
@@ -215,7 +215,7 @@ export default function DetailProduct() {
                 </div>
 
                 {/* Title */}
-                <h1 className="text-2xl font-bold text-gray-900 leading-tight mb-3">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white leading-tight mb-3">
                     {product.name}
                 </h1>
 
@@ -223,14 +223,14 @@ export default function DetailProduct() {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         {/* Rating Pill */}
-                        <div className="flex items-center gap-1 bg-gray-100 px-3 py-1.5 rounded-full">
+                        <div className="flex items-center gap-1 bg-gray-100 dark:bg-slate-800 px-3 py-1.5 rounded-full border dark:border-slate-700 shadow-sm">
                             <span className="text-yellow-500">★</span>
-                            <span className="text-sm font-medium text-gray-900">{product.rating || "New"}</span>
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">{product.rating || "New"}</span>
                         </div>
 
                         {/* Reviews Pill */}
-                        <div className="flex items-center gap-1 bg-gray-100 px-3 py-2 rounded-full text-gray-600">
-                            <ArrowRightLeft size={14} className="fill-gray-600" />
+                        <div className="flex items-center gap-1 bg-gray-100 dark:bg-slate-800 px-3 py-2 rounded-full text-gray-600 dark:text-gray-300 border dark:border-slate-700 shadow-sm">
+                            <ArrowRightLeft size={14} className="fill-gray-600 dark:fill-gray-400" />
                             <span className="text-sm font-medium">{product.review_count || 0} Transaksi</span>
                         </div>
                     </div>
@@ -254,8 +254,8 @@ export default function DetailProduct() {
 
                 {/* Description */}
                 <div>
-                    <h3 className="font-semibold mb-2 text-gray-900">Deskripsi</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                    <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Deskripsi</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
                         {product.warung_description || "Belum ada deskripsi produk ini."}
                     </p>
                 </div>
@@ -263,20 +263,20 @@ export default function DetailProduct() {
                 {/* REVIEWS */}
                 <div>
                     <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-semibold text-gray-900">
+                        <h3 className="font-semibold text-gray-900 dark:text-white">
                             Ulasan Pembeli
                         </h3>
-                        <button className="text-xs text-indigo-600 font-medium flex items-center gap-0.5">
+                        <button className="text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-0.5">
                             Lihat semua <ChevronRight size={14} />
                         </button>
                     </div>
 
                     {/* Rating Summary */}
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="text-3xl font-bold text-gray-900">
+                        <div className="text-3xl font-bold text-gray-900 dark:text-white">
                             {product.rating || 0}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
                             <div>⭐⭐⭐⭐⭐</div>
                             <div>{product.review_count || 0} ulasan</div>
                         </div>
@@ -302,19 +302,19 @@ export default function DetailProduct() {
                 {/* Outlet Section */}
                 <div>
                     <div className="flex items-center justify-between mb-3 px-1">
-                        <h3 className="font-bold text-gray-900">Outlet & Owner</h3>
+                        <h3 className="font-bold text-gray-900 dark:text-white">Outlet & Owner</h3>
                         <button
                             onClick={() => navigate(`/outlet/${product.warung_id}`)}
-                            className="text-xs text-indigo-600 font-semibold flex items-center gap-0.5"
+                            className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-0.5"
                         >
                             Kunjungi Outlet <ChevronRight size={14} />
                         </button>
                     </div>
 
-                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
                         {/* Outlet Info */}
-                        <div className="p-4 bg-gray-50/50 flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
+                        <div className="p-4 bg-gray-50/50 dark:bg-slate-800/50 flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm">
                                 {product.warung_image_url ? (
                                     <img src={product.warung_image_url} alt={product.warung_name} className="w-full h-full object-cover" />
                                 ) : (
@@ -322,8 +322,8 @@ export default function DetailProduct() {
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-gray-900 truncate">{product.warung_name}</p>
-                                <p className="text-xs text-gray-500 truncate">{product.warung_address}</p>
+                                <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{product.warung_name}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{product.warung_address}</p>
                             </div>
                             <button
                                 onClick={() => setOpenMaps(true)}
@@ -334,20 +334,20 @@ export default function DetailProduct() {
                         </div>
 
                         {/* Merchant Info */}
-                        <div className="p-4 flex items-center gap-3 border-b border-gray-50">
-                            <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
+                        <div className="p-4 flex items-center gap-3 border-b border-gray-50 dark:border-slate-800">
+                            <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm">
                                 {product.owner_avatar_url ? (
                                     <img src={product.owner_avatar_url} alt={product.owner_name} className="w-full h-full object-cover" />
                                 ) : (
-                                    <User size={24} className="text-indigo-300" />
+                                    <User size={24} className="text-indigo-300 dark:text-indigo-400" />
                                 )}
                             </div>
                             <div className="flex-1">
-                                <p className="text-sm font-bold text-gray-900 flex items-center gap-1">
-                                    {product.owner_name}
-                                    <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">Verifikasi</span>
-                                </p>
-                                <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Owner Terpercaya</p>
+                                <div className="flex items-center gap-1">
+                                    <p className="text-sm font-bold text-gray-900 dark:text-white">{product.owner_name}</p>
+                                    <span className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded-full font-bold">Verifikasi</span>
+                                </div>
+                                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Owner Terpercaya</p>
                             </div>
                             <button
                                 className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform"
@@ -360,27 +360,27 @@ export default function DetailProduct() {
             </div>
 
             {/* BOTTOM ACTION */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white
-                       px-4 py-3 flex gap-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900
+                       px-4 py-3 flex gap-3 z-50 shadow-sm border-t dark:border-slate-800">
 
                 {/* Chat */}
                 <button
                     onClick={() => startChatWith(product.owner_id)}
-                    className="w-12 h-12 border border-gray-200 rounded-xl
-                           flex items-center justify-center text-gray-700 hover:bg-gray-50 active:scale-95 transition-all">
+                    className="w-12 h-12 border border-gray-200 dark:border-slate-700 rounded-xl
+                           flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all">
                     <MessageCircle size={24} />
                 </button>
 
                 {/* Add to Cart */}
-                <button className="flex-1 border border-gray-200 rounded-xl
-                           flex items-center justify-center gap-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all">
+                <button className="flex-1 border border-gray-200 dark:border-slate-700 rounded-xl
+                           flex items-center justify-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all">
                     <ShoppingCart size={18} />
                     <span>Simpan dulu</span>
                 </button>
 
                 {/* Buy Now */}
                 <button className="flex-1 rounded-xl bg-[#6366F1] text-white
-                           py-3 text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 active:scale-95 transition-all">
+                           py-3 text-sm font-bold flex items-center justify-center gap-2 shadow-sm shadow-indigo-200 active:scale-95 transition-all">
                     <SquareCheckBig size={18} />
                     <span className="text-white">
                         {keteranganByStatus()}

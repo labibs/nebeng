@@ -138,7 +138,9 @@ export default function DetailProduct() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-base-100 dark:bg-slate-900">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 to-emerald-200
+        dark:from-slate-900 dark:to-slate-800
+        transition-transform">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white" />
             </div>
         );
@@ -146,7 +148,9 @@ export default function DetailProduct() {
 
     if (!product) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-base-100 dark:bg-slate-900 gap-4">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-base-100 bg-gradient-to-br from-green-100 to-emerald-200
+        dark:from-slate-900 dark:to-slate-800
+        transition-transform gap-4">
                 <p className="text-gray-500 dark:text-gray-400">Produk tidak ditemukan</p>
                 <button
                     onClick={() => navigate(-1)}
@@ -173,7 +177,9 @@ export default function DetailProduct() {
 
     return (
         <motion.div
-            className="min-h-screen bg-base-100 pb-24"
+            className="min-h-screen bg-gradient-to-br from-green-100 to-emerald-200
+        dark:from-slate-900 dark:to-slate-800
+        transition-transform pb-24"
             initial={{ x: "100%", opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "-100%", opacity: 0 }}
@@ -239,7 +245,7 @@ export default function DetailProduct() {
                     <div className="text-right">
                         {product.warung_status !== 'milik' && (
                             <button onClick={() => setOpenRoute(true)}
-                                className="flex items-center gap-1 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors">
+                                className="flex items-center gap-1 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors border dark:border-slate-700 shadow-sm">
                                 <Route size={14} className="stroke-indigo-600" />
                                 <span className="text-sm font-semibold">Cek Rute</span>
                             </button>
@@ -361,7 +367,7 @@ export default function DetailProduct() {
             {/* BOTTOM ACTION */}
             {user?.id !== product.owner_id && (
                 <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900
-                           px-4 py-3 flex gap-3 z-50 shadow-sm border-t dark:border-slate-800">
+                           px-4 py-3 flex gap-3 z-50 shadow-sm dark:border-slate-800">
 
                     {/* Chat */}
                     <button

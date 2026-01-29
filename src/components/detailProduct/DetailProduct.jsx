@@ -272,7 +272,7 @@ export default function DetailProduct() {
                         <h3 className="font-semibold text-gray-900 dark:text-white">
                             Ulasan Pelanggan
                         </h3>
-                        <button className="text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-0.5">
+                        <button className="text-xs text-green-600/70 dark:text-green-600/70 font-medium flex items-center gap-0.5">
                             Lihat semua <ChevronRight size={14} />
                         </button>
                     </div>
@@ -312,7 +312,7 @@ export default function DetailProduct() {
                         <h3 className="font-bold text-gray-900 dark:text-white">Outlet {user?.id !== product.owner_id && (`& Owner`)}</h3>
                         <button
                             onClick={() => navigate(`/outlet/${product.warung_id}`)}
-                            className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-0.5"
+                            className="text-xs text-green-600/70 dark:text-green-600/70 font-semibold flex items-center gap-0.5"
                         >
                             Kunjungi Outlet <ChevronRight size={14} />
                         </button>
@@ -366,8 +366,9 @@ export default function DetailProduct() {
 
             {/* BOTTOM ACTION */}
             {user?.id !== product.owner_id && (
-                <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900
-                           px-4 py-3 flex gap-3 z-50 shadow-sm dark:border-slate-800">
+                <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-br from-green-100 to-emerald-200
+        dark:from-slate-900 dark:to-slate-800
+        transition-transform px-4 py-3 flex gap-3 z-50 shadow-sm dark:border-slate-800">
 
                     {/* Chat */}
                     <button
@@ -385,7 +386,7 @@ export default function DetailProduct() {
                     </button>
 
                     {/* Buy Now */}
-                    <button className="flex-1 rounded-xl bg-[#6366F1] text-white
+                    <button className="flex-1 rounded-xl bg-green-600/70 text-white
                                py-3 text-sm font-bold flex items-center justify-center gap-2 shadow-sm shadow-indigo-200 active:scale-95 transition-all">
                         <SquareCheckBig size={18} />
                         <span className="text-white">

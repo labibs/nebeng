@@ -12,7 +12,7 @@ export default function DetailProductHeader({ title = "Detail Produk" }) {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => navigate(-1)}
-                        className="bg-white dark:bg-slate-800 rounded-full p-2 border dark:border-slate-700 shadow-sm text-black dark:text-white hover:bg-gray-50 dark:hover:bg-slate-700 active:scale-95 transition-all"
+                        className="bg-white dark:bg-slate-800 rounded-full p-2 shadow-sm text-black dark:text-white hover:bg-gray-50 dark:hover:bg-slate-700 active:scale-95 transition-all"
                     >
                         <ArrowLeft size={20} />
                     </button>

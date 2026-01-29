@@ -328,9 +328,9 @@ export default function DetailProduct() {
                             </div>
                             <button
                                 onClick={() => setOpenMaps(true)}
-                                className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform"
+                                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 active:scale-95 transition-all"
                             >
-                                <MapPin size={18} />
+                                <MapPin size={24} />
                             </button>
                         </div>
                         {user?.id !== product.owner_id && (
@@ -339,7 +339,7 @@ export default function DetailProduct() {
                                     {product.owner_avatar_url ? (
                                         <img src={product.owner_avatar_url} alt={product.owner_name} className="w-full h-full object-cover" />
                                     ) : (
-                                        <User size={24} className="text-indigo-300 dark:text-indigo-400" />
+                                        <User size={28} className="text-indigo-300 dark:text-indigo-400" />
                                     )}
                                 </div>
                                 <div className="flex-1">
@@ -349,8 +349,8 @@ export default function DetailProduct() {
                                     </div>
                                     <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Owner Terpercaya</p>
                                 </div>
-                                <button className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform">
-                                    <UserRoundPlus size={18} />
+                                <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 active:scale-95 transition-all">
+                                    <UserRoundPlus size={24} />
                                 </button>
                             </div>
                         )}

@@ -64,15 +64,15 @@ export default function OutletInfoCard({ outlet, isOwner, user }) {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setOpenMaps(true)}
-                className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform"
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 active:scale-95 transition-all"
               >
-                <MapPin size={18} />
+                <MapPin size={22} />
               </button>
               <button
                 onClick={() => setOpenRoute(true)}
-                className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform"
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 active:scale-95 transition-all"
               >
-                <Route size={18} />
+                <Route size={22} />
               </button>
             </div>
           )}
@@ -101,11 +101,11 @@ export default function OutletInfoCard({ outlet, isOwner, user }) {
             </div>
             <button
               onClick={() => startChatWith(outlet, user)}
-              className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform">
-              <MessageCircle size={18} />
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 active:scale-95 transition-all">
+              <MessageCircle size={22} />
             </button>
-            <button className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform">
-              <UserRoundPlus size={18} />
+            <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 active:scale-95 transition-all">
+              <UserRoundPlus size={22} />
             </button>
           </div>
         )}

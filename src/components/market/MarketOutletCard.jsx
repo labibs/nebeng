@@ -40,8 +40,6 @@ export default function MarketOutletCard({ outlet }) {
     return "Official";
   };
 
-  
-
   return (
     <div className="relative h-48 rounded-2xl overflow-hidden shadow-lg group">
 
@@ -69,15 +67,15 @@ export default function MarketOutletCard({ outlet }) {
             onDelete={() => handleDeleteOutlet(id)}
           />
         )} */}
-          
+
       </div>
 
 
       <div className="absolute bottom-0 z-10 p-3 w-full text-white">
         <div className="flex items-center gap-1 cursor-pointer " >
           <div
-              onClick={() => navigate(`/outlet/${id}`)}
-              className="
+            onClick={() => navigate(`/outlet/${id}`)}
+            className="
                 w-9 h-9
                 rounded-full
                 bg-black/60
@@ -90,28 +88,28 @@ export default function MarketOutletCard({ outlet }) {
                 active:scale-95
                 transition
               "
-            >
-              {owner?.avatar_url ? (
-                <img
-                  src={owner?.avatar_url}
-                  alt="Avatar Pemilik"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="capitalize">
-                  {owner?.full_name?.charAt(0) || "?"}
-                </span>
-              )}
-            </div>
+          >
+            {owner?.avatar_url ? (
+              <img
+                src={owner?.avatar_url}
+                alt="Avatar Pemilik"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="capitalize">
+                {owner?.full_name?.charAt(0) || "?"}
+              </span>
+            )}
+          </div>
           <div className="flex-1">
             <h3
               className={`
                 font-bold text-sm leading-tightcursor-pointer hover:underline
               `}
               onClick={() => {
-              navigate(`/outlet/${id}`);
-            
-          }}
+                navigate(`/outlet/${id}`);
+
+              }}
             >
               {name || "Tanpa Nama"}
             </h3>
@@ -119,7 +117,7 @@ export default function MarketOutletCard({ outlet }) {
               <AddressText address={address} onClick={() => setOpenMaps(true)} />
 
             )}
-            </div>
+          </div>
         </div>
         <div className="mt-2 flex items-center justify-between gap-2">
 
@@ -138,48 +136,48 @@ export default function MarketOutletCard({ outlet }) {
           {/* ===== BUTTON MAPS ===== */}
           {status !== 'milik' && (
             <button
-                onClick={() => setOpenRoute(true)}
-                className="btn btn-xs rounded-full bg-white text-black flex items-center gap-1 px-2.5"
+              onClick={() => setOpenRoute(true)}
+              className="btn btn-xs rounded-full bg-white text-black flex items-center gap-1 px-2.5"
             >
-                <Route size={14} className="opacity-80" />
-                <span>Rute</span>
+              <Route size={14} className="opacity-80" />
+              <span>Rute</span>
             </button>
-            )}
+          )}
 
 
-          
 
-        {status === 'milik' && (<button
+
+          {status === 'milik' && (<button
             onClick={() => setOpenMaps(true)}
             className="btn btn-xs rounded-full bg-white text-black flex items-center gap-1"
-            >
+          >
             <span className="text-sm">📍</span>
             Maps
-            </button>
-            )}
-            
+          </button>
+          )}
+
 
         </div>
-        
+
       </div>
       <OutletRouteViewer
-            open={openRoute}
-            setOpen={setOpenRoute}
-            outletId={outlet.id}
-            />
-            <GoogleMapsPointViewer
-                open={openMaps}
-                setOpen={setOpenMaps}
+        open={openRoute}
+        setOpen={setOpenRoute}
+        outletId={outlet.id}
+      />
+      <GoogleMapsPointViewer
+        open={openMaps}
+        setOpen={setOpenMaps}
 
-                latitude={outlet.latitude}
-                longitude={outlet.longitude}
-                address={outlet.address}
+        latitude={outlet.latitude}
+        longitude={outlet.longitude}
+        address={outlet.address}
 
-                title={outlet.name}
-                />
+        title={outlet.name}
+      />
     </div>
-    
+
   );
-  
+
 }
 

@@ -3,6 +3,22 @@ export default function MarketProductCard({ product, categories = [] }) {
 
   const navigate = useNavigate();
 
+  const status = product?.warung?.status;
+  const category = product?.warung?.category;
+
+  const iconByStatus = () => {
+    if (status === "kurir") return "🛵";
+    if (status === "pembeli") return "🧺";
+    return "🏪";
+  };
+
+  const keteranganByStatus = () => {
+    if (status === "kurir") return "Bisa nitip ke saya";
+    if (status === "pembeli" && category === "Jasa") return "Anterin ke sini";
+    if (status === "pembeli" && category !== "Jasa") return "Beliin ke sini";
+    return "Official";
+  };
+
   return (
     <div
       onClick={() => navigate(`/product/${product.id}`)}
@@ -49,22 +65,24 @@ export default function MarketProductCard({ product, categories = [] }) {
 
         <div className="mt-2 flex items-center justify-between gap-2">
           {/* Posted By */}
-          <div className="flex items-center gap-1.5 text-xs">
-            <div className="w-7 h-7 rounded-full bg-white/80 text-black
-                            flex items-center justify-center text-lg">
-              🛵
+          <div className="flex items-center ps-1 gap-1.5 text-xs text-white/90">
+            <div className="w-7 h-7 rounded-full bg-white/80 text-black flex items-center justify-center">
+              <span className="text-lg">
+                {iconByStatus()}
+              </span>
             </div>
-            <span className="text-[11px]">
-              {product.created_by_clerk_id ? "Kurir" : "Warung"}
+
+            <span className="text-[11px] capitalize">
+              {keteranganByStatus()}
             </span>
           </div>
 
           {/* CTA */}
-          <button className="btn btn-xs rounded-full bg-white text-black
+          {/* <button className="btn btn-xs rounded-full bg-white text-black
                              border-none flex items-center gap-1">
             <span>🧺</span>
             Nitip
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

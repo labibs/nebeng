@@ -3,8 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 import DetailProductHeader from "./DetailProductHeader";
 import { motion } from "framer-motion";
-import { MessageCircle, ShoppingCart } from "lucide-react";
+import { ArrowRightLeft, MessageCircle, Route, ShoppingCart, MapPin, User, ChevronRight, UserRoundPlus, SquareCheckBig } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
+import OutletRouteViewer from "../market/OutletRouteViewer";
+import GoogleMapsPointViewer from "../GoogleMapsViewer";
 
 export default function DetailProduct() {
     const { id } = useParams();
@@ -12,6 +14,8 @@ export default function DetailProduct() {
     const { user } = useUser();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [openRoute, setOpenRoute] = useState(false);
+    const [openMaps, setOpenMaps] = useState(false);
 
     async function startChatWith(targetClerkId) {
         if (!user) {
@@ -85,7 +89,13 @@ export default function DetailProduct() {
                 .select(`
                     *,
                     categories:category_id ( name ),
-                    warung:warungs ( name, address, created_by_clerk_id )
+                    warung:warungs ( 
+                        *,
+                        owner:users!warungs_created_by_clerk_id_fkey (
+                            avatar_url,
+                            name
+                        )
+                    )
                 `)
                 .eq("id", id)
                 .single();
@@ -100,9 +110,22 @@ export default function DetailProduct() {
                 setProduct({
                     ...data,
                     category_name: data.categories?.name || "Produk",
+                    warung_id: data.warung?.id,
                     warung_name: data.warung?.name || "-",
                     warung_address: data.warung?.address || "-",
-                    owner_id: data.warung?.created_by_clerk_id || data.created_by_clerk_id
+                    warung_description: data.warung?.description || "-",
+                    warung_category: data.warung?.category || "-",
+                    warung_latitude: data.warung?.latitude || "-",
+                    warung_longitude: data.warung?.longitude || "-",
+                    warung_image_url: data.warung?.image_url || "-",
+                    warung_from_lat: data.warung?.from_lat || "-",
+                    warung_from_lng: data.warung?.from_lng || "-",
+                    warung_to_lat: data.warung?.to_lat || "-",
+                    warung_to_lng: data.warung?.to_lng || "-",
+                    warung_status: data.warung?.status || "-",
+                    owner_id: data.warung?.created_by_clerk_id || data.created_by_clerk_id,
+                    owner_name: data.warung?.owner?.name || "-",
+                    owner_avatar_url: data.warung?.owner?.avatar_url
                 });
             }
             setLoading(false);
@@ -135,6 +158,19 @@ export default function DetailProduct() {
         );
     }
 
+    const iconByStatus = () => {
+        if (product.warung_status === "kurir") return "🛵";
+        if (product.warung_status === "pembeli") return "🧺";
+        return "🛒";
+    };
+
+    const keteranganByStatus = () => {
+        if (product.warung_status === "kurir") return "Mau Nitip";
+        if (product.warung_status === "pembeli" && product.category === "Jasa") return "Anterin Kesini";
+        if (product.warung_status === "pembeli" && product.category !== "Jasa") return "Beliin Kesini";
+        return "Nitip Sekarang";
+    };
+
     return (
         <motion.div
             initial={{ x: "100%" }}
@@ -157,71 +193,168 @@ export default function DetailProduct() {
                     alt={product.name}
                     className="w-full h-full object-cover"
                 />
-
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent backdrop-blur-[1px]" />
+            {/* PRODUCT TITLE SECTION */}
+            <div className="px-4 pt-4 pb-2">
                 {/* Category */}
-                <div className="absolute top-4 left-4 text-xs px-3 py-1 rounded-full
-                        bg-black/60 text-white backdrop-blur-sm">
-                    {product.category_name}
+                <div className="flex items-center justify-between text-sm text-gray-500 mb-1">
+                    <span className="font-medium">{product.category_name}</span>
+
+                    {/* Price */}
+                    <div className="text-right">
+                        <p className="text-xl font-bold text-gray-900 leading-none">
+                            Rp {Number(product.estimated_price || 0).toLocaleString("id-ID")}
+                        </p>
+                        {product.is_estimated && (
+                            <p className="text-[10px] text-orange-500 italic mt-0.5">
+                                *Harga ini adalah estimasi
+                            </p>
+                        )}
+                    </div>
                 </div>
 
                 {/* Title */}
-                <div className="absolute bottom-4 left-4 right-4 text-white">
-                    <h1 className="text-xl font-bold leading-tight">
-                        {product.name}
-                    </h1>
-                    <p className="text-xs opacity-80 mt-1 flex items-center gap-1">
-                        ⭐ {product.rating || 0} · Transaksi {product.transaction_count || 0}
-                    </p>
+                <h1 className="text-2xl font-bold text-gray-900 leading-tight mb-3">
+                    {product.name}
+                </h1>
+
+                {/* Stats & Price Row */}
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        {/* Rating Pill */}
+                        <div className="flex items-center gap-1 bg-gray-100 px-3 py-1.5 rounded-full">
+                            <span className="text-yellow-500">★</span>
+                            <span className="text-sm font-medium text-gray-900">{product.rating || "New"}</span>
+                        </div>
+
+                        {/* Reviews Pill */}
+                        <div className="flex items-center gap-1 bg-gray-100 px-3 py-2 rounded-full text-gray-600">
+                            <ArrowRightLeft size={14} className="fill-gray-600" />
+                            <span className="text-sm font-medium">{product.review_count || 0} Transaksi</span>
+                        </div>
+                    </div>
+
+                    {/* ===== BUTTON MAPS ===== */}
+                    <div className="text-right">
+                        {product.warung_status !== 'milik' && (
+                            <button onClick={() => setOpenRoute(true)}
+                                className="flex items-center gap-1 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors">
+                                <Route size={14} className="stroke-indigo-600" />
+                                <span className="text-sm font-semibold">Cek Rute</span>
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 
             {/* CONTENT */}
             <div className="p-4 space-y-6">
 
-                {/* Price */}
-                <div className="border-b pb-4">
-                    <p className="text-xs text-gray-500 mb-1">Estimasi Harga</p>
-                    <p className="text-2xl font-bold text-green-600">
-                        Rp {Number(product.estimated_price || 0).toLocaleString("id-ID")}
-                    </p>
-                    {product.is_estimated && (
-                        <p className="text-[10px] text-orange-500 mt-1 bg-orange-50 inline-block px-2 py-0.5 rounded">
-                            *Harga ini adalah estimasi
-                        </p>
-                    )}
-                </div>
 
                 {/* Description */}
                 <div>
                     <h3 className="font-semibold mb-2 text-gray-900">Deskripsi</h3>
                     <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                        {product.description || "Belum ada deskripsi produk ini."}
+                        {product.warung_description || "Belum ada deskripsi produk ini."}
                     </p>
                 </div>
 
-                {/* Writer/Seller Info */}
+                {/* REVIEWS */}
                 <div>
-                    <h3 className="font-semibold mb-3 text-gray-900">Penjual / Warung</h3>
-                    <div
-                        onClick={() => navigate(`/outlet/${product.warung_id}`)}
-                        className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                        <div className="w-12 h-12 rounded-full bg-white shadow-sm border
-                              flex items-center justify-center text-2xl">
-                            🛵
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-gray-900">
+                            Ulasan Pembeli
+                        </h3>
+                        <button className="text-xs text-indigo-600 font-medium flex items-center gap-0.5">
+                            Lihat semua <ChevronRight size={14} />
+                        </button>
+                    </div>
+
+                    {/* Rating Summary */}
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="text-3xl font-bold text-gray-900">
+                            {product.rating || 0}
                         </div>
-                        <div className="flex-1">
-                            <p className="text-sm font-bold text-gray-900">
-                                {product.warung?.name || (product.created_by_clerk_id ? "User Pribadi" : "Warung Tetangga")}
-                            </p>
-                            <p className="text-xs text-gray-500 mt-0.5">
-                                {product.warung_address}
-                            </p>
+                        <div className="text-sm text-gray-500">
+                            <div>⭐⭐⭐⭐⭐</div>
+                            <div>{product.review_count || 0} ulasan</div>
                         </div>
-                        {/* <button className="text-xs bg-black text-white px-3 py-1.5 rounded-lg font-medium">
-                            Kunjungi
-                        </button> */}
+                    </div>
+
+                    {/* Review List */}
+                    <div className="space-y-3">
+                        {[1, 2].map((_, i) => (
+                            <div key={i} className="border rounded-xl p-3">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className="w-6 h-6 rounded-full bg-gray-200" />
+                                    <p className="text-xs font-medium">Pembeli</p>
+                                    <span className="text-[10px] text-gray-400">⭐ 5</span>
+                                </div>
+                                <p className="text-sm text-gray-600">
+                                    Barang sesuai, cepat dikirim 👍
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Outlet Section */}
+                <div>
+                    <div className="flex items-center justify-between mb-3 px-1">
+                        <h3 className="font-bold text-gray-900">Outlet & Owner</h3>
+                        <button
+                            onClick={() => navigate(`/outlet/${product.warung_id}`)}
+                            className="text-xs text-indigo-600 font-semibold flex items-center gap-0.5"
+                        >
+                            Kunjungi Outlet <ChevronRight size={14} />
+                        </button>
+                    </div>
+
+                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                        {/* Outlet Info */}
+                        <div className="p-4 bg-gray-50/50 flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
+                                {product.warung_image_url ? (
+                                    <img src={product.warung_image_url} alt={product.warung_name} className="w-full h-full object-cover" />
+                                ) : (
+                                    "🏪"
+                                )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-gray-900 truncate">{product.warung_name}</p>
+                                <p className="text-xs text-gray-500 truncate">{product.warung_address}</p>
+                            </div>
+                            <button
+                                onClick={() => setOpenMaps(true)}
+                                className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform"
+                            >
+                                <MapPin size={18} />
+                            </button>
+                        </div>
+
+                        {/* Merchant Info */}
+                        <div className="p-4 flex items-center gap-3 border-b border-gray-50">
+                            <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
+                                {product.owner_avatar_url ? (
+                                    <img src={product.owner_avatar_url} alt={product.owner_name} className="w-full h-full object-cover" />
+                                ) : (
+                                    <User size={24} className="text-indigo-300" />
+                                )}
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-sm font-bold text-gray-900 flex items-center gap-1">
+                                    {product.owner_name}
+                                    <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">Verifikasi</span>
+                                </p>
+                                <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Owner Terpercaya</p>
+                            </div>
+                            <button
+                                className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform"
+                            >
+                                <UserRoundPlus size={18} />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -248,9 +381,31 @@ export default function DetailProduct() {
                 {/* Buy Now */}
                 <button className="flex-1 rounded-xl bg-[#6366F1] text-white
                            py-3 text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 active:scale-95 transition-all">
-                    Nitip Ini
+                    <SquareCheckBig size={18} />
+                    <span className="text-white">
+                        {keteranganByStatus()}
+                    </span>
                 </button>
             </div>
+
+            {product.warung_id && (
+                <OutletRouteViewer
+                    open={openRoute}
+                    setOpen={setOpenRoute}
+                    outletId={product.warung_id}
+                />
+            )}
+
+            {product.warung_id && (
+                <GoogleMapsPointViewer
+                    open={openMaps}
+                    setOpen={setOpenMaps}
+                    latitude={product.warung_latitude}
+                    longitude={product.warung_longitude}
+                    address={product.warung_address}
+                    title={product.warung_name}
+                />
+            )}
         </motion.div>
     );
 }

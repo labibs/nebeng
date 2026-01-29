@@ -43,7 +43,17 @@ export default function OutletProductList({ outlet, isOwner }) {
 
       const { data, error } = await supabase
         .from("warung_products")
-        .select("*")
+        .select(`
+          id,
+          name,
+          estimated_price,
+          image_url,
+          rating,
+          is_estimated,
+          created_at,
+          categories:category_id ( name ),
+          warung:warungs!inner ( name, category, status )
+        `)
         .eq("warung_id", outlet.id)
         .order("created_at", { ascending: false });
 

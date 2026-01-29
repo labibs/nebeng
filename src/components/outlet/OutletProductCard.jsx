@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import ProductActionMenu from "../detailOutlet/ProductActionMenu";
 import ProductForm from "../detailOutlet/ProductForm";
 import BottomSheet from "../BottomSheet";
+import { useNavigate } from "react-router-dom";
 
 export default function OutletProductCard({
   product,
@@ -12,6 +13,7 @@ export default function OutletProductCard({
 }) {
   const [openEdit, setOpenEdit] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (product?.category_id) {
@@ -20,7 +22,8 @@ export default function OutletProductCard({
   }, [product]);
 
   return (
-    <div className="relative h-48 rounded-2xl overflow-hidden shadow-md group">
+    <div
+      className="relative h-48 rounded-2xl overflow-hidden shadow-md group">
       {/* Image */}
       <img
         src={
@@ -46,7 +49,9 @@ export default function OutletProductCard({
       )}
 
       {/* Content */}
-      <div className="absolute bottom-0 z-10 p-3 w-full text-white">
+      <div
+        onClick={() => navigate(`/product/${product.id}`)}
+        className="absolute bottom-0 z-10 p-3 w-full text-white">
         <h3 className="font-bold text-sm leading-tight line-clamp-2">
           {product.name}
         </h3>

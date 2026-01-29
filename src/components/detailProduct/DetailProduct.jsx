@@ -264,7 +264,7 @@ export default function DetailProduct() {
                 <div>
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="font-semibold text-gray-900 dark:text-white">
-                            Ulasan Pembeli
+                            Ulasan Pelanggan
                         </h3>
                         <button className="text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-0.5">
                             Lihat semua <ChevronRight size={14} />
@@ -300,9 +300,10 @@ export default function DetailProduct() {
                 </div>
 
                 {/* Outlet Section */}
+
                 <div>
                     <div className="flex items-center justify-between mb-3 px-1">
-                        <h3 className="font-bold text-gray-900 dark:text-white">Outlet & Owner</h3>
+                        <h3 className="font-bold text-gray-900 dark:text-white">Outlet {user?.id !== product.owner_id && (`& Owner`)}</h3>
                         <button
                             onClick={() => navigate(`/outlet/${product.warung_id}`)}
                             className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-0.5"
@@ -332,61 +333,61 @@ export default function DetailProduct() {
                                 <MapPin size={18} />
                             </button>
                         </div>
-
-                        {/* Merchant Info */}
-                        <div className="p-4 flex items-center gap-3 border-b border-gray-50 dark:border-slate-800">
-                            <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm">
-                                {product.owner_avatar_url ? (
-                                    <img src={product.owner_avatar_url} alt={product.owner_name} className="w-full h-full object-cover" />
-                                ) : (
-                                    <User size={24} className="text-indigo-300 dark:text-indigo-400" />
-                                )}
-                            </div>
-                            <div className="flex-1">
-                                <div className="flex items-center gap-1">
-                                    <p className="text-sm font-bold text-gray-900 dark:text-white">{product.owner_name}</p>
-                                    <span className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded-full font-bold">Verifikasi</span>
+                        {user?.id !== product.owner_id && (
+                            <div className="p-4 flex items-center gap-3 border-b border-gray-50 dark:border-slate-800">
+                                <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm">
+                                    {product.owner_avatar_url ? (
+                                        <img src={product.owner_avatar_url} alt={product.owner_name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <User size={24} className="text-indigo-300 dark:text-indigo-400" />
+                                    )}
                                 </div>
-                                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Owner Terpercaya</p>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-1">
+                                        <p className="text-sm font-bold text-gray-900 dark:text-white">{product.owner_name}</p>
+                                        <span className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded-full font-bold">Verifikasi</span>
+                                    </div>
+                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Owner Terpercaya</p>
+                                </div>
+                                <button className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform">
+                                    <UserRoundPlus size={18} />
+                                </button>
                             </div>
-                            <button
-                                className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform"
-                            >
-                                <UserRoundPlus size={18} />
-                            </button>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>
 
             {/* BOTTOM ACTION */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900
-                       px-4 py-3 flex gap-3 z-50 shadow-sm border-t dark:border-slate-800">
+            {user?.id !== product.owner_id && (
+                <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900
+                           px-4 py-3 flex gap-3 z-50 shadow-sm border-t dark:border-slate-800">
 
-                {/* Chat */}
-                <button
-                    onClick={() => startChatWith(product.owner_id)}
-                    className="w-12 h-12 border border-gray-200 dark:border-slate-700 rounded-xl
-                           flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all">
-                    <MessageCircle size={24} />
-                </button>
+                    {/* Chat */}
+                    <button
+                        onClick={() => startChatWith(product.owner_id)}
+                        className="w-12 h-12 border border-gray-200 dark:border-slate-700 rounded-xl
+                               flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all">
+                        <MessageCircle size={24} />
+                    </button>
 
-                {/* Add to Cart */}
-                <button className="flex-1 border border-gray-200 dark:border-slate-700 rounded-xl
-                           flex items-center justify-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all">
-                    <ShoppingCart size={18} />
-                    <span>Simpan dulu</span>
-                </button>
+                    {/* Add to Cart */}
+                    <button className="flex-1 border border-gray-200 dark:border-slate-700 rounded-xl
+                               flex items-center justify-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all">
+                        <ShoppingCart size={18} />
+                        <span>Simpan dulu</span>
+                    </button>
 
-                {/* Buy Now */}
-                <button className="flex-1 rounded-xl bg-[#6366F1] text-white
-                           py-3 text-sm font-bold flex items-center justify-center gap-2 shadow-sm shadow-indigo-200 active:scale-95 transition-all">
-                    <SquareCheckBig size={18} />
-                    <span className="text-white">
-                        {keteranganByStatus()}
-                    </span>
-                </button>
-            </div>
+                    {/* Buy Now */}
+                    <button className="flex-1 rounded-xl bg-[#6366F1] text-white
+                               py-3 text-sm font-bold flex items-center justify-center gap-2 shadow-sm shadow-indigo-200 active:scale-95 transition-all">
+                        <SquareCheckBig size={18} />
+                        <span className="text-white">
+                            {keteranganByStatus()}
+                        </span>
+                    </button>
+                </div>
+            )}
 
             {product.warung_id && (
                 <OutletRouteViewer

@@ -1,10 +1,15 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, User, UserRoundPlus, MapPin, Route } from "lucide-react";
 import AddressText from "../market/AddressText";
+import GoogleMapsPointViewer from "../GoogleMapsViewer";
+import OutletRouteViewer from "../market/OutletRouteViewer";
 
 export default function OutletInfoCard({ outlet, isOwner, user }) {
   const navigate = useNavigate();
+  const [openMaps, setOpenMaps] = useState(false);
+  const [openRoute, setOpenRoute] = useState(false);
 
   const startChatWith = async (selectedUser) => {
     const currentUserId = user.id;
@@ -50,68 +55,74 @@ export default function OutletInfoCard({ outlet, isOwner, user }) {
 
       <div className="p-4 space-y-3">
         <div className="flex items-center gap-3">
-          <div
-            onClick={() => navigate(`/outlet/${id}`)}
-            className="
-                w-9 h-9
-                rounded-full
-                bg-black/60
-                text-white
-                backdrop-blur
-                flex items-center justify-center
-                font-bold
-                overflow-hidden
-                cursor-pointer
-                active:scale-95
-                transition
-              "
-          >
-            {outlet?.owner?.avatar_url ? (
-              <img
-                src={outlet?.owner?.avatar_url}
-                alt="Avatar Pemilik"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="capitalize">
-                {outlet?.owner?.name?.charAt(0) || "?"}
-              </span>
-            )}
-          </div>
           <div className="flex-1">
             <p className="font-semibold">{outlet.name}</p>
             <p className="text-xs opacity-60"><AddressText address={outlet.address} /></p>
           </div>
           {/* Kanan */}
           {!isOwner && (
-            <button
-              onClick={() => startChatWith(outlet, user)}
-              title="Chat Pemilik Toko"
-              className="
-                flex items-center gap-2
-                px-4 py-2
-                rounded-full
-                text-emerald-600
-                border border-emerald-200
-                bg-white
-                transition-all
-
-                hover:bg-emerald-50 hover:border-emerald-300
-                active:bg-emerald-100 active:scale-95
-              "
-            >
-              <MessageCircle size={20} />
-
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setOpenMaps(true)}
+                className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform"
+              >
+                <MapPin size={18} />
+              </button>
+              <button
+                onClick={() => setOpenRoute(true)}
+                className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform"
+              >
+                <Route size={18} />
+              </button>
+            </div>
           )}
 
         </div>
 
-        <div className="flex items-center justify-between bg-green-100 rounded-xl p-3">
-          <p className="text-sm text-amber-950">{outlet.description}</p>
-          <button className="btn btn-xs btn-primary">Ikuti</button>
+        <div className="flex items-center justify-between bg-green-100 rounded-xl p-3 text-center">
+          <p className="text-sm text-amber-950">{outlet.description || "Belum ada deskripsi"}</p>
         </div>
+        <hr className="my-2 " />
+        {!isOwner && (
+          <div className="p-0 flex items-center gap-3 ">
+            <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm">
+              {outlet?.owner?.avatar_url ? (
+                <img src={outlet?.owner?.avatar_url} alt={outlet?.owner?.name} className="w-full h-full object-cover" />
+              ) : (
+                <User size={24} className="text-indigo-300 dark:text-indigo-400" />
+              )}
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-1">
+                <p className="text-sm font-bold text-gray-900 dark:text-white">{outlet?.owner?.name}</p>
+                <span className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded-full font-bold">Verifikasi</span>
+              </div>
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Owner Terpercaya</p>
+            </div>
+            <button
+              onClick={() => startChatWith(outlet, user)}
+              className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform">
+              <MessageCircle size={18} />
+            </button>
+            <button className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-90 transition-transform">
+              <UserRoundPlus size={18} />
+            </button>
+          </div>
+        )}
       </div>
+      <OutletRouteViewer
+        open={openRoute}
+        setOpen={setOpenRoute}
+        outletId={outlet.id}
+      />
+      <GoogleMapsPointViewer
+        open={openMaps}
+        setOpen={setOpenMaps}
+        latitude={outlet.latitude}
+        longitude={outlet.longitude}
+        address={outlet.address}
+        title={outlet.name}
+      />
     </div>
   );
 }

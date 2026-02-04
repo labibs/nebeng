@@ -16,6 +16,8 @@ export default function DetailProduct() {
     const [loading, setLoading] = useState(true);
     const [openRoute, setOpenRoute] = useState(false);
     const [openMaps, setOpenMaps] = useState(false);
+    const [isAddingToCart, setIsAddingToCart] = useState(false);
+    const [cartMessage, setCartMessage] = useState(null); // untuk toast / alert sementara
 
     async function startChatWith(targetClerkId) {
         if (!user) {
@@ -78,6 +80,59 @@ export default function DetailProduct() {
         } catch (error) {
             console.error("Error starting chat:", error);
             alert("Gagal memulai chat");
+        }
+    }
+
+    async function handleAddToCart() {
+        if (!user) {
+            navigate("/login");
+            return;
+        }
+
+        if (user.id === product.owner_id) {
+            alert("Ini produk dari outlet kamu sendiri");
+            return;
+        }
+
+        setIsAddingToCart(true);
+        setCartMessage(null);
+
+        try {
+            const { data, error } = await supabase
+                .from("warung_cart_items")
+                .insert({
+                    user_id: user.id,
+                    warung_id: product.warung_id,
+                    product_id: product.id,
+                    quantity: 1,
+                    requested_price: product.estimated_price || null,
+                    estimated_price: product.estimated_price || null,
+                    notes: null,
+                    status: "pending"
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            // Sukses insert
+            setCartMessage("Produk berhasil disimpan ke daftar nitip!");
+
+            // Dispatch event agar CartIconButton di header langsung update badge + animasi
+            const event = new CustomEvent('cart:item-added', {
+                detail: { productId: product.id } // optional, bisa dipakai untuk log atau validasi nanti
+            });
+            window.dispatchEvent(event);
+
+            // Optional: redirect atau refresh cart count di komponen ini jika ada state count lokal
+            // setCartCount(prev => prev + 1);   // kalau komponen ini punya state count sendiri
+
+        } catch (err) {
+            console.error("Gagal menambahkan ke cart:", err);
+            setCartMessage("Gagal menyimpan. Coba lagi nanti.");
+            alert("Gagal menyimpan nitip: " + (err.message || "Unknown error"));
+        } finally {
+            setIsAddingToCart(false);
         }
     }
 
@@ -378,10 +433,20 @@ export default function DetailProduct() {
                     </button>
 
                     {/* Add to Cart */}
-                    <button className="flex-1 border border-gray-200 dark:border-slate-700 rounded-xl
-                               flex items-center justify-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all">
+                    <button
+                        onClick={handleAddToCart}
+                        disabled={isAddingToCart}
+                        className={`flex-1 border border-gray-200 dark:border-slate-700 rounded-xl
+                                flex items-center justify-center gap-2 text-sm font-semibold
+                                ${isAddingToCart 
+                                    ? "text-gray-400 cursor-not-allowed" 
+                                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95"}
+                                transition-all`}
+                    >
                         <ShoppingCart size={18} />
-                        <span>Simpan dulu</span>
+                        <span>
+                            {isAddingToCart ? "Menyimpan..." : "Simpan dulu"}
+                        </span>
                     </button>
 
                     {/* Buy Now */}

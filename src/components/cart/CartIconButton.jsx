@@ -1,0 +1,115 @@
+// src/components/CartIconButton.jsx
+import { useState, useEffect } from "react";
+import { ShoppingCart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../../lib/supabaseClient";
+import { useUser } from "@clerk/clerk-react";
+
+export default function CartIconButton({ className = "" }) {
+    const { user } = useUser();
+    const navigate = useNavigate();
+    const [count, setCount] = useState(0);
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    const fetchCartCount = async () => {
+        if (!user) {
+            setCount(0);
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const { count: itemCount, error } = await supabase
+                .from("warung_cart_items")
+                .select("*", { count: "exact", head: true })
+                .eq("user_id", user.id)
+                .eq("status", "pending"); // hanya pending yang masih di "keranjang"
+
+            if (error) throw error;
+            setCount(itemCount || 0);
+        } catch (err) {
+            console.error("Gagal ambil jumlah cart:", err);
+            setCount(0);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        // Fetch count awal
+        fetchCartCount();
+
+        // Listener untuk event 'cart:item-added' dari handleAddToCart
+        const handleItemAdded = () => {
+            setCount((prev) => prev + 1);          // langsung tambah badge
+            setIsAnimating(true);                  // trigger animasi
+            setTimeout(() => setIsAnimating(false), 800); // reset setelah animasi selesai
+        };
+
+        window.addEventListener("cart:item-added", handleItemAdded);
+
+        // Cleanup listener saat komponen unmount
+        return () => {
+            window.removeEventListener("cart:item-added", handleItemAdded);
+        };
+    }, [user]);   // dependensi user → kalau user login/logout, refresh listener
+
+    // 2. Optional: Realtime Supabase (bisa tetap ada di useEffect terpisah)
+    useEffect(() => {
+        if (!user) return;
+
+        const channel = supabase
+            .channel(`cart:${user.id}`)
+            .on("postgres_changes", {
+                event: "*",
+                schema: "public",
+                table: "warung_cart_items",
+                filter: `user_id=eq.${user.id}`
+            }, fetchCartCount)
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [user]);
+
+    const handleClick = () => {
+        if (!user) return navigate("/login");
+        navigate("/cart");
+    };
+
+    return (
+        <>
+        
+        <button
+            onClick={handleClick}
+            className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 
+                       text-gray-700 dark:text-gray-300 active:scale-95 transition-all 
+                       relative ${className}`}
+            aria-label="Keranjang Nitip"
+        >
+            <ShoppingCart
+                    size={20}
+                    className={`transition-transform duration-300 ${
+                        isAnimating ? "animate-fly-to-cart" : ""
+                    }`}
+                />
+
+            {!loading && count > 0 && (
+                <span className={`absolute -top-1 -right-1 bg-red-500 text-white 
+                               text-[10px] font-bold min-w-[18px] h-[18px] 
+                               flex items-center justify-center rounded-full px-1 
+                               border-2 border-white dark:border-slate-900 shadow-sm transition-all duration-300 ${isAnimating ? "scale-125" : "scale-100"}`}>
+                    {count > 99 ? "99+" : count}
+                </span>
+            )}
+
+            {loading && (
+                <span className="absolute -top-1 -right-1 bg-gray-400 text-white 
+                               text-[9px] font-bold w-4 h-4 rounded-full animate-pulse" />
+            )}
+        </button>
+        </>
+    );
+}

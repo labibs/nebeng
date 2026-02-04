@@ -1,5 +1,6 @@
 import { ArrowLeft, Share2, Heart, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import CartIconButton from "../cart/CartIconButton";
 
 export default function DetailProductHeader({ title = "Detail Produk" }) {
     const navigate = useNavigate();
@@ -29,9 +30,7 @@ export default function DetailProductHeader({ title = "Detail Produk" }) {
                     <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 active:scale-95 transition-all">
                         <Heart size={20} />
                     </button>
-                    <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 active:scale-95 transition-all relative">
-                        <ShoppingCart size={20} />
-                    </button>
+                    <CartIconButton />
                 </div>
             </div>
         </div>

@@ -44,6 +44,19 @@ export default function DetailOutlet() {
     setCatLoading(false);
   }
 
+  function handleCategoryChange(cat) {
+    if (cat._delete) {
+      setCategories((prev) => prev.filter((c) => c.id !== cat.id));
+    } else {
+      setCategories((prev) => {
+        const exists = prev.find((c) => c.id === cat.id);
+        return exists
+          ? prev.map((c) => (c.id === cat.id ? cat : c))
+          : [...prev, cat];
+      });
+    }
+  }
+
   async function loadOutletById(outletId) {
     setLoading(true);
 
@@ -82,7 +95,6 @@ export default function DetailOutlet() {
         estimated_price,
         image_url,
         rating,
-        category_id,
         is_estimated,
         created_by_clerk_id,
         created_at,
@@ -147,18 +159,16 @@ export default function DetailOutlet() {
 
   if (loading) return <div className="p-4">Loading...</div>;
   if (!outlet) return <div className="p-4">Outlet tidak ditemukan</div>;
-
+  
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-green-100 to-emerald-200
-        dark:from-slate-900 dark:to-slate-800
-        transition-transform pb-24"
+      className="min-h-screen bg-base-100 pb-24"
       initial={{ x: "100%", opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: "-100%", opacity: 0 }}
       transition={{ type: "tween", ease: "easeOut", duration: 0.35 }}
     >
-      <OutletHeader outlet={outlet} isOwner={isOwner} />
+      <OutletHeader outlet={outlet} isOwner={isOwner}/>
 
       <div className="px-4 space-y-4">
         <OutletInfoCard outlet={outlet} isOwner={isOwner} user={user} />
@@ -168,18 +178,23 @@ export default function DetailOutlet() {
           categories={categories}
           onSelect={(categoryId) => {
             setActiveCategoryId(categoryId);
-            loadProducts({
-              outletId: outlet.id,
-              categoryId,
-            });
+            loadProducts({ outletId: outlet.id, categoryId });
           }}
           onCreated={(cat) => {
             setCategories((prev) => [...prev, cat]);
             setActiveCategoryId(cat.id);
-            loadProducts({
-              outletId: outlet.id,
-              categoryId: cat.id,
-            });
+            loadProducts({ outletId: outlet.id, categoryId: cat.id });
+          }}
+          onUpdated={(cat) => {
+            setCategories((prev) =>
+              prev.map((c) => (c.id === cat.id ? cat : c))
+            );
+          }}
+
+          onDeleted={(catId) => {
+            setCategories((prev) => prev.filter((c) => c.id !== catId));
+            setActiveCategoryId(null);
+            loadProducts({ outletId: outlet.id });
           }}
         />
 
@@ -193,13 +208,13 @@ export default function DetailOutlet() {
             ))}
           </div>
         ) : (
-          <ProductGrid
-            products={products}
+          <ProductGrid 
+            products={products} 
             outletId={outlet.id}
-            isOwner={isOwner}
+            isOwner={isOwner} 
             categories={categories}
-            onAddProduct={() => setOpenAddProduct(true)}
-            onUpdateProduct={handleUpdateProduct}
+            onAddProduct={() => setOpenAddProduct(true)} 
+            onUpdate={handleUpdateProduct}
             onDelete={handleDeleteProduct}
           />
         )}

@@ -83,7 +83,7 @@ export default function CartItemCard({
             )}
           </div>
         </div>
-        <hr className="px-2 mt-2 mb-0 opacity-10"/>
+        <hr className="px-2 mt-2 mb-2 opacity-10"/>
         {/* Row Estimasi + controls (full width, below gambar & keterangan) */}
         <div className="mt-1 flex items-center justify-between w-full">
           <div>

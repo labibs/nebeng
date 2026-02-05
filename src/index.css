@@ -91,6 +91,15 @@ body {
   animation: fly-to-cart 0.6s ease-in-out forwards;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
 
 
 

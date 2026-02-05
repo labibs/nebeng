@@ -1,8 +1,10 @@
 import { Store, Search, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CartIconButton from "../cart/CartIconButton";
+import OutletButton from "./OutletButton";
+import Cart from "../../pages/Cart";
 
-export default function MarketHeader({ search, onSearchChange }) {
+export default function MarketHeader({ search, onSearchChange, owner_avatar }) {
   const navigate = useNavigate();
 
   return (
@@ -16,14 +18,7 @@ export default function MarketHeader({ search, onSearchChange }) {
             className="w-10 h-10 rounded-xl"
           />
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate("/outlet")}
-              className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full bg-primary/10 text-primary"
-            >
-              <Store size={20} />
-              Outlet Saya
-            </button>
-            <CartIconButton />
+            <OutletButton owner_avatar={owner_avatar} />
           </div>
         </div>
       </div>
@@ -31,8 +26,6 @@ export default function MarketHeader({ search, onSearchChange }) {
       {/* Search */}
       <div className="sticky top-0 z-40 px-4 pb-3 pt-2 backdrop-blur">
         <div className="relative">
-
-
           <input
             type="text"
             value={search}
@@ -49,6 +42,7 @@ export default function MarketHeader({ search, onSearchChange }) {
           />
 
           {search && (
+            <>
             <button
               onClick={() => onSearchChange("")}
               className="
@@ -62,6 +56,7 @@ export default function MarketHeader({ search, onSearchChange }) {
             >
               <X size={14} />
             </button>
+            </>
           )}
         </div>
       </div>

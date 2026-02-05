@@ -5,6 +5,7 @@ export default function MarketProductCard({ product, categories = [] }) {
 
   const status = product?.warung?.status;
   const category = product?.warung?.category;
+  const ownerAvatar = product?.warung?.owner?.avatar_url;
 
   const iconByStatus = () => {
     if (status === "kurir") return "🛵";
@@ -68,7 +69,13 @@ export default function MarketProductCard({ product, categories = [] }) {
           <div className="flex items-center ps-1 gap-1.5 text-xs text-white/90">
             <div className="w-7 h-7 rounded-full bg-white/80 text-black flex items-center justify-center">
               <span className="text-lg">
-                {iconByStatus()}
+                {ownerAvatar ? (
+                  <img
+                    src={ownerAvatar}
+                    alt="Owner Avatar"
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : null}
               </span>
             </div>
 

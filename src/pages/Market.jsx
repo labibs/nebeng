@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { motion } from "framer-motion";
+import { useUser } from '@clerk/clerk-react'
 import MarketHeader from "../components/market/MarketHeader";
 import MarketCategories from "../components/market/MarketCategories";
 import MarketQuickIcons from "../components/market/MarketQuickIcons";
@@ -8,12 +9,16 @@ import MarketPromoBanner from "../components/market/MarketPromoBanner";
 import MarketSection from "../components/market/MarketSection";
 import MarketOutletList from "../components/market/MarketOutletList";
 
+
 export default function MarketPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState(null); // kategori besar
   const [activeQuick, setActiveQuick] = useState(null);
+
+  const { user, isLoaded } = useUser();
+  const owner_avatar = user?.imageUrl || null;
 
   async function searchWarungIds(keyword) {
     if (!keyword) return [];
@@ -42,7 +47,13 @@ export default function MarketPage() {
           is_estimated,
           created_at,
           categories:category_id ( name ),
-          warung:warungs!inner ( name, category, status )
+          warung:warungs!inner (
+            name,
+            category,
+            status,
+            created_by_clerk_id,
+            owner:users!warungs_created_by_clerk_id_fkey ( avatar_url, name )
+          )
         `)
       .order("created_at", { ascending: false })
       .limit(10);
@@ -72,6 +83,9 @@ export default function MarketPage() {
         (data || []).map(p => ({
           ...p,
           category_name: p.categories?.name,
+          owner_name: p.warung?.owner?.name || p.warung?.name,
+          owner_avatar: p.warung?.owner?.avatar_url || null,
+          owner_id: p.warung?.created_by_clerk_id || null,
         }))
       );
     }
@@ -104,6 +118,7 @@ export default function MarketPage() {
       <div className="min-h-screen bg-gradient-to-br from-green-100 to-emerald-200 dark:from-slate-900 dark:to-slate-800 pb-24">
         <MarketHeader
           search={search}
+          owner_avatar={owner_avatar} 
           onSearchChange={setSearch}
         />
 

@@ -1,7 +1,7 @@
 // pages/Cart.jsx atau components/Cart.jsx
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
-import { ShoppingCart, CheckSquare, Trash2 } from "lucide-react";
+import { ShoppingCart, CheckSquare, Trash2, User } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import CartHeader from "../components/cart/CartHeader";
@@ -34,7 +34,7 @@ export default function Cart() {
           notes,
           status,
           product:product_id ( name, image_url, estimated_price ),
-          warung:warung_id ( name, address )
+          warung:warung_id ( name, address, created_by_clerk_id, owner:users!warungs_created_by_clerk_id_fkey ( avatar_url, name ) )
         `)
         .eq("user_id", user.id)
         .eq("status", "pending")
@@ -80,6 +80,25 @@ export default function Cart() {
       setSelectedIds(allIds);
       setSelectAll(true);
     }
+  };
+
+  // Toggle select per group (owner)
+  const toggleSelectGroup = (ownerId) => {
+    const groupItems = items.filter((it) => (it.warung?.created_by_clerk_id || "unknown") === ownerId);
+    const allSelected = groupItems.every((it) => selectedIds.has(it.id));
+
+    setSelectedIds((prev) => {
+      const newSet = new Set(prev);
+      if (allSelected) {
+        groupItems.forEach((it) => newSet.delete(it.id));
+      } else {
+        groupItems.forEach((it) => newSet.add(it.id));
+      }
+
+      // update selectAll flag
+      setSelectAll(items.length > 0 && newSet.size === items.length);
+      return newSet;
+    });
   };
 
   // Update quantity (bisa langsung update ke supabase juga)
@@ -149,6 +168,20 @@ export default function Cart() {
     }
   };
 
+  // Handle deal (create deal for selected items). Disallow if multiple owners selected.
+  const handleDealSelected = () => {
+    if (selectedIds.size === 0) return;
+    if (multipleOwnersSelected) {
+      alert("Pilih hanya item dari 1 outlet untuk membuat 1 deal");
+      return;
+    }
+
+    // Proceed to checkout / deal flow for selectedItems
+    // For now show placeholder — replace with actual navigation / deal creation
+    // navigate('/checkout', { state: { selectedItems } });
+    alert(`Lanjut ke proses deal untuk ${selectedItems.length} item (outlet: ${Array.from(selectedOwners)[0]})`);
+  };
+
   // Hitung total
   const selectedItems = items.filter((item) => selectedIds.has(item.id));
   const totalQuantity = selectedItems.reduce((sum, i) => sum + i.quantity, 0);
@@ -156,6 +189,10 @@ export default function Cart() {
     (sum, i) => sum + (Number(i.estimated_price || 0) * i.quantity),
     0
   );
+
+  // Cek owner unik dari selected items -> kalau >1, disable Deal
+  const selectedOwners = new Set(selectedItems.map((i) => i.warung?.created_by_clerk_id || "unknown"));
+  const multipleOwnersSelected = selectedOwners.size > 1;
 
   if (!user) return null;
 
@@ -179,17 +216,65 @@ export default function Cart() {
           </div>
         ) : (
           <>
-            {/* Daftar item */}
-            <div className="space-y-4 mb-28">
-              {items.map((item) => (
-                <CartItemCard
-                  key={item.id}
-                  item={item}
-                  isSelected={selectedIds.has(item.id)}
-                  onToggleSelect={toggleSelect}
-                  onUpdateQuantity={updateQuantity}
-                  onDelete={deleteItem}
-                />
+            {/* Daftar item (grouped by warung owner) */}
+            <div className="space-y-6 mb-28">
+              {Object.values(
+                items.reduce((acc, item) => {
+                  const owner = item.warung?.created_by_clerk_id || "unknown";
+                  const ownerName = item.warung?.owner?.name || item.warung?.name || "Outlet";
+                  const ownerAvatar = item.warung?.owner?.avatar_url || null;
+                  if (!acc[owner]) {
+                    acc[owner] = { ownerId: owner, ownerName, ownerAvatar, items: [] };
+                  }
+                  acc[owner].items.push(item);
+                  return acc;
+                }, {})
+              ).map((group) => (
+                <div key={group.ownerId} className="bg-white dark:bg-slate-800 rounded-2xl p-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm">
+                        {group.ownerAvatar ? (
+                          <img src={group.ownerAvatar} alt={group.ownerName} className="w-full h-full object-cover" />
+                        ) : (
+                          <User size={28} className="text-indigo-300 dark:text-indigo-400" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-semibold">{group.ownerName}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{group.items.length} item</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => toggleSelectGroup(group.ownerId)}
+                        className="w-10 h-10 border border-gray-200 dark:border-slate-700 rounded-xl flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all"
+                        title="Pilih semua di outlet ini"
+                      >
+                        {/* show whether all in group are selected */}
+                        {group.items.every((it) => selectedIds.has(it.id)) ? (
+                          <span className="text-emerald-600">✓</span>
+                        ) : (
+                          <span className="text-gray-400">○</span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                <hr className="px-2 mt-2 mb-2 opacity-10"/>
+                  <div className="space-y-3">
+                    {group.items.map((item) => (
+                      <CartItemCard
+                        key={item.id}
+                        item={item}
+                        isSelected={selectedIds.has(item.id)}
+                        onToggleSelect={toggleSelect}
+                        onUpdateQuantity={updateQuantity}
+                        onDelete={deleteItem}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
 
@@ -199,7 +284,7 @@ export default function Cart() {
                 <div className="flex justify-between items-center mb-3">
                   <div>
                     <p className="font-medium">
-                      {selectedIds.size} barang dipilih
+                      {selectedIds.size} item dipilih
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       Total {totalQuantity} pcs
@@ -211,7 +296,7 @@ export default function Cart() {
                     </p>
                   </div>
                 </div>
-
+                <hr className="px-2 mt-2 mb-2 opacity-10"/>
                 <div className="flex gap-3">
                   {/* Pilih Semua (kecil) */}
                   <button
@@ -226,23 +311,32 @@ export default function Cart() {
                   {/* Jika ada yang di select, tampilkan Hapus + Deal, else tampilkan Deal disabled */}
                   {selectedIds.size > 0 ? (
                     <>
-                      <button
-                        onClick={deleteSelected}
-                        className="flex-1 border border-gray-200 dark:border-slate-700 rounded-xl
-                                   flex items-center justify-center gap-2 text-sm font-semibold text-red-600 bg-red-50/40 hover:bg-red-100 active:scale-95 transition-all"
-                      >
-                        <Trash2 size={16} />
-                        <span>Hapus ({selectedIds.size})</span>
-                      </button>
+                      <div className="flex-1">
+                        {multipleOwnersSelected && (
+                          <p className="text-sm text-yellow-600 mb-2">⚠️ Pilih hanya item dari 1 outlet untuk membuat 1 deal</p>
+                        )}
 
-                      <button
-                        className="flex-1 rounded-xl bg-green-600/70 text-white
-                                   py-3 text-sm font-bold flex items-center justify-center gap-2 shadow-sm shadow-indigo-200 active:scale-95 transition-all"
-                        onClick={() => alert('Lanjut ke proses deal / checkout')}
-                      >
-                        <ShoppingCart size={16} />
-                        <span>Deal ({selectedIds.size})</span>
-                      </button>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={deleteSelected}
+                            className="flex-1 border border-gray-200 dark:border-slate-700 rounded-xl
+                                       flex items-center justify-center gap-2 text-sm font-semibold text-red-600 bg-red-50/40 hover:bg-red-100 active:scale-95 transition-all"
+                          >
+                            <Trash2 size={16} />
+                            <span>Hapus ({selectedIds.size})</span>
+                          </button>
+
+                          <button
+                            className={`flex-1 rounded-xl py-3 text-sm font-bold flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all ${multipleOwnersSelected ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-green-600/70 text-white shadow-indigo-200'}`}
+                            onClick={() => handleDealSelected()}
+                            disabled={multipleOwnersSelected}
+                            title={multipleOwnersSelected ? 'Tidak bisa deal item dari outlet berbeda' : 'Lanjut ke proses deal / checkout'}
+                          >
+                            <ShoppingCart size={16} />
+                            <span>{multipleOwnersSelected ? 'Deal (berbeda outlet)' : `Deal (${selectedIds.size})`}</span>
+                          </button>
+                        </div>
+                      </div>
                     </>
                   ) : (
                     <button

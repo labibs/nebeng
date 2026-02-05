@@ -98,34 +98,67 @@ export default function DetailProduct() {
         setCartMessage(null);
 
         try {
-            const { data, error } = await supabase
+            // Cek apakah item ini sudah ada di cart (pending)
+            const { data: existing, error: fetchErr } = await supabase
                 .from("warung_cart_items")
-                .insert({
-                    user_id: user.id,
-                    warung_id: product.warung_id,
-                    product_id: product.id,
-                    quantity: 1,
-                    requested_price: product.estimated_price || null,
-                    estimated_price: product.estimated_price || null,
-                    notes: null,
-                    status: "pending"
-                })
-                .select()
-                .single();
+                .select("*")
+                .eq("user_id", user.id)
+                .eq("product_id", product.id)
+                .eq("status", "pending")
+                .maybeSingle();
 
-            if (error) throw error;
+            if (fetchErr) throw fetchErr;
 
-            // Sukses insert
-            setCartMessage("Produk berhasil disimpan ke daftar nitip!");
+            if (existing) {
+                // Jika sudah ada, tambahkan quantity saja
+                const newQty = Number(existing.quantity || 0) + 1;
+                const { data: updated, error: updateErr } = await supabase
+                    .from("warung_cart_items")
+                    .update({
+                        quantity: newQty,
+                        // update harga estimasi jika perlu, gunakan nilai produk terbaru jika tersedia
+                        requested_price: product.estimated_price || existing.requested_price,
+                        estimated_price: product.estimated_price || existing.estimated_price
+                    })
+                    .eq("id", existing.id)
+                    .select()
+                    .single();
 
-            // Dispatch event agar CartIconButton di header langsung update badge + animasi
-            const event = new CustomEvent('cart:item-added', {
-                detail: { productId: product.id } // optional, bisa dipakai untuk log atau validasi nanti
-            });
-            window.dispatchEvent(event);
+                if (updateErr) throw updateErr;
 
-            // Optional: redirect atau refresh cart count di komponen ini jika ada state count lokal
-            // setCartCount(prev => prev + 1);   // kalau komponen ini punya state count sendiri
+                setCartMessage("Jumlah produk berhasil ditambahkan di keranjang");
+                // Jangan dispatch 'cart:item-added' karena ini bukan item baru (agar badge tidak bertambah)
+                // Tetapi dispatch event khusus jika ingin trigger animasi/feedback
+                const evt = new CustomEvent('cart:item-updated', { detail: { productId: product.id, action: 'increment' } });
+                window.dispatchEvent(evt);
+            } else {
+                // Jika belum ada, insert baru
+                const { data, error } = await supabase
+                    .from("warung_cart_items")
+                    .insert({
+                        user_id: user.id,
+                        warung_id: product.warung_id,
+                        product_id: product.id,
+                        quantity: 1,
+                        requested_price: product.estimated_price || null,
+                        estimated_price: product.estimated_price || null,
+                        notes: null,
+                        status: "pending"
+                    })
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                // Sukses insert
+                setCartMessage("Produk berhasil disimpan ke daftar nitip!");
+
+                // Dispatch event agar CartIconButton di header langsung update badge + animasi
+                const event = new CustomEvent('cart:item-added', {
+                    detail: { productId: product.id } // optional, bisa dipakai untuk log atau validasi nanti
+                });
+                window.dispatchEvent(event);
+            }
 
         } catch (err) {
             console.error("Gagal menambahkan ke cart:", err);

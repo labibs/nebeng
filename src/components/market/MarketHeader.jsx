@@ -1,5 +1,6 @@
 import { Store, Search, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import CartIconButton from "../cart/CartIconButton";
 
 export default function MarketHeader({ search, onSearchChange }) {
   const navigate = useNavigate();
@@ -9,19 +10,21 @@ export default function MarketHeader({ search, onSearchChange }) {
       {/* Top Bar */}
       <div className="px-4 pt-4 pb-2">
         <div className="flex items-center justify-between">
-          <button
-            onClick={() => navigate("/outlet")}
-            className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full bg-primary/10 text-primary"
-          >
-            <Store size={18} />
-            Outlet Saya
-          </button>
-
           <img
             src="./pwa-64x64.png"
             alt="Nebeng"
             className="w-10 h-10 rounded-xl"
           />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate("/outlet")}
+              className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full bg-primary/10 text-primary"
+            >
+              <Store size={20} />
+              Outlet Saya
+            </button>
+            <CartIconButton />
+          </div>
         </div>
       </div>
 

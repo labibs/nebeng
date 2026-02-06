@@ -267,7 +267,7 @@ export default function Cart() {
   {Object.keys(kurirGroups).length > 0 && (
     <div>
       <h2 className="text-xl font-bold mb-4 px-2 flex items-center gap-2 text-blue-700 dark:text-blue-400">
-        <span className="text-2xl">🚚</span> Pesanan via Kurir
+        <span className="text-2xl">🚚</span> Nitip ke Kurir
       </h2>
       {Object.values(kurirGroups).map(group => (
         // render card group sama seperti di atas, tapi pakai styling kurir
@@ -340,7 +340,7 @@ export default function Cart() {
   {Object.keys(nonKurirGroups).length > 0 && (
     <div>
       <h2 className="text-xl font-bold mb-4 px-2 flex items-center gap-2">
-        <span className="text-2xl">🛒</span> Pesanan Toko Biasa
+        <span className="text-2xl">🛒</span> Nitip Beliin
       </h2>
       {Object.values(nonKurirGroups).map(group => (
         // render card group dengan styling normal
@@ -422,6 +422,7 @@ export default function Cart() {
             {/* Bottom bar */}
             <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900  p-4 shadow-2xl z-10">
               <div className="max-w-3xl mx-auto">
+                {selectedIds.size > 0 && (
                 <div className="flex justify-between items-center mb-3">
                   <div>
                     <p className="font-medium">
@@ -436,7 +437,8 @@ export default function Cart() {
                       Rp {totalPrice.toLocaleString("id-ID")}
                     </p>
                   </div>
-                </div>
+                </div> 
+                )}
                 <hr className="px-2 mt-2 mb-2 opacity-10" />
                 <div className="flex gap-3">
                   {/* Pilih Semua (kecil) */}

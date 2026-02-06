@@ -16,6 +16,8 @@ export default function Cart() {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [selectAll, setSelectAll] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectAllKurir, setSelectAllKurir] = useState(false);
+  const [selectAllNonKurir, setSelectAllNonKurir] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -34,7 +36,7 @@ export default function Cart() {
           notes,
           status,
           product:product_id ( name, image_url, estimated_price ),
-          warung:warung_id ( name, address, created_by_clerk_id, owner:users!warungs_created_by_clerk_id_fkey ( avatar_url, name ) )
+          warung:warung_id ( name, address, category, status, created_by_clerk_id, owner:users!warungs_created_by_clerk_id_fkey ( avatar_url, name ) )
         `)
         .eq("user_id", user.id)
         .eq("status", "pending")
@@ -50,6 +52,27 @@ export default function Cart() {
 
     fetchCart();
   }, [user, navigate]);
+
+  const kurirGroups = {};
+  const nonKurirGroups = {};
+
+  items.forEach((item) => {
+    const ownerId = item.warung?.created_by_clerk_id || "unknown";
+    const isKurir = (item.warung?.status || "").toLowerCase() === "kurir";
+
+    const target = isKurir ? kurirGroups : nonKurirGroups;
+
+    if (!target[ownerId]) {
+      target[ownerId] = {
+        ownerId,
+        ownerName: item.warung?.owner?.name || item.warung?.name || "Outlet",
+        ownerAvatar: item.warung?.owner?.avatar_url || null,
+        warungStatus: item.warung?.status || "unknown",
+        items: []
+      };
+    }
+    target[ownerId].items.push(item);
+  });
 
   // Handler toggle select satu item
   const toggleSelect = (id) => {
@@ -83,20 +106,41 @@ export default function Cart() {
   };
 
   // Toggle select per group (owner)
-  const toggleSelectGroup = (ownerId) => {
-    const groupItems = items.filter((it) => (it.warung?.created_by_clerk_id || "unknown") === ownerId);
-    const allSelected = groupItems.every((it) => selectedIds.has(it.id));
-
+  const toggleSelectAllKurir = () => {
     setSelectedIds((prev) => {
       const newSet = new Set(prev);
-      if (allSelected) {
-        groupItems.forEach((it) => newSet.delete(it.id));
+      const kurirItems = items.filter(
+        (it) => (it.warung?.status || "").toLowerCase() === "kurir"
+      );
+
+      if (selectAllKurir) {
+        // deselect semua kurir
+        kurirItems.forEach((it) => newSet.delete(it.id));
       } else {
-        groupItems.forEach((it) => newSet.add(it.id));
+        // select semua kurir
+        kurirItems.forEach((it) => newSet.add(it.id));
       }
 
-      // update selectAll flag
-      setSelectAll(items.length > 0 && newSet.size === items.length);
+      setSelectAllKurir(!selectAllKurir);
+      // Optional: sync selectAllNonKurir kalau perlu, tapi biasanya tidak
+      return newSet;
+    });
+  };
+
+  const toggleSelectAllNonKurir = () => {
+    setSelectedIds((prev) => {
+      const newSet = new Set(prev);
+      const nonKurirItems = items.filter(
+        (it) => (it.warung?.status || "").toLowerCase() !== "kurir"
+      );
+
+      if (selectAllNonKurir) {
+        nonKurirItems.forEach((it) => newSet.delete(it.id));
+      } else {
+        nonKurirItems.forEach((it) => newSet.add(it.id));
+      }
+
+      setSelectAllNonKurir(!selectAllNonKurir);
       return newSet;
     });
   };
@@ -216,21 +260,19 @@ export default function Cart() {
           </div>
         ) : (
           <>
-            {/* Daftar item (grouped by warung owner) */}
-            <div className="space-y-6 mb-28">
-              {Object.values(
-                items.reduce((acc, item) => {
-                  const owner = item.warung?.created_by_clerk_id || "unknown";
-                  const ownerName = item.warung?.owner?.name || item.warung?.name || "Outlet";
-                  const ownerAvatar = item.warung?.owner?.avatar_url || null;
-                  if (!acc[owner]) {
-                    acc[owner] = { ownerId: owner, ownerName, ownerAvatar, items: [] };
-                  }
-                  acc[owner].items.push(item);
-                  return acc;
-                }, {})
-              ).map((group) => (
-                <div key={group.ownerId} className="bg-white dark:bg-slate-800 rounded-2xl p-3">
+          
+<div className="space-y-10 mb-32">
+
+  {/* Bagian Kurir */}
+  {Object.keys(kurirGroups).length > 0 && (
+    <div>
+      <h2 className="text-xl font-bold mb-4 px-2 flex items-center gap-2 text-blue-700 dark:text-blue-400">
+        <span className="text-2xl">🚚</span> Pesanan via Kurir
+      </h2>
+      {Object.values(kurirGroups).map(group => (
+        // render card group sama seperti di atas, tapi pakai styling kurir
+        
+          <div key={group.ownerId} className="bg-white dark:bg-slate-800 rounded-2xl p-3 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm">
@@ -242,26 +284,40 @@ export default function Cart() {
                       </div>
                       <div>
                         <p className="font-semibold">{group.ownerName}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{group.items.length} item</p>
+                        <div className="flex items-center gap-2 text-xs mt-0.5">
+                          {/* <span className="text-gray-500 dark:text-gray-400">Kurir / Toko</span> */}
+                          {/* Badge status */}
+                          <span className={`
+                            px-2 py-0.5 rounded-full text-xs font-medium
+                            ${group.warungStatus === 'kurir' 
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200'
+                              : group.warungStatus === 'aktif' 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+                              : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                            }
+                          `}>
+                            {group.warungStatus === 'kurir' ? 'Kurir' : 
+                            group.warungStatus || 'Status tidak diketahui'}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => toggleSelectGroup(group.ownerId)}
-                        className="w-10 h-10 border border-gray-200 dark:border-slate-700 rounded-xl flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all"
-                        title="Pilih semua di outlet ini"
-                      >
-                        {/* show whether all in group are selected */}
-                        {group.items.every((it) => selectedIds.has(it.id)) ? (
-                          <span className="text-emerald-600">✓</span>
-                        ) : (
-                          <span className="text-gray-400">○</span>
-                        )}
-                      </button>
-                    </div>
+
+                    {/* Tombol select group */}
+                    <button
+                      onClick={() => toggleSelectAllKurir(group.ownerId)}
+                      className="w-10 h-10 border border-gray-200 dark:border-slate-700 rounded-xl flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all"
+                      title="Pilih semua di outlet ini"
+                    >
+                      {group.items.every((it) => selectedIds.has(it.id)) ? (
+                        <span className="text-emerald-600">✓</span>
+                      ) : (
+                        <span className="text-gray-400">○</span>
+                      )}
+                    </button>
                   </div>
-                <hr className="px-2 mt-2 mb-2 opacity-10"/>
+
+                  <hr className="my-2 opacity-10" />
                   <div className="space-y-3">
                     {group.items.map((item) => (
                       <CartItemCard
@@ -275,7 +331,92 @@ export default function Cart() {
                     ))}
                   </div>
                 </div>
-              ))}
+       
+      ))}
+    </div>
+  )}
+
+  {/* Bagian Non-Kurir */}
+  {Object.keys(nonKurirGroups).length > 0 && (
+    <div>
+      <h2 className="text-xl font-bold mb-4 px-2 flex items-center gap-2">
+        <span className="text-2xl">🛒</span> Pesanan Toko Biasa
+      </h2>
+      {Object.values(nonKurirGroups).map(group => (
+        // render card group dengan styling normal
+        
+          <div key={group.ownerId} className="bg-white dark:bg-slate-800 rounded-2xl p-3 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm">
+                        {group.ownerAvatar ? (
+                          <img src={group.ownerAvatar} alt={group.ownerName} className="w-full h-full object-cover" />
+                        ) : (
+                          <User size={28} className="text-indigo-300 dark:text-indigo-400" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-semibold">{group.ownerName}</p>
+                        <div className="flex items-center gap-2 text-xs mt-0.5">
+                          {/* <span className="text-gray-500 dark:text-gray-400">Kurir / Toko</span> */}
+                          {/* Badge status */}
+                          <span className={`
+                            px-2 py-0.5 rounded-full text-xs font-medium
+                            ${group.warungStatus === 'kurir' 
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200'
+                              : group.warungStatus === 'aktif' 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+                              : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                            }
+                          `}>
+                            {group.warungStatus === 'kurir' ? 'Mode Kurir' : 
+                            group.warungStatus || 'Status tidak diketahui'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tombol select group */}
+                    <button
+                      onClick={() => toggleSelectAllNonKurir(group.ownerId)}
+                      className="w-10 h-10 border border-gray-200 dark:border-slate-700 rounded-xl flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all"
+                      title="Pilih semua di outlet ini"
+                    >
+                      {group.items.every((it) => selectedIds.has(it.id)) ? (
+                        <span className="text-emerald-600">✓</span>
+                      ) : (
+                        <span className="text-gray-400">○</span>
+                      )}
+                    </button>
+                  </div>
+
+                  <hr className="my-2 opacity-10" />
+                  <div className="space-y-3">
+                    {group.items.map((item) => (
+                      <CartItemCard
+                        key={item.id}
+                        item={item}
+                        isSelected={selectedIds.has(item.id)}
+                        onToggleSelect={toggleSelect}
+                        onUpdateQuantity={updateQuantity}
+                        onDelete={deleteItem}
+                      />
+                    ))}
+                  </div>
+                </div>
+        
+      ))}
+    </div>
+  )}
+
+  {Object.keys(kurirGroups).length === 0 && Object.keys(nonKurirGroups).length === 0 && (
+    <p className="text-center py-10 text-gray-500">Belum ada barang di keranjang</p>
+  )}
+</div>
+            
+            {/* Daftar item (grouped by warung owner) */}
+            <div className="space-y-6 mb-28">
+              
             </div>
 
             {/* Bottom bar */}
@@ -296,7 +437,7 @@ export default function Cart() {
                     </p>
                   </div>
                 </div>
-                <hr className="px-2 mt-2 mb-2 opacity-10"/>
+                <hr className="px-2 mt-2 mb-2 opacity-10" />
                 <div className="flex gap-3">
                   {/* Pilih Semua (kecil) */}
                   <button
@@ -333,7 +474,7 @@ export default function Cart() {
                             title={multipleOwnersSelected ? 'Tidak bisa deal item dari outlet berbeda' : 'Lanjut ke proses deal / checkout'}
                           >
                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
                             <span>{multipleOwnersSelected ? 'Deal (berbeda outlet)' : `Deal (${selectedIds.size})`}</span>
                           </button>
@@ -349,7 +490,7 @@ export default function Cart() {
                       title="Pilih minimal 1 item untuk mulai deal"
                     >
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                       </svg>
                       <span>Deal</span>
                     </button>

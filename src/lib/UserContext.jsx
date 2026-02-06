@@ -25,9 +25,6 @@ export function UserProvider({ children }) {
 
       if (error) {
         console.warn('User belum ada di Supabase (akan dibuat via webhook):', error);
-      } else {
-        setSupabaseUserId(data.id);
-        console.log('User Supabase ID:', data.id);
       }
       setLoading(false);
     };

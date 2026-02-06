@@ -17,6 +17,13 @@ export default function CartItemCard({
     onUpdateQuantity(item.id, newQty);
   };
 
+  const keteranganByStatus = () => {
+    if (warung.status === "kurir") return "Mau Nitip";
+    if (warung.status === "pembeli" && warung.category === "Jasa") return "Anterin Kesini";
+    if (warung.status === "pembeli" && warung.category !== "Jasa") return "Beliin Kesini";
+    return "Nitip Sekarang";
+  };
+
   return (
     <motion.div
       className={`
@@ -31,7 +38,7 @@ export default function CartItemCard({
       transition={{ duration: 0.25 }}
     >
       {/* Checkbox */}
-      
+
 
       <div className="w-full">
         <div className="flex items-start gap-3 w-full">
@@ -48,9 +55,11 @@ export default function CartItemCard({
           <div className="flex-1 min-w-0 flex flex-col">
             {/* Nama + tombol wishlist */}
             <div className="flex justify-between items-start">
-              <h4 className="font-semibold text-base leading-tight line-clamp-2 pr-8">
-                {product.name}
-              </h4>
+
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {keteranganByStatus()} • {warung.name.substring(0, 15)}
+                {warung.name.length > 15 ? "..." : ""}
+              </p>
               <input
                 type="checkbox"
                 checked={isSelected}
@@ -60,16 +69,15 @@ export default function CartItemCard({
             </div>
 
             {/* Info tambahan (warung / size / variant jika ada) */}
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {warung.name} • {warung.address?.substring(0, 35)}
-              {warung.address?.length > 35 ? "..." : ""}
-            </p>
+            <h4 className="font-semibold text-base leading-tight line-clamp-2 pr-8">
+              {product.name}
+            </h4>
             <div className="flex justify-between items-start mt-1">
               <h4 className="font-semibold text-base leading-tight line-clamp-2 pr-8">
                 {product.estimated_price
                   ? ` Rp ${Number(
-                      product.estimated_price
-                    ).toLocaleString("id-ID")}`
+                    product.estimated_price
+                  ).toLocaleString("id-ID")}`
                   : "Rp. 0"}
               </h4>
               <p>X {item.quantity} pcs</p>
@@ -83,7 +91,7 @@ export default function CartItemCard({
             )}
           </div>
         </div>
-        <hr className="px-2 mt-2 mb-2 opacity-10"/>
+        <hr className="px-2 mt-2 mb-2 opacity-10" />
         {/* Row Estimasi + controls (full width, below gambar & keterangan) */}
         <div className="mt-1 flex items-center justify-between w-full">
           <div>

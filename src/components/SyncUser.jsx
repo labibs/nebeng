@@ -17,15 +17,13 @@ export default function SyncUser() {
 
       if (error) {
         console.warn('User belum ada di Supabase (akan dibuat via webhook)')
-      } else {
-        console.log('User Supabase ID:', data.id)
       }
     }
 
     checkUser()
-    
+
   }, [isLoaded, user])
-  
+
 
   return null
 }

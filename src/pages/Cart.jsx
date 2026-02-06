@@ -423,23 +423,27 @@ export default function Cart() {
             <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900  p-4 shadow-2xl z-10">
               <div className="max-w-3xl mx-auto">
                 {selectedIds.size > 0 && (
-                <div className="flex justify-between items-center mb-3">
                   <div>
-                    <p className="font-medium">
-                      {selectedIds.size} item dipilih
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Total {totalQuantity} pcs
-                    </p>
+                    <div className="flex justify-between items-center mb-3">
+                      <div>
+                        <p className="font-medium">
+                          {selectedIds.size} item dipilih
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Total {totalQuantity} pcs
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-emerald-600">
+                          Rp {totalPrice.toLocaleString("id-ID")}
+                        </p>
+                      </div>
+                    </div>
+                    <hr className="my-2 opacity-10" />
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-emerald-600">
-                      Rp {totalPrice.toLocaleString("id-ID")}
-                    </p>
-                  </div>
-                </div> 
                 )}
-                <hr className="px-2 mt-2 mb-2 opacity-10" />
+
+                
                 <div className="flex gap-3">
                   {/* Pilih Semua (kecil) */}
                   <button

@@ -47,9 +47,9 @@ export default function Cart() {
 
       // 2. Ambil ID warung milik user
       const { data: myWarungs } = await supabase
-        .from("warungs")
+        .from("warung_cart_items")
         .select("id")
-        .eq("created_by_clerk_id", user.id);
+        .eq("user_id", user.id);
 
       let oItems = [];
       if (myWarungs && myWarungs.length > 0) {
@@ -359,7 +359,7 @@ export default function Cart() {
                   <h2 className="text-xl font-black mb-4 px-2 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg"><ShoppingCart size={20} /></div>
-                      <span className="bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">Beli Lewat Kurir</span>
+                      <span className="bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">Nitip ke Kurir</span>
                     </div>
                     <div className="bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold border border-blue-200">{Object.keys(kurirGroups).length} tujuan</div>
                   </h2>
@@ -374,7 +374,7 @@ export default function Cart() {
                         </div>
                         <button
                           onClick={() => toggleSelectGroup(group.key, kurirGroups)}
-                          className="w-8 h-8 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90"
+                          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90"
                         >
                           <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-200' : 'border-gray-300'}`}>
                             {group.items.every(it => selectedIds.has(it.id)) && (
@@ -401,7 +401,7 @@ export default function Cart() {
                   <h2 className="text-xl font-black mb-4 px-2 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg"><Plus size={20} /></div>
-                      <span className="bg-gradient-to-r from-emerald-700 to-teal-700 bg-clip-text text-transparent">Permintaan Beli</span>
+                      <span className="bg-gradient-to-r from-emerald-700 to-teal-700 bg-clip-text text-transparent">Permintaan Nitip</span>
                     </div>
                     <div className="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-bold border border-emerald-200">{Object.keys(pembeliGroups).length} tujuan</div>
                   </h2>
@@ -416,7 +416,7 @@ export default function Cart() {
                         </div>
                         <button
                           onClick={() => toggleSelectGroup(group.key, pembeliGroups)}
-                          className="w-8 h-8 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90"
+                          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90"
                         >
                           <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-200' : 'border-gray-300'}`}>
                             {group.items.every(it => selectedIds.has(it.id)) && (
@@ -458,7 +458,7 @@ export default function Cart() {
                         </div>
                         <button
                           onClick={() => toggleSelectGroup(group.key, milikGroups)}
-                          className="w-8 h-8 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90"
+                          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90"
                         >
                           <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-200' : 'border-gray-300'}`}>
                             {group.items.every(it => selectedIds.has(it.id)) && (

@@ -4,37 +4,40 @@ export default function DealStatusBadge({
   deliveryStatus,
   size = "md", // sm | md | lg
 }) {
-  let label = "Status Tidak Diketahui";
-  let color = "badge-ghost";
+  let label = "Sedang Nego";
+  let color = "badge-outline badge-ghost opacity-60";
 
   // 1️⃣ DELIVERY STATUS (PRIORITAS TERTINGGI)
   if (deliveryStatus === "running") {
     label = "Sedang Diantar";
     color = "badge-info";
   } else if (deliveryStatus === "delivered") {
-    label = "Titipan Diterima";
+    label = "Pesanan Selesai";
     color = "badge-success";
   }
 
   // 2️⃣ TRANSACTION STATUS
   else if (transactionStatus === "pending") {
-    label = "Menunggu Pembayaran";
+    label = "Menunggu Bayar";
     color = "badge-warning";
   } else if (transactionStatus === "expire") {
-    label = "Pembayaran Expired";
+    label = "Bayar Expired";
     color = "badge-error";
   } else if (transactionStatus === "fail") {
-    label = "Pembayaran Gagal";
+    label = "Bayar Gagal";
     color = "badge-error";
   } else if (transactionStatus === "paid") {
-    label = "Pembayaran Berhasil";
-    color = "badge-success";
+    label = "Sudah Dibayar";
+    color = "badge-emerald-100 text-emerald-800 border-none font-semibold";
   }
 
   // 3️⃣ DEAL STATUS (FALLBACK)
   else if (dealStatus === "completed") {
-    label = "Transaksi Baru";
-    color = "badge-neutral";
+    label = "Nego Selesai";
+    color = "badge-primary badge-outline font-medium";
+  } else if (dealStatus === "cancelled" || transactionStatus === "cancelled") {
+    label = "Dibatalkan";
+    color = "badge-error badge-outline opacity-70";
   }
 
   return (

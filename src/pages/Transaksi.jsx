@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { supabase } from "../lib/supabaseClient";
-import { FileText, Wallet, BaggageClaim, Truck, MapPin} from "lucide-react";
+import { FileText, Wallet, BaggageClaim, Truck, MapPin } from "lucide-react";
 import { handlePay } from "../lib/handlePay";
 import { useNavigate } from 'react-router-dom'
 import LiveTrackingModal from "../components/transaksi/LiveTrackingModal";
@@ -111,6 +111,44 @@ export default function TransaksiPage() {
     );
   }
 
+  // Real-time synchronization for Transaksi list
+  useEffect(() => {
+    if (!clerkId) return;
+
+    // Listen to changes in transactions and deals
+    const channel = supabase
+      .channel(`transaksi-list-realtime-${clerkId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to any change (UPDATE, INSERT, DELETE)
+          schema: 'public',
+          table: 'transactions',
+        },
+        () => {
+          console.log('🔄 Real-time Transaction update in list, refetching...');
+          fetchTransactions(clerkId).then(setRows);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'deals',
+        },
+        () => {
+          console.log('🔄 Real-time Deal update in list, refetching...');
+          fetchTransactions(clerkId).then(setRows);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [clerkId]);
+
   const openLiveTracking = (dealId) => {
     setSelectedDealId(dealId);
     setShowTrackingModal(true);
@@ -124,118 +162,129 @@ export default function TransaksiPage() {
 
   return (
     <>
-    <div className="min-h-screen bg-gradient-to-br from-[#e8f5e9] via-[#f0f8f1] to-[#d9f0e0] dark:from-[#1e293b] dark:via-[#0f172a] dark:to-[#1e293b] flex flex-col mb-15">
-      <TransaksiHeader
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
+      <div className="min-h-screen bg-gradient-to-br from-[#e8f5e9] via-[#f0f8f1] to-[#d9f0e0] dark:from-[#1e293b] dark:via-[#0f172a] dark:to-[#1e293b] flex flex-col mb-15">
+        <TransaksiHeader
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
 
         {/* Transaction List / Loading / Empty */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {loading ? (
-          [...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="border border-base-300/30 dark:border-base-700/30 rounded-2xl p-4 space-y-3 animate-pulse"
-            >
-              <div className="flex justify-between">
-                <div className="skeleton h-4 w-32 bg-base-300/40" />
-                <div className="skeleton h-4 w-20 bg-base-300/40" />
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="skeleton w-12 h-12 rounded-full bg-base-300/40" />
-                <div className="flex-1 space-y-2">
-                  <div className="skeleton h-4 w-40 bg-base-300/40" />
-                  <div className="skeleton h-3 w-24 bg-base-300/30" />
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {loading ? (
+            [...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="border border-base-300/30 dark:border-base-700/30 rounded-2xl p-4 space-y-3 animate-pulse"
+              >
+                <div className="flex justify-between">
+                  <div className="skeleton h-4 w-32 bg-base-300/40" />
+                  <div className="skeleton h-4 w-20 bg-base-300/40" />
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="skeleton w-12 h-12 rounded-full bg-base-300/40" />
+                  <div className="flex-1 space-y-2">
+                    <div className="skeleton h-4 w-40 bg-base-300/40" />
+                    <div className="skeleton h-3 w-24 bg-base-300/30" />
+                  </div>
                 </div>
               </div>
+            ))
+          ) : rows.length === 0 ? (
+            <div className="p-12 text-center">
+              <p className="text-xl font-medium text-base-content/60">
+                Belum ada transaksi
+              </p>
             </div>
-          ))
-        ) : rows.length === 0 ? (
-          <div className="p-12 text-center">
-            <p className="text-xl font-medium text-base-content/60">
-              Belum ada transaksi
-            </p>
-          </div>
-        ) : (
-          rows.map((trx) => (
-          
-            <div
-              key={trx.id}
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/deal?deal=${trx.deal?.id}&trx=${trx.id}`);
-              }}
-              className="cursor-pointer rounded-2xl bg-base-100 border border-base-300/30
+          ) : (
+            rows.map((trx) => (
+
+              <div
+                key={trx.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/deal?deal=${trx.deal?.id}&trx=${trx.id}`);
+                }}
+                className="cursor-pointer rounded-2xl bg-base-100 border border-base-300/30
                         hover:bg-base-200/30 transition overflow-hidden"
-            >
-              {/* ================= HEADER ================= */}
-              <div className="px-4 pt-4 flex items-center justify-between">
-                <span className="text-xs font-medium px-3 py-1 rounded-full bg-base-200 text-base-content/70">
-                  {new Date(trx.created_at).toLocaleDateString("id-ID")}
-                </span>
+              >
+                {/* ================= HEADER ================= */}
+                <div className="px-4 pt-4 flex items-center justify-between">
+                  <span className="text-xs font-medium px-3 py-1 rounded-full bg-base-200 text-base-content/70">
+                    {new Date(trx.created_at).toLocaleDateString("id-ID")}
+                  </span>
 
-                <DealStatusBadge
-                  dealStatus={trx.deal.status}
-                  transactionStatus={trx.transaction_status}
-                  deliveryStatus={trx.deal.delivery_status}
-                  size="sm"
-                />
-              </div>
+                  <DealStatusBadge
+                    dealStatus={trx.deal.status}
+                    transactionStatus={trx.transaction_status}
+                    deliveryStatus={trx.deal.delivery_status}
+                    size="sm"
+                  />
+                </div>
 
-              {/* ================= BODY ================= */}
-              <div className="p-4 flex items-center justify-between gap-4">
-                {/* Left */}
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="avatar">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-base-200">
-                      <img
-                        src={trx.deal?.post?.item_photo || "/default-avatar.png"}
-                        alt=""
-                      />
+                {/* ================= BODY ================= */}
+                <div className="p-4 flex items-center justify-between gap-4">
+                  {/* Left */}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="avatar">
+                      <div className="w-16 h-16 rounded-2xl overflow-hidden bg-base-200 shadow-sm border border-base-300/30">
+                        <img
+                          src={trx.deal?.post?.item_photo || "/default-avatar.png"}
+                          alt=""
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        {trx.deal?.carrier_id === clerkId ? (
+                          <span className="badge badge-error badge-xs font-bold text-[10px] px-1.5 py-2 rounded-md">
+                            JASTIPER
+                          </span>
+                        ) : (
+                          <span className="badge badge-info badge-xs font-bold text-[10px] px-1.5 py-2 rounded-md">
+                            NITIPERS
+                          </span>
+                        )}
+                      </div>
+                      <p className="font-bold text-base leading-tight truncate">
+                        {trx.deal?.item_description || "Detail barang tidak ada"}
+                      </p>
+                      <div className="flex items-center gap-1.5 text-xs opacity-60 mt-0.5">
+                        <span className="font-medium">{trx.deal?.post?.from_city}</span>
+                        <svg className="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                        <span className="font-medium">{trx.deal?.post?.to_city}</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="min-w-0">
-                    <p className="text-xs text-base-content/60">
-                      {trx.deal?.carrier_id === clerkId
-                        ? "Bawa Titipan"
-                        : "Nitip Bawakan"}
+                  {/* Right */}
+                  <div className="text-right">
+                    <p className="font-bold text-emerald-600">
+                      Rp{" "}
+                      {Number(
+                        trx.gross_amount ?? trx.deal?.agreed_fee ?? 0
+                      ).toLocaleString("id-ID")}
                     </p>
-                    <p className="font-semibold truncate">
-                      {trx.deal?.item_description}
-                    </p>
-                    <p className="text-sm text-base-content/60 truncate">
-                      {trx.deal?.post?.from_city} → {trx.deal?.post?.to_city}
+                    <p className="text-xs text-base-content/50">
+                      {trx.payment_type?.toUpperCase()}
                     </p>
                   </div>
                 </div>
 
-                {/* Right */}
-                <div className="text-right">
-                  <p className="font-bold text-emerald-600">
-                    Rp{" "}
-                    {Number(
-                      trx.gross_amount ?? trx.deal?.agreed_fee ?? 0
-                    ).toLocaleString("id-ID")}
-                  </p>
-                  <p className="text-xs text-base-content/50">
-                    {trx.payment_type?.toUpperCase()}
-                  </p>
-                </div>
-              </div>
+                {/* ================= FOOTER ================= */}
+                <div className="px-4 pb-4 flex items-center justify-between border-t border-base-300/20">
+                  <span className="text-xs text-base-content/50">
+                    {trx.deal?.carrier_id === clerkId
+                      ? `Customer: ${trx.deal?.depositor?.name ?? "-"}`
+                      : `Kurir: ${trx.deal?.carrier?.name ?? "-"}`}
+                  </span>
 
-              {/* ================= FOOTER ================= */}
-              <div className="px-4 pb-4 flex items-center justify-between border-t border-base-300/20">
-                <span className="text-xs text-base-content/50">
-                  {trx.deal?.carrier_id === clerkId
-                    ? `Customer: ${trx.deal?.depositor?.name ?? "-"}`
-                    : `Kurir: ${trx.deal?.carrier?.name ?? "-"}`}
-                </span>
-
-                <div className="flex items-center gap-3">
-                  {/* Live tracking icon (ringkas) */}
-                  {/* {trx.deal?.delivery_status === "running" && (
+                  <div className="flex items-center gap-3">
+                    {/* Live tracking icon (ringkas) */}
+                    {/* {trx.deal?.delivery_status === "running" && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -248,51 +297,51 @@ export default function TransaksiPage() {
                       <BaggageClaim size={20} />
                     </button>
                   )} */}
-                </div>
-              </div>
-
-              {/* ================= EXTEND (RUNNING ONLY) ================= */}
-              {trx.deal?.delivery_status === "running" && (
-                <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3
-                                animate-in fade-in slide-in-from-top-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-emerald-700">
-                      <Truck className="w-5 h-5" />
-                      <div>
-                        <p className="text-sm font-semibold">Sedang Mengantar</p>
-                        <p className="text-xs opacity-70">
-                          Kurir dalam perjalanan
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedDeal(trx.deal);
-                        openLiveTracking();
-                      }}
-                      className="btn btn-xs bg-emerald-600 hover:bg-emerald-700 text-white"
-                    >
-                      <MapPin className="w-4 h-4" />
-                      Posisi Kurir
-                    </button>
                   </div>
                 </div>
-              )}
-            </div>
-          ))
-        )}
+
+                {/* ================= EXTEND (RUNNING ONLY) ================= */}
+                {trx.deal?.delivery_status === "running" && (
+                  <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3
+                                animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-emerald-700">
+                        <Truck className="w-5 h-5" />
+                        <div>
+                          <p className="text-sm font-semibold">Sedang Mengantar</p>
+                          <p className="text-xs opacity-70">
+                            Kurir dalam perjalanan
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDeal(trx.deal);
+                          openLiveTracking();
+                        }}
+                        className="btn btn-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                      >
+                        <MapPin className="w-4 h-4" />
+                        Posisi Kurir
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
       </div>
-    </div>
-    {showTrackingModal && selectedDeal && (
-      <LiveTrackingModal
-        dealId={selectedDeal.id}
-        deal={selectedDeal}
-        open={showTrackingModal}
-        onClose={closeLiveTracking}
-      />
-    )}
+      {showTrackingModal && selectedDeal && (
+        <LiveTrackingModal
+          dealId={selectedDeal.id}
+          deal={selectedDeal}
+          open={showTrackingModal}
+          onClose={closeLiveTracking}
+        />
+      )}
 
     </>
   );

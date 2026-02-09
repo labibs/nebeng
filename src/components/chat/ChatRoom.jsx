@@ -1,5 +1,4 @@
-// src/components/chat/ChatRoom.jsx
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabaseClient';
@@ -13,7 +12,7 @@ export default function ChatRoom() {
   const { conversationId } = useParams();
   const { user } = useUser();
   const { supabaseUserId } = useSupabaseUserId();
-  
+
   const currentUserId = user?.id;
   const currentUserAvatar = user?.imageUrl || '/default-avatar.png';
 
@@ -58,13 +57,80 @@ export default function ChatRoom() {
       }
     }
 
-    const { error } = await supabase.from('messages').insert(insertData);
+    const { data, error } = await supabase.from('messages').insert(insertData).select('id').single();
 
     if (error) {
       console.error('Error kirim pesan:', error);
       alert('Gagal mengirim pesan');
+      return null;
     }
+    return data?.id;
   };
+
+  const location = useLocation();
+  const dealItemsProcessed = useRef(false);
+
+  // Auto-send deal summary if arriving from Cart "Deal" button
+  useEffect(() => {
+    const dealItems = location.state?.dealItems;
+    if (dealItems && dealItems.length > 0 && !dealItemsProcessed.current && supabaseUserId && conversationPostId && carrierId && depositorId) {
+      dealItemsProcessed.current = true;
+
+      const summary = dealItems.map(item =>
+        `- ${item.product?.name || 'Produk'} x${item.quantity} (Rp ${(Number(item.estimated_price || 0)).toLocaleString('id-ID')})`
+      ).join('\n');
+
+      const totalProductPrice = dealItems.reduce((sum, item) => sum + (Number(item.estimated_price || 0) * item.quantity), 0);
+
+      const message = `[deal_barang_titipan]\n📦 Detail barang:\n${summary}\n\n⚖️ Ukuran & berat: Terlampir di rincian\n📸 Foto barang: `;
+
+      const processAutoDeal = async () => {
+        const msgId = await sendMessage(message);
+        if (msgId) {
+          // 1. Ensure deal exists or update it
+          let dealId;
+          const { data: existingDeals } = await supabase
+            .from('deals')
+            .select('id')
+            .eq('post_id', conversationPostId)
+            .eq('carrier_id', carrierId)
+            .eq('depositor_id', depositorId)
+            .limit(1);
+
+          if (existingDeals && existingDeals.length > 0) {
+            dealId = existingDeals[0].id;
+            await supabase.from('deals').update({
+              item_description: summary,
+              item_fee: totalProductPrice
+            }).eq('id', dealId);
+          } else {
+            const { data: newDeal } = await supabase.from('deals').insert({
+              carrier_id: carrierId,
+              depositor_id: depositorId,
+              post_id: conversationPostId,
+              agreed_fee: postInfo?.fee || 0,
+              status: 'pending',
+              pickup_location: 'TBD',
+              delivery_location: 'TBD',
+              pickup_datetime: new Date().toISOString(),
+              item_description: summary,
+              item_fee: totalProductPrice,
+              item_photos: [],
+              notes: ''
+            }).select('id').single();
+            dealId = newDeal?.id;
+          }
+
+          // 2. Link message to deal
+          if (dealId) {
+            await supabase.from('messages').update({ deal_id: dealId }).eq('id', msgId);
+          }
+        }
+      };
+
+      processAutoDeal();
+    }
+  }, [location.state, supabaseUserId, conversationPostId, carrierId, depositorId]);
 
   const userUuId = user?.id;
 
@@ -82,13 +148,13 @@ export default function ChatRoom() {
 
     return postInfo.type === "bawa"
       ? {
-          carrierId: postInfo.clerk_user_id,
-          depositorId: opponentId,
-        }
+        carrierId: postInfo.clerk_user_id,
+        depositorId: opponentId,
+      }
       : {
-          carrierId: opponentId,
-          depositorId: postInfo.clerk_user_id,
-        };
+        carrierId: opponentId,
+        depositorId: postInfo.clerk_user_id,
+      };
   };
 
   useEffect(() => {
@@ -108,7 +174,7 @@ export default function ChatRoom() {
   console.log('cek dulu', carrierId, depositorId)
 
   const insertDeal = async (postId, agreedFee, msgId) => {
-     
+
     if (!postInfo?.clerk_user_id || !supabaseUserId || !postId) return;
 
     if (!carrierId || !depositorId) {
@@ -168,7 +234,7 @@ export default function ChatRoom() {
       console.log("Created new deal:", dealId);
 
       alert("Deal baru berhasil dibuat!");
-    } 
+    }
     else {
       // ===============================
       // 3️⃣ Jika SUDAH ADA deal → UPDATE agreed_fee saja
@@ -210,7 +276,7 @@ export default function ChatRoom() {
   };
 
   const updateDealLocation = async (postId, locationData, msgId) => {
-   console.log('cekiin', postId, locationData, msgId)
+    console.log('cekiin', postId, locationData, msgId)
     if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
 
     // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
@@ -542,7 +608,7 @@ export default function ChatRoom() {
         console.error("Gagal update message.deal_id:", msgError);
       }
     }
-    
+
   };
 
   // Fetch recipient

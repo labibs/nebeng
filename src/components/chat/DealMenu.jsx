@@ -49,7 +49,7 @@ export default function DealMenu({
         if (dealId) {
           const { data, error } = await supabase
             .from('deals')
-            .select('id,agreed_fee, pickup_location, delivery_location, pickup_datetime, item_description')
+            .select('id, agreed_fee, item_fee, pickup_location, delivery_location, pickup_datetime, item_description, status')
             .eq('post_id', postId)
             .eq('id', dealId)
             .maybeSingle();
@@ -87,14 +87,23 @@ export default function DealMenu({
             );
 
             // ⬇️ simpan ke state global komponen
-            setAllDone(allDone);   
+            setAllDone(allDone);
 
             // kalau lengkap → update status deal menjadi completed
-            if (allDone) {
+            if (allDone && dealResult?.status !== 'completed') {
               await supabase
                 .from('deals')
                 .update({ status: 'completed' })
                 .eq('id', dealId);
+
+              // Tambah pesan sistem
+              await supabase.from('messages').insert({
+                conversation_id: conversationId,
+                sender_id: currentUserId,
+                message_type: 'system',
+                content: '[system] Kesepakatan selesai! Silakan lanjut ke Pembayaran.',
+                post_id: postId
+              });
             }
           }
         }
@@ -154,14 +163,14 @@ export default function DealMenu({
   };
 
   const formattedPickupTime = dealData?.pickup_datetime
-  ? new Date(dealData.pickup_datetime).toLocaleString("id-ID", {
+    ? new Date(dealData.pickup_datetime).toLocaleString("id-ID", {
       weekday: "long",
       day: "numeric",
       month: "long",
       hour: "2-digit",
       minute: "2-digit",
     })
-  : "-";
+    : "-";
 
 
   const deals = [
@@ -305,9 +314,8 @@ export default function DealMenu({
                 key={dealItem.tag}
                 onClick={() => handleSelect(dealItem)}
                 disabled={dealItem.isCompleted}
-                className={`w-full text-left px-5 py-4 flex items-center justify-between transition-colors ${
-                  i !== 0 ? 'border-t border-base-300/50' : ''
-                } ${dealItem.isCompleted ? 'opacity-60 cursor-not-allowed' : 'hover:bg-base-200'}`}
+                className={`w-full text-left px-5 py-4 flex items-center justify-between transition-colors ${i !== 0 ? 'border-t border-base-300/50' : ''
+                  } ${dealItem.isCompleted ? 'opacity-60 cursor-not-allowed' : 'hover:bg-base-200'}`}
               >
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-${color}-100 text-${color}-600`}>
@@ -344,7 +352,7 @@ export default function DealMenu({
                     .upsert(
                       {
                         deal_id: dealData.id,
-                        gross_amount: dealData.agreed_fee,
+                        gross_amount: Number(dealData.agreed_fee || 0) + Number(dealData.item_fee || 0),
                         transaction_status: "draft",
                       },
                       {

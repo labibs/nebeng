@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { supabase } from "../lib/supabaseClient";
+import { apiFetch } from "../lib/apiClient";
 import { FileText, Wallet, BaggageClaim, Truck, MapPin } from "lucide-react";
 import { handlePay } from "../lib/handlePay";
 import { useNavigate } from 'react-router-dom'
@@ -31,68 +32,20 @@ export default function TransaksiPage() {
   useEffect(() => {
     if (!isLoaded || !user) return;
 
-    fetchTransactions(user.id)
+    fetchTransactions()
       .then(setRows)
       .finally(() => setLoading(false));
   }, [isLoaded, user]);
 
-  async function fetchTransactions(clerkId) {
-    const { data, error } = await supabase
-      .from("transactions")
-      .select(`
-        id,
-        transaction_status,
-        gross_amount,
-        payment_type,
-        created_at,
-
-        deal:deals!inner (
-          id,
-          status,
-          agreed_fee,
-          carrier_id,
-          depositor_id,
-          pickup_location,
-          delivery_location,
-          pickup_datetime,
-          item_description,
-          delivery_status,
-
-          carrier:users!deals_carrier_id_fkey (
-            clerk_id,
-            name,
-            avatar_url
-          ),
-
-          depositor:users!fk_deals_depositor (
-            clerk_id,
-            name,
-            avatar_url
-          ),
-
-          post:posts!fk_deals_post (
-            from_city,
-            to_city,
-            type,
-            item_photo,
-            created_at
-          )
-        )
-      `)
-      .or(
-        `carrier_id.eq.${clerkId},depositor_id.eq.${clerkId}`,
-        { foreignTable: "deals" }
-      )
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Supabase error:", error);
-      throw error;
-    } else {
-      setTransaksi(data);
+  async function fetchTransactions() {
+    try {
+      const data = await apiFetch('/api/transactions');
+      setRows(data || []);
+      setTransaksi(data || []);
+    } catch (err) {
+      console.error("Error fetching transactions:", err.message);
+      throw err;
     }
-
-    return data || [];
   }
 
   if (!isLoaded || loading) {
@@ -120,26 +73,18 @@ export default function TransaksiPage() {
       .channel(`transaksi-list-realtime-${clerkId}`)
       .on(
         'postgres_changes',
-        {
-          event: '*', // Listen to any change (UPDATE, INSERT, DELETE)
-          schema: 'public',
-          table: 'transactions',
-        },
+        { event: '*', schema: 'public', table: 'transactions' },
         () => {
           console.log('🔄 Real-time Transaction update in list, refetching...');
-          fetchTransactions(clerkId).then(setRows);
+          fetchTransactions().then(setRows);
         }
       )
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'deals',
-        },
+        { event: '*', schema: 'public', table: 'deals' },
         () => {
           console.log('🔄 Real-time Deal update in list, refetching...');
-          fetchTransactions(clerkId).then(setRows);
+          fetchTransactions().then(setRows);
         }
       )
       .subscribe();

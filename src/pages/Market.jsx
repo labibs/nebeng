@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
 import { motion } from "framer-motion";
 import { useUser } from '@clerk/clerk-react'
+import { apiFetch } from "../lib/apiClient";
 import MarketHeader from "../components/market/MarketHeader";
 import MarketCategories from "../components/market/MarketCategories";
 import MarketQuickIcons from "../components/market/MarketQuickIcons";
@@ -14,83 +14,29 @@ export default function MarketPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState(null); // kategori besar
+  const [activeCategory, setActiveCategory] = useState(null);
   const [activeQuick, setActiveQuick] = useState(null);
 
   const { user, isLoaded } = useUser();
   const owner_avatar = user?.imageUrl || null;
 
-  async function searchWarungIds(keyword) {
-    if (!keyword) return [];
-
-    const { data } = await supabase
-      .from("warungs")
-      .select("id")
-      .ilike("name", `%${keyword}%`);
-
-    return data?.map(w => w.id) || [];
-  }
-
   async function loadProducts(keyword = "") {
     setLoading(true);
 
-    const warungIds = await searchWarungIds(keyword);
+    try {
+      const params = new URLSearchParams();
+      if (keyword) params.set('search', keyword);
+      if (activeCategory) params.set('category', activeCategory);
+      if (activeQuick) params.set('category_id', activeQuick);
 
-    let query = supabase
-      .from("warung_products")
-      .select(`
-          id,
-          name,
-          estimated_price,
-          image_url,
-          rating,
-          is_estimated,
-          created_at,
-          categories:category_id ( name ),
-          warung:warungs!inner (
-            name,
-            category,
-            status,
-            created_by_clerk_id,
-            owner:users!warungs_created_by_clerk_id_fkey ( avatar_url, name )
-          )
-        `)
-      .order("created_at", { ascending: false })
-      .limit(10);
-
-    if (keyword) {
-      if (warungIds.length) {
-        query = query.or(
-          `name.ilike.%${keyword}%,warung_id.in.(${warungIds.join(",")})`
-        );
-      } else {
-        query = query.ilike("name", `%${keyword}%`);
-      }
+      const data = await apiFetch(`/api/market/products?${params.toString()}`);
+      setProducts(data || []);
+    } catch (err) {
+      console.error('Error loading products:', err.message);
+      setProducts([]);
+    } finally {
+      setLoading(false);
     }
-
-    if (activeCategory) {
-      query = query.eq("warung.category", activeCategory);
-    }
-
-    if (activeQuick) {
-      query = query.eq("category_id", activeQuick);
-    }
-
-    const { data, error } = await query;
-
-    if (!error) {
-      setProducts(
-        (data || []).map(p => ({
-          ...p,
-          category_name: p.categories?.name,
-          owner_name: p.warung?.owner?.name || p.warung?.name,
-          owner_avatar: p.warung?.owner?.avatar_url || null,
-          owner_id: p.warung?.created_by_clerk_id || null,
-        }))
-      );
-    }
-
-    setLoading(false);
   }
 
   // initial load
@@ -98,7 +44,7 @@ export default function MarketPage() {
     loadProducts();
   }, [activeCategory, activeQuick]);
 
-  // search effect (debounced ringan)
+  // search effect (debounced)
   useEffect(() => {
     const t = setTimeout(() => {
       loadProducts(search);
@@ -106,6 +52,7 @@ export default function MarketPage() {
 
     return () => clearTimeout(t);
   }, [search]);
+
 
   return (
     <motion.div
@@ -118,7 +65,7 @@ export default function MarketPage() {
       <div className="min-h-screen bg-gradient-to-br from-green-100 to-emerald-200 dark:from-slate-900 dark:to-slate-800 pb-24">
         <MarketHeader
           search={search}
-          owner_avatar={owner_avatar} 
+          owner_avatar={owner_avatar}
           onSearchChange={setSearch}
         />
 

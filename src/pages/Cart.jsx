@@ -1,6 +1,7 @@
 // pages/Cart.jsx
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { apiFetch } from "../lib/apiClient";
 import { ShoppingCart, CheckSquare, Trash2, User, Plus } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
@@ -22,61 +23,8 @@ export default function Cart() {
     if (!user) return;
     setLoading(true);
     try {
-      // 1. Ambil items di mana saya pembelinya (user_id = user.id)
-      const { data: bItems, error: bErr } = await supabase
-        .from("warung_cart_items")
-        .select(`
-          id,
-          user_id,
-          quantity,
-          requested_price,
-          estimated_price,
-          notes,
-          status,
-          product:product_id ( name, image_url, estimated_price ),
-          warung:warung_id ( 
-            id, name, address, category, status, created_by_clerk_id, 
-            owner:users ( avatar_url, name ) 
-          ),
-          buyer:users ( name, avatar_url )
-        `)
-        .eq("user_id", user.id)
-        .eq("status", "pending");
-
-      if (bErr) throw bErr;
-
-      // 2. Ambil ID warung milik user
-      const { data: myWarungs } = await supabase
-        .from("warung_cart_items")
-        .select("id")
-        .eq("user_id", user.id);
-
-      let oItems = [];
-      if (myWarungs && myWarungs.length > 0) {
-        const myIds = myWarungs.map(w => w.id);
-        const { data: res, error: oErr } = await supabase
-          .from("warung_cart_items")
-          .select(`
-            id,
-            user_id,
-            quantity,
-            requested_price,
-            estimated_price,
-            notes,
-            status,
-            product:product_id ( name, image_url, estimated_price ),
-            warung:warung_id ( id, name, address, category, status, created_by_clerk_id, owner:users ( avatar_url, name ) ),
-            buyer:users ( name, avatar_url )
-          `)
-          .in("warung_id", myIds)
-          .eq("status", "pending")
-          .neq("user_id", user.id); // Hindari double count jika beli di warung sendiri
-
-        if (oErr) throw oErr;
-        oItems = res || [];
-      }
-
-      setItems([...(bItems || []), ...oItems]);
+      const data = await apiFetch('/api/cart');
+      setItems(data || []);
     } catch (error) {
       console.error("Error fetch cart:", error.message);
     } finally {
@@ -88,15 +36,12 @@ export default function Cart() {
     if (!user) return;
     fetchCart();
 
+    // Realtime tetap dari Supabase langsung
     const channel = supabase
       .channel('cart-changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'warung_cart_items',
-        },
+        { event: '*', schema: 'public', table: 'warung_cart_items' },
         () => {
           console.log('🔄 Real-time Cart update, refetching...');
           fetchCart();
@@ -110,9 +55,9 @@ export default function Cart() {
   }, [user]);
 
   const groupItems = () => {
-    const kurirGroups = {};    // status === 'kurir'
-    const pembeliGroups = {};  // status === 'pembeli'
-    const milikGroups = {};    // status === 'milik'
+    const kurirGroups = {};
+    const pembeliGroups = {};
+    const milikGroups = {};
 
     items.forEach((item) => {
       if (!item || !item.warung) return;
@@ -225,11 +170,14 @@ export default function Cart() {
         item.id === id ? { ...item, quantity: newQty } : item
       )
     );
-    const { error } = await supabase
-      .from("warung_cart_items")
-      .update({ quantity: newQty })
-      .eq("id", id);
-    if (error) console.error("Gagal update quantity:", error);
+    try {
+      await apiFetch(`/api/cart/${id}/quantity`, {
+        method: 'PATCH',
+        body: JSON.stringify({ quantity: newQty }),
+      });
+    } catch (err) {
+      console.error("Gagal update quantity:", err.message);
+    }
   };
 
   const deleteItem = async (id) => {
@@ -241,11 +189,11 @@ export default function Cart() {
       setSelectAll(items.length > 0 && newSet.size === items.length);
       return newSet;
     });
-    const { error } = await supabase
-      .from("warung_cart_items")
-      .delete()
-      .eq("id", id);
-    if (error) console.error("Gagal hapus:", error);
+    try {
+      await apiFetch(`/api/cart/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.error("Gagal hapus:", err.message);
+    }
   };
 
   const deleteSelected = async () => {
@@ -255,11 +203,14 @@ export default function Cart() {
     setItems((prev) => prev.filter((item) => !selectedIds.has(item.id)));
     setSelectedIds(new Set());
     setSelectAll(false);
-    const { error } = await supabase
-      .from("warung_cart_items")
-      .delete()
-      .in("id", ids);
-    if (error) console.error("Gagal hapus selected:", error);
+    try {
+      await apiFetch('/api/cart', {
+        method: 'DELETE',
+        body: JSON.stringify({ ids }),
+      });
+    } catch (err) {
+      console.error("Gagal hapus selected:", err.message);
+    }
   };
 
   const selectedItems = items.filter((item) => selectedIds.has(item.id));
@@ -288,31 +239,15 @@ export default function Cart() {
     }
 
     try {
-      let conversationId;
-      const { data: participants } = await supabase
-        .from("conversation_participants")
-        .select("conversation_id")
-        .in("user_id", [user.id, opponentId]);
+      const result = await apiFetch('/api/cart/deal', {
+        method: 'POST',
+        body: JSON.stringify({
+          item_ids: Array.from(selectedIds),
+          opponent_id: opponentId,
+        }),
+      });
 
-      if (participants && participants.length >= 2) {
-        const counts = {};
-        participants.forEach(p => { counts[p.conversation_id] = (counts[p.conversation_id] || 0) + 1; });
-        conversationId = Object.keys(counts).find(id => counts[id] === 2);
-      }
-
-      if (!conversationId) {
-        const { data: newConv, error: convError } = await supabase.from("conversations").insert({}).select("id").single();
-        if (convError) throw convError;
-        conversationId = newConv.id;
-        await supabase.from("conversation_participants").insert([
-          { conversation_id: conversationId, user_id: user.id },
-          { conversation_id: conversationId, user_id: opponentId },
-        ]);
-      }
-
-      await supabase.from("warung_cart_items").update({ status: "deal" }).in("id", Array.from(selectedIds));
-
-      navigate(`/chat/${conversationId}`, {
+      navigate(`/chat/${result.conversation_id}`, {
         state: { recipient: { name: opponentName, imageUrl: opponentAvatar }, dealItems: selectedItems }
       });
     } catch (err) {
@@ -372,10 +307,7 @@ export default function Cart() {
                           </div>
                           <div><p className="font-bold text-sm">{group.partnerName}</p><p className="text-[10px] opacity-60 uppercase tracking-wider">{group.warungName}</p></div>
                         </div>
-                        <button
-                          onClick={() => toggleSelectGroup(group.key, kurirGroups)}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90"
-                        >
+                        <button onClick={() => toggleSelectGroup(group.key, kurirGroups)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90">
                           <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-200' : 'border-gray-300'}`}>
                             {group.items.every(it => selectedIds.has(it.id)) && (
                               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
@@ -414,10 +346,7 @@ export default function Cart() {
                           </div>
                           <div><p className="font-bold text-sm">{group.partnerName}</p><span className="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">Rekomendasi</span></div>
                         </div>
-                        <button
-                          onClick={() => toggleSelectGroup(group.key, pembeliGroups)}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90"
-                        >
+                        <button onClick={() => toggleSelectGroup(group.key, pembeliGroups)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90">
                           <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-200' : 'border-gray-300'}`}>
                             {group.items.every(it => selectedIds.has(it.id)) && (
                               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
@@ -456,10 +385,7 @@ export default function Cart() {
                           </div>
                           <div><p className="font-bold text-sm">{group.partnerName}</p><span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">Customer</span></div>
                         </div>
-                        <button
-                          onClick={() => toggleSelectGroup(group.key, milikGroups)}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90"
-                        >
+                        <button onClick={() => toggleSelectGroup(group.key, milikGroups)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90">
                           <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-200' : 'border-gray-300'}`}>
                             {group.items.every(it => selectedIds.has(it.id)) && (
                               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
@@ -484,16 +410,10 @@ export default function Cart() {
             <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-10 border-t border-white/20">
               <div className="max-w-3xl mx-auto">
                 <div className="flex items-center justify-between mb-4 px-1">
-                  <button
-                    onClick={toggleSelectAll}
-                    className="flex items-center gap-2.5 group active:scale-95 transition-all"
-                  >
+                  <button onClick={toggleSelectAll} className="flex items-center gap-2.5 group active:scale-95 transition-all">
                     <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${selectAll ? 'bg-emerald-500 border-emerald-500 shadow-lg shadow-emerald-200' : 'border-gray-300 group-hover:border-emerald-400'}`}>
                       {selectAll && (
-                        <motion.div
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                        >
+                        <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3.5} d="M5 13l4 4L19 7" />
                           </svg>

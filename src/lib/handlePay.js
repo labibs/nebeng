@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient";
+import { apiFetch } from "./apiClient";
 
 export async function handlePay({
   transactionId,
@@ -13,15 +13,13 @@ export async function handlePay({
   if (setPaying) setPaying(true);
 
   try {
-    const { data, error } = await supabase.functions.invoke(
-      "create-midtrans-snap",
-      {
-        body: { transaction_id: transactionId },
-      }
-    );
+    const data = await apiFetch('/api/transactions/pay', {
+      method: 'POST',
+      body: JSON.stringify({ transaction_id: transactionId }),
+    });
 
-    if (error || !data?.snap_token) {
-      console.error("Midtrans error:", error, data);
+    if (!data?.snap_token) {
+      console.error("No snap token:", data);
       alert("Gagal membuat pembayaran. Coba lagi.");
       return;
     }
@@ -47,7 +45,7 @@ export async function handlePay({
     });
   } catch (err) {
     console.error(err);
-    alert("Terjadi kesalahan");
+    alert("Terjadi kesalahan: " + err.message);
   } finally {
     if (setPaying) setPaying(false);
   }

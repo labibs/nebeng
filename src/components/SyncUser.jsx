@@ -1,6 +1,6 @@
 import { useUser } from '@clerk/clerk-react'
 import { useEffect } from 'react'
-import { supabase } from '../lib/supabaseClient'
+import { apiFetch } from '../lib/apiClient'
 
 export default function SyncUser() {
   const { user, isLoaded } = useUser()
@@ -8,22 +8,25 @@ export default function SyncUser() {
   useEffect(() => {
     if (!isLoaded || !user) return
 
-    const checkUser = async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id')
-        .eq('clerk_id', user.id)
-        .single()
-
-      if (error) {
-        console.warn('User belum ada di Supabase (akan dibuat via webhook)')
+    const syncUser = async () => {
+      try {
+        await apiFetch('/api/users/sync', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: user.fullName ||
+              user.username ||
+              user.primaryEmailAddress?.emailAddress.split('@')[0] ||
+              'User',
+            avatar_url: user.imageUrl,
+          }),
+        })
+      } catch (err) {
+        console.warn('SyncUser error:', err.message)
       }
     }
 
-    checkUser()
-
+    syncUser()
   }, [isLoaded, user])
-
 
   return null
 }

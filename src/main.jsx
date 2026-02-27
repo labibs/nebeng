@@ -7,6 +7,7 @@ import './index.css';
 import { ClerkProvider } from '@clerk/clerk-react';
 import "leaflet/dist/leaflet.css";
 import { UserProvider } from './lib/UserContext.jsx';
+import ApiClientInit from './components/ApiClientInit.jsx';
 
 // Komponen Toast Minimalis
 const Toast = ({ message, type = 'success', onClose }) => {
@@ -24,9 +25,9 @@ const Toast = ({ message, type = 'success', onClose }) => {
     <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 animate-slide-up">
       <div className={`text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-3 ${bgColor}`}>
         <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-            d={type === 'success' 
-              ? "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d={type === 'success'
+              ? "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               : "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"} />
         </svg>
         <span className="text-sm font-medium">{message}</span>
@@ -103,6 +104,7 @@ function SWUpdatePrompt() {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
+      <ApiClientInit /> {/* 🔥 Init API client with Clerk token */}
       <UserProvider>
         <App />
       </UserProvider>

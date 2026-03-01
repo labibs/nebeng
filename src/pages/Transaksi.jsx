@@ -33,7 +33,6 @@ export default function TransaksiPage() {
     if (!isLoaded || !user) return;
 
     fetchTransactions()
-      .then(setRows)
       .finally(() => setLoading(false));
   }, [isLoaded, user]);
 
@@ -42,11 +41,42 @@ export default function TransaksiPage() {
       const data = await apiFetch('/api/transactions');
       setRows(data || []);
       setTransaksi(data || []);
+      return data || [];
     } catch (err) {
       console.error("Error fetching transactions:", err.message);
       throw err;
     }
   }
+
+  // Real-time synchronization for Transaksi list
+  useEffect(() => {
+    if (!clerkId) return;
+
+    // Listen to changes in transactions and deals
+    const channel = supabase
+      .channel(`transaksi-list-realtime-${clerkId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transactions' },
+        () => {
+          console.log('🔄 Real-time Transaction update in list, refetching...');
+          fetchTransactions();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'deals' },
+        () => {
+          console.log('🔄 Real-time Deal update in list, refetching...');
+          fetchTransactions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [clerkId]);
 
   if (!isLoaded || loading) {
     return (
@@ -64,35 +94,6 @@ export default function TransaksiPage() {
     );
   }
 
-  // Real-time synchronization for Transaksi list
-  useEffect(() => {
-    if (!clerkId) return;
-
-    // Listen to changes in transactions and deals
-    const channel = supabase
-      .channel(`transaksi-list-realtime-${clerkId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'transactions' },
-        () => {
-          console.log('🔄 Real-time Transaction update in list, refetching...');
-          fetchTransactions().then(setRows);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'deals' },
-        () => {
-          console.log('🔄 Real-time Deal update in list, refetching...');
-          fetchTransactions().then(setRows);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [clerkId]);
 
   const openLiveTracking = (dealId) => {
     setSelectedDealId(dealId);
@@ -159,9 +160,9 @@ export default function TransaksiPage() {
                   </span>
 
                   <DealStatusBadge
-                    dealStatus={trx.deal.status}
+                    dealStatus={trx.deal?.status}
                     transactionStatus={trx.transaction_status}
-                    deliveryStatus={trx.deal.delivery_status}
+                    deliveryStatus={trx.deal?.delivery_status}
                     size="sm"
                   />
                 </div>

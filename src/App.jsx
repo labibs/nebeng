@@ -24,6 +24,7 @@ import EditOutlet from './components/outlet/EditOutlet';
 import DetailProduct from './components/detailProduct/DetailProduct';
 import DetailImage from './components/detailProduct/DetailImage';
 import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
 
 function App() {
   return (
@@ -57,6 +58,7 @@ function App() {
                 <Route path="/product/:id" element={<DetailProduct />} />
                 <Route path="/product/:id/image" element={<DetailImage />} />
                 <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
               </Route>
 
               {/* Redirect semua route tidak dikenal ke home */}

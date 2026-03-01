@@ -14,6 +14,70 @@ import (
 func GetTransactions(c *gin.Context) {
 	clerkID := middleware.GetClerkID(c)
 
+	// Step 1: Get the internal user ID from users table using clerkID
+	userData, _, err := sb.DefaultClient.DoRequest("GET",
+		fmt.Sprintf("users?clerk_id=eq.%s&select=id", clerkID),
+		nil,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user mapping: " + err.Error()})
+		return
+	}
+
+	var users []map[string]interface{}
+	if err := json.Unmarshal(userData, &users); err != nil || len(users) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found in mapping"})
+		return
+	}
+
+	internalUserID := users[0]["id"]
+	// Could be float64 or string depending on DB type
+	idStr := fmt.Sprintf("%v", internalUserID)
+
+	// Step 2: Workaround for PostgREST: fetch deals where user is carrier or depositor
+	dealSelect := `id`
+	dealPath := fmt.Sprintf(
+		"deals?select=%s&or=(carrier_id.eq.%s,depositor_id.eq.%s)",
+		dealSelect, idStr, idStr,
+	)
+
+	dealData, _, err := sb.DefaultClient.DoRequest("GET", dealPath, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch deals: " + err.Error()})
+		return
+	}
+
+	var dealsResponse []map[string]interface{}
+	if err := json.Unmarshal(dealData, &dealsResponse); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse deals"})
+		return
+	}
+
+	if len(dealsResponse) == 0 {
+		c.JSON(http.StatusOK, []map[string]interface{}{})
+		return
+	}
+
+	var dealIDs []string
+	for _, d := range dealsResponse {
+		if id, ok := d["id"].(float64); ok {
+			dealIDs = append(dealIDs, fmt.Sprintf("%v", id))
+		} else if idStr, ok := d["id"].(string); ok {
+			dealIDs = append(dealIDs, idStr)
+		}
+	}
+
+	// Now fetch transactions for those deals
+	// Constructing in.() filter for deal_id
+	inFilter := "deal_id.in.("
+	for i, id := range dealIDs {
+		if i > 0 {
+			inFilter += ","
+		}
+		inFilter += id
+	}
+	inFilter += ")"
+
 	selectCols := `id,transaction_status,gross_amount,payment_type,created_at,` +
 		`deal:deals!inner(` +
 		`id,status,agreed_fee,carrier_id,depositor_id,pickup_location,delivery_location,` +
@@ -23,16 +87,14 @@ func GetTransactions(c *gin.Context) {
 		`post:posts!fk_deals_post(from_city,to_city,type,item_photo,created_at)` +
 		`)`
 
-	// Supabase OR filter for foreign table fields
 	path := fmt.Sprintf(
-		"transactions?select=%s&or=(deals.carrier_id.eq.%s,deals.depositor_id.eq.%s)&order=created_at.desc",
-		selectCols, clerkID, clerkID,
+		"transactions?select=%s&%s&order=created_at.desc",
+		selectCols, inFilter,
 	)
 
 	data, _, err := sb.DefaultClient.DoRequest("GET", path, nil)
 	if err != nil {
-		// Fallback: fetch deals separately and then transactions
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch transactions " + err.Error()})
 		return
 	}
 

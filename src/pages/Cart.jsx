@@ -239,20 +239,16 @@ export default function Cart() {
     }
 
     try {
-      const result = await apiFetch('/api/cart/deal', {
-        method: 'POST',
-        body: JSON.stringify({
-          item_ids: Array.from(selectedIds),
-          opponent_id: opponentId,
-        }),
-      });
-
-      navigate(`/chat/${result.conversation_id}`, {
-        state: { recipient: { name: opponentName, imageUrl: opponentAvatar }, dealItems: selectedItems }
+      navigate('/checkout', {
+        state: {
+          selectedIds: Array.from(selectedIds),
+          items: selectedItems,
+          opponent: { id: opponentId, name: opponentName, imageUrl: opponentAvatar }
+        }
       });
     } catch (err) {
       console.error("Deal error:", err);
-      alert("Gagal memulai deal: " + err.message);
+      alert("Gagal melanjutkan deal: " + err.message);
     } finally {
       setIsProcessing(false);
     }

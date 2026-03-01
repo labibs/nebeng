@@ -13,7 +13,7 @@ import (
 
 const cartItemSelect = `id,user_id,quantity,requested_price,estimated_price,notes,status,` +
 	`product:product_id(name,image_url,estimated_price),` +
-	`warung:warung_id(id,name,address,category,status,created_by_clerk_id,owner:users(avatar_url,name)),` +
+	`warung:warung_id(id,name,address,latitude,longitude,category,status,created_by_clerk_id,owner:users(avatar_url,name)),` +
 	`buyer:users(name,avatar_url)`
 
 // GetCart retrieves all pending cart items for the current user
@@ -51,11 +51,11 @@ func GetCart(c *gin.Context) {
 
 	var ownerItems []map[string]interface{}
 	if len(myWarungs) > 0 {
-		ids := make([]string, len(myWarungs))
+		quotedIDs := make([]string, len(myWarungs))
 		for i, w := range myWarungs {
-			ids[i] = fmt.Sprintf("%v", w["id"])
+			quotedIDs[i] = fmt.Sprintf("\"%v\"", w["id"])
 		}
-		warungIDs := strings.Join(ids, ",")
+		warungIDs := strings.Join(quotedIDs, ",")
 
 		ownerData, _, err := sb.DefaultClient.DoRequest("GET",
 			fmt.Sprintf("warung_cart_items?select=%s&warung_id=in.(%s)&status=eq.pending&user_id=neq.%s",
@@ -126,7 +126,11 @@ func DeleteCartItems(c *gin.Context) {
 		return
 	}
 
-	ids := strings.Join(body.IDs, ",")
+	quotedIDs := make([]string, len(body.IDs))
+	for i, id := range body.IDs {
+		quotedIDs[i] = fmt.Sprintf("\"%s\"", id)
+	}
+	ids := strings.Join(quotedIDs, ",")
 	_, status, err := sb.DefaultClient.DoRequest("DELETE",
 		fmt.Sprintf("warung_cart_items?id=in.(%s)", ids),
 		nil,
@@ -145,8 +149,12 @@ func DealCart(c *gin.Context) {
 	clerkID := middleware.GetClerkID(c)
 
 	var body struct {
-		ItemIDs    []string `json:"item_ids"`
-		OpponentID string   `json:"opponent_id"` // clerk_id of the other party
+		ItemIDs          []string `json:"item_ids"`
+		OpponentID       string   `json:"opponent_id"`
+		PickupLocation   string   `json:"pickup_location"`
+		DeliveryLocation string   `json:"delivery_location"`
+		Notes            string   `json:"notes"`
+		ProposedFee      float64  `json:"proposed_fee"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil || len(body.ItemIDs) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "item_ids are required"})
@@ -158,13 +166,18 @@ func DealCart(c *gin.Context) {
 	}
 
 	// 1. Update cart items status to "deal"
-	ids := strings.Join(body.ItemIDs, ",")
-	_, status, err := sb.DefaultClient.DoRequest("PATCH",
+	quotedIDs := make([]string, len(body.ItemIDs))
+	for i, id := range body.ItemIDs {
+		quotedIDs[i] = fmt.Sprintf("\"%s\"", id)
+	}
+	ids := strings.Join(quotedIDs, ",")
+	resBody, status, err := sb.DefaultClient.DoRequest("PATCH",
 		fmt.Sprintf("warung_cart_items?id=in.(%s)", ids),
 		map[string]interface{}{"status": "deal"},
 	)
 	if err != nil || status >= 400 {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update cart items status"})
+		fmt.Printf("Supabase error updating cart items: status=%d, body=%s, err=%v\n", status, string(resBody), err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update cart items status", "details": string(resBody)})
 		return
 	}
 

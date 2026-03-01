@@ -73,6 +73,7 @@ export default function ChatRoom() {
   // Auto-send deal summary if arriving from Cart "Deal" button
   useEffect(() => {
     const dealItems = location.state?.dealItems;
+    const dealDetails = location.state?.dealDetails;
     if (dealItems && dealItems.length > 0 && !dealItemsProcessed.current && supabaseUserId && conversationPostId && carrierId && depositorId) {
       dealItemsProcessed.current = true;
 
@@ -81,8 +82,10 @@ export default function ChatRoom() {
       ).join('\n');
 
       const totalProductPrice = dealItems.reduce((sum, item) => sum + (Number(item.estimated_price || 0) * item.quantity), 0);
-
-      const message = `[deal_barang_titipan]\n📦 Detail barang:\n${summary}\n\n⚖️ Ukuran & berat: Terlampir di rincian\n📸 Foto barang: `;
+      let message = `[deal_barang_titipan]\n📦 Detail barang:\n${summary}\n\n⚖️ Ukuran & berat: Terlampir di rincian\n📸 Foto barang: `;
+      if (dealDetails?.proposedFee) {
+        message += `\n💰 Penawaran Ongkos: Rp ${dealDetails.proposedFee.toLocaleString('id-ID')}`;
+      }
 
       const processAutoDeal = async () => {
         const msgId = await sendMessage(message);
@@ -101,22 +104,26 @@ export default function ChatRoom() {
             dealId = existingDeals[0].id;
             await supabase.from('deals').update({
               item_description: summary,
-              item_fee: totalProductPrice
+              item_fee: totalProductPrice,
+              agreed_fee: dealDetails?.proposedFee !== undefined ? dealDetails.proposedFee : (postInfo?.fee || 0),
+              pickup_location: dealDetails?.pickupLocation || 'TBD',
+              delivery_location: dealDetails?.deliveryLocation || 'TBD',
+              notes: dealDetails?.notes || ''
             }).eq('id', dealId);
           } else {
             const { data: newDeal } = await supabase.from('deals').insert({
               carrier_id: carrierId,
               depositor_id: depositorId,
               post_id: conversationPostId,
-              agreed_fee: postInfo?.fee || 0,
+              agreed_fee: dealDetails?.proposedFee !== undefined ? dealDetails.proposedFee : (postInfo?.fee || 0),
               status: 'pending',
-              pickup_location: 'TBD',
-              delivery_location: 'TBD',
+              pickup_location: dealDetails?.pickupLocation || 'TBD',
+              delivery_location: dealDetails?.deliveryLocation || 'TBD',
               pickup_datetime: new Date().toISOString(),
               item_description: summary,
               item_fee: totalProductPrice,
               item_photos: [],
-              notes: ''
+              notes: dealDetails?.notes || ''
             }).select('id').single();
             dealId = newDeal?.id;
           }

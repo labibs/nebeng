@@ -21,27 +21,27 @@ function convertIndonesianDateTimeToISO(dateStr, timeStr) {
   // Parse Indonesian date format: "Kamis, 8 Januari 2026"
   const dateMatch = dateStr.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
   if (!dateMatch) return null;
-  
+
   const day = parseInt(dateMatch[1], 10);
   const monthName = dateMatch[2].toLowerCase();
   const year = parseInt(dateMatch[3], 10);
-  
+
   // Convert month name to number
   const monthMap = {
     'januari': 1, 'februari': 2, 'maret': 3, 'april': 4, 'mei': 5, 'juni': 6,
     'juli': 7, 'agustus': 8, 'september': 9, 'oktober': 10, 'november': 11, 'desember': 12
   };
-  
+
   const month = monthMap[monthName];
   if (!month) return null;
-  
+
   // Parse time format: "07.53" or "07:53"
   const timeMatch = timeStr.match(/(\d{1,2})[.:](\d{2})/);
   if (!timeMatch) return null;
-  
+
   const hour = parseInt(timeMatch[1], 10);
   const minute = parseInt(timeMatch[2], 10);
-  
+
   // Create ISO datetime string
   const date = new Date(year, month - 1, day, hour, minute, 0);
   return date.toISOString().slice(0, 19).replace('T', ' ');
@@ -59,7 +59,7 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
 
   // Tentukan jenis deal
   const dealType = msg.message_type || (msg.content.includes('[deal_ongkos_jastip]') ? 'deal_ongkos_jastip' : msg.content.includes('[deal_lokasi_ketemuan]') ? 'deal_lokasi_ketemuan' : msg.content.includes('[deal_waktu_ketemuan]') ? 'deal_waktu_ketemuan' : msg.content.includes('[deal_lokasi_pengantaran]') ? 'deal_lokasi_pengantaran' : msg.content.includes('[deal_barang_titipan]') ? 'deal_barang_titipan' : null);
-  
+
   console.log('DealCard - Message content:', msg.content);
   console.log('DealCard - Detected dealType:', dealType);
 
@@ -71,31 +71,31 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
     extractedData.ongkos = ongkosText ? parseInt(ongkosText.replace(/,/g, ''), 10) : null;
   } else if (dealType === 'deal_lokasi_ketemuan' || dealType === 'deal_lokasi_pengantaran') {
 
-  const locationMatch = msg.content.match(/📍\s*Lokasi[^:]*:\s*(.+)/);
-  const addressMatch  = msg.content.match(/📝\s*Alamat:\s*(.+)/);
+    const locationMatch = msg.content.match(/📍\s*Lokasi[^:]*:\s*(.+)/);
+    const addressMatch = msg.content.match(/📝\s*Alamat:\s*(.+)/);
 
-  // Tangkap koordinat aman
-  const coordMatch = msg.content.match(/Koordinat:\s*([-0-9.]+),\s*([-0-9.]+)/);
+    // Tangkap koordinat aman
+    const coordMatch = msg.content.match(/Koordinat:\s*([-0-9.]+),\s*([-0-9.]+)/);
 
-  // Hapus baris koordinat dari pesan
-  const cleanedMessage = msg.content
-    .replace(/^\[[^\]]+\]\s*/, '')          // hapus [deal_xxx]
-    .replace(/🗺️\s*Koordinat:[^\n]+/g, '')  // hapus baris koordinat
-    .trim();
+    // Hapus baris koordinat dari pesan
+    const cleanedMessage = msg.content
+      .replace(/^\[[^\]]+\]\s*/, '')          // hapus [deal_xxx]
+      .replace(/🗺️\s*Koordinat:[^\n]+/g, '')  // hapus baris koordinat
+      .trim();
 
-  extractedData.cleanedMessage = cleanedMessage;
+    extractedData.cleanedMessage = cleanedMessage;
 
-  extractedData.locationName = locationMatch ? locationMatch[1].trim() : "Lokasi Terpilih";
-  extractedData.address      = addressMatch  ? addressMatch[1].trim()  : "Alamat tidak tersedia";
+    extractedData.locationName = locationMatch ? locationMatch[1].trim() : "Lokasi Terpilih";
+    extractedData.address = addressMatch ? addressMatch[1].trim() : "Alamat tidak tersedia";
 
-  extractedData.lat = coordMatch ? parseFloat(coordMatch[1]) : null;
-  extractedData.lng = coordMatch ? parseFloat(coordMatch[2]) : null;
+    extractedData.lat = coordMatch ? parseFloat(coordMatch[1]) : null;
+    extractedData.lng = coordMatch ? parseFloat(coordMatch[2]) : null;
 
-  extractedData.gmapsUrl =
-    extractedData.lat && extractedData.lng
-      ? `https://www.google.com/maps/search/?api=1&query=${extractedData.lat},${extractedData.lng}`
-      : null;
-} else if (dealType === 'deal_waktu_ketemuan') {
+    extractedData.gmapsUrl =
+      extractedData.lat && extractedData.lng
+        ? `https://www.google.com/maps/search/?api=1&query=${extractedData.lat},${extractedData.lng}`
+        : null;
+  } else if (dealType === 'deal_waktu_ketemuan') {
     const timeMatch = msg.content.match(/🕐 Waktu ketemuan: ([^\n]+)/);
     const notesMatch = msg.content.match(/📝 Catatan: ([^\n]+)/);
     extractedData.meetingTime = timeMatch ? timeMatch[1].trim() : "Waktu tidak tersedia";
@@ -104,9 +104,10 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
     // More robust parsing
     const lines = msg.content.split('\n');
     let itemDetail = "Detail tidak tersedia";
-    let weight = "Ukuran & berat tidak tersedia";  
+    let weight = "Ukuran & berat tidak tersedia";
     let photos = [];
-    
+    let ongkos = null;
+
     lines.forEach(line => {
       if (line.includes('📦 Detail barang:')) {
         itemDetail = line.split('📦 Detail barang:')[1]?.trim() || itemDetail;
@@ -117,13 +118,19 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
         if (photoStr) {
           photos = photoStr.split(',').map(url => url.trim()).filter(url => url && url.startsWith('http'));
         }
+      } else if (line.includes('💰 Penawaran Ongkos: Rp')) {
+        const ongkosMatch = line.match(/Rp ([0-9.,]+)/);
+        if (ongkosMatch) {
+          ongkos = parseInt(ongkosMatch[1].replace(/\./g, ''), 10);
+        }
       }
     });
-    
+
     extractedData.itemDetail = itemDetail;
     extractedData.weight = weight;
     extractedData.photos = photos;
-    
+    extractedData.ongkos = ongkos;
+
     console.log('Parsed deal barang titipan:', { itemDetail, weight, photos });
   }
 
@@ -169,31 +176,30 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
             relative max-w-md px-5 py-4 rounded-2xl shadow-lg overflow-hidden border
             ${isMine
               ? (dealType === 'deal_ongkos_jastip'
-                  ? 'bg-linear-to-r from-[#81c784]/10 to-[#66bb6a]/10 border-emerald-300 rounded-br-none'
-                  : dealType === 'deal_lokasi_ketemuan'
+                ? 'bg-linear-to-r from-[#81c784]/10 to-[#66bb6a]/10 border-emerald-300 rounded-br-none'
+                : dealType === 'deal_lokasi_ketemuan'
                   ? 'bg-linear-to-r from-[#64b5f6]/10 to-[#42a5f5]/10 border-blue-300 rounded-br-none'
                   : dealType === 'deal_waktu_ketemuan'
-                  ? 'bg-linear-to-r from-[#ba68c8]/10 to-[#9c27b0]/10 border-purple-300 rounded-br-none'
-                  : dealType === 'deal_lokasi_pengantaran'
-                  ? 'bg-linear-to-r from-[#4dd0e1]/10 to-[#00bcd4]/10 border-cyan-300 rounded-br-none'
-                  : 'bg-linear-to-r from-[#fb8c00]/10 to-[#f57c00]/10 border-orange-300 rounded-br-none')
+                    ? 'bg-linear-to-r from-[#ba68c8]/10 to-[#9c27b0]/10 border-purple-300 rounded-br-none'
+                    : dealType === 'deal_lokasi_pengantaran'
+                      ? 'bg-linear-to-r from-[#4dd0e1]/10 to-[#00bcd4]/10 border-cyan-300 rounded-br-none'
+                      : 'bg-linear-to-r from-[#fb8c00]/10 to-[#f57c00]/10 border-orange-300 rounded-br-none')
               : (dealType === 'deal_ongkos_jastip'
-                  ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 rounded-bl-none'
-                  : dealType === 'deal_lokasi_ketemuan'
+                ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 rounded-bl-none'
+                : dealType === 'deal_lokasi_ketemuan'
                   ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/30 rounded-bl-none'
                   : dealType === 'deal_waktu_ketemuan'
-                  ? 'bg-purple-50 border-purple-200 dark:bg-purple-900/30 rounded-bl-none'
-                  : dealType === 'deal_lokasi_pengantaran'
-                  ? 'bg-cyan-50 border-cyan-200 dark:bg-cyan-900/30 rounded-bl-none'
-                  : 'bg-orange-50 border-orange-200 dark:bg-orange-900/30 rounded-bl-none')
+                    ? 'bg-purple-50 border-purple-200 dark:bg-purple-900/30 rounded-bl-none'
+                    : dealType === 'deal_lokasi_pengantaran'
+                      ? 'bg-cyan-50 border-cyan-200 dark:bg-cyan-900/30 rounded-bl-none'
+                      : 'bg-orange-50 border-orange-200 dark:bg-orange-900/30 rounded-bl-none')
             }
           `}
         >
           {/* Header Card */}
           <div className="flex items-center gap-3 mb-4">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-              dealType === 'deal_ongkos_jastip' ? 'bg-emerald-500' : dealType === 'deal_lokasi_ketemuan' ? 'bg-blue-500' : dealType === 'deal_waktu_ketemuan' ? 'bg-purple-500' : dealType === 'deal_lokasi_pengantaran' ? 'bg-cyan-500' : 'bg-orange-500'
-            }`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${dealType === 'deal_ongkos_jastip' ? 'bg-emerald-500' : dealType === 'deal_lokasi_ketemuan' ? 'bg-blue-500' : dealType === 'deal_waktu_ketemuan' ? 'bg-purple-500' : dealType === 'deal_lokasi_pengantaran' ? 'bg-cyan-500' : 'bg-orange-500'
+              }`}>
               {dealType === 'deal_ongkos_jastip' ? (
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -226,9 +232,8 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
               )}
             </div>
             <div>
-              <div className={`font-bold ${
-                dealType === 'deal_ongkos_jastip' ? 'text-emerald-700 dark:text-emerald-300' : dealType === 'deal_lokasi_ketemuan' ? 'text-blue-700 dark:text-blue-300' : dealType === 'deal_waktu_ketemuan' ? 'text-purple-700 dark:text-purple-300' : dealType === 'deal_lokasi_pengantaran' ? 'text-cyan-700 dark:text-cyan-300' : 'text-orange-700 dark:text-orange-300'
-              }`}>
+              <div className={`font-bold ${dealType === 'deal_ongkos_jastip' ? 'text-emerald-700 dark:text-emerald-300' : dealType === 'deal_lokasi_ketemuan' ? 'text-blue-700 dark:text-blue-300' : dealType === 'deal_waktu_ketemuan' ? 'text-purple-700 dark:text-purple-300' : dealType === 'deal_lokasi_pengantaran' ? 'text-cyan-700 dark:text-cyan-300' : 'text-orange-700 dark:text-orange-300'
+                }`}>
                 {dealType === 'deal_ongkos_jastip' ? 'Deal Ongkos Jastip' : dealType === 'deal_lokasi_ketemuan' ? 'Deal Lokasi Ketemuan' : dealType === 'deal_waktu_ketemuan' ? 'Deal Waktu Ketemuan' : dealType === 'deal_lokasi_pengantaran' ? 'Deal Lokasi Pengantaran' : 'Deal Barang Titipan'}
               </div>
               <div className="text-xs opacity-70">
@@ -378,10 +383,15 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                 {msg.content
                   .replace(/^\[[^\]]+\]\s*/, '') // Remove tag
                   .split('\n')
-                  .filter(line => !line.startsWith('📸 Foto barang:')) // Remove photo URLs line
+                  .filter(line => !line.startsWith('📸 Foto barang:') && !line.startsWith('💰 Penawaran Ongkos:')) // Remove photo URLs line and fee
                   .join('\n')
                   .trim()}
               </div>
+              {extractedData.ongkos !== null && (
+                <div className="mb-3 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                  💰 Penawaran Ongkos: Rp {extractedData.ongkos.toLocaleString('id-ID')}
+                </div>
+              )}
               {/* Photo Gallery */}
               {extractedData.photos && extractedData.photos.length > 0 ? (
                 <div className="flex flex-col gap-1">
@@ -519,10 +529,10 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                         if (timeMatch) {
                           const dateStr = timeMatch[1].trim();
                           const timeStr = timeMatch[2].trim();
-                          
+
                           // Convert Indonesian date format to ISO datetime
                           const dateTimeISO = convertIndonesianDateTimeToISO(dateStr, timeStr);
-                          
+
                           onUpdateDealTime(msg.post.id, {
                             datetime: dateTimeISO,
                             notes: extractedData.notes
@@ -586,11 +596,11 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
                     Revisi
                   </button>
                 </>
-                
+
               ) : null}
             </div>
-            
-            
+
+
           )}
 
           {/* Tail lancip */}
@@ -608,12 +618,12 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
           </div>
         </div>
         {isMine && (
-        <div className={`chat-footer text-xs mt-0 ${msg.is_read ? 'text-blue-500' : 'opacity-70'}`}>
-          {msg.is_read ? 'Terbaca ✓✓' : 'Terkirim ✓'}
-        </div>
-      )}
+          <div className={`chat-footer text-xs mt-0 ${msg.is_read ? 'text-blue-500' : 'opacity-70'}`}>
+            {msg.is_read ? 'Terbaca ✓✓' : 'Terkirim ✓'}
+          </div>
+        )}
       </div>
-      
+
 
       {/* Modal Nego */}
       <NegoModal

@@ -22,6 +22,7 @@ export default function TransaksiPage() {
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [showTrackingModal, setShowTrackingModal] = useState(false);
   const [transaksi, setTransaksi] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -32,18 +33,53 @@ export default function TransaksiPage() {
   useEffect(() => {
     if (!isLoaded || !user) return;
 
+    setError(null);
     fetchTransactions()
+      .catch((err) => {
+        setError(err.message || "Failed to fetch transactions");
+      })
       .finally(() => setLoading(false));
   }, [isLoaded, user]);
 
   async function fetchTransactions() {
     try {
+      console.log("\n");
+      console.log("╔════════════════════════════════════════════════════════════╗");
+      console.log("║ 🚀 === Transaksi Page: fetchTransactions START ===       ║");
+      console.log("╚════════════════════════════════════════════════════════════╝");
+      console.log("📌 User loaded:", isLoaded);
+      console.log("👤 User object exists:", !!user);
+      console.log("🔑 User Clerk ID:", user?.id);
+      console.log("📋 clerkId from state:", clerkId);
+      console.log("\n🌐 API Request Details:");
+      console.log("   Method: GET");
+      console.log("   Endpoint: /api/transactions");
+      console.log("   API URL:", import.meta.env.VITE_API_URL || 'http://localhost:8080');
+      console.log("\n⏳ Calling API...");
+      
       const data = await apiFetch('/api/transactions');
+      
+      console.log("\n╔════════════════════════════════════════════════════════════╗");
+      console.log("║ ✅ API Response Received                                ║");
+      console.log("╚════════════════════════════════════════════════════════════╝");
+      console.log("📊 Response Type:", typeof data);
+      console.log("📊 Is Array:", Array.isArray(data));
+      console.log("📊 Item Count:", Array.isArray(data) ? data.length : 'N/A');
+      console.log("📄 Response Data:", JSON.stringify(data, null, 2));
+      
+      console.log("\n✅ Setting state with", Array.isArray(data) ? data.length : 0, 'items');
+      
       setRows(data || []);
       setTransaksi(data || []);
       return data || [];
     } catch (err) {
-      console.error("Error fetching transactions:", err.message);
+      console.log("\n╔════════════════════════════════════════════════════════════╗");
+      console.log("║ ❌ API Request Failed                                   ║");
+      console.log("╚════════════════════════════════════════════════════════════╝");
+      console.error("❌ Error fetching transactions:", err);
+      console.error("   Error message:", err.message);
+      console.error("   Full error:", err);
+      setError(err.message || "Failed to fetch transactions");
       throw err;
     }
   }
@@ -116,6 +152,13 @@ export default function TransaksiPage() {
 
         {/* Transaction List / Loading / Empty */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {error && (
+            <div className="alert alert-error">
+              <div>
+                <span>❌ Error: {error}</span>
+              </div>
+            </div>
+          )}
           {loading ? (
             [...Array(4)].map((_, i) => (
               <div

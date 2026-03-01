@@ -99,8 +99,13 @@ func getPublicKey(token *jwt.Token) (interface{}, error) {
 // AuthMiddleware validates Clerk JWT and sets clerk_id in context
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		fmt.Printf("\n🔐🔐🔐 AuthMiddleware called for %s %s\n", c.Request.Method, c.Request.URL.Path)
+		
 		authHeader := c.GetHeader("Authorization")
+		fmt.Printf("  Authorization header: %v (empty=%v)\n", authHeader != "", authHeader == "")
+		
 		if authHeader == "" {
+			fmt.Printf("  ❌ No Authorization header - rejecting\n")
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
 			c.Abort()
 			return
@@ -136,6 +141,15 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user ID in token"})
 			c.Abort()
 			return
+		}
+
+		fmt.Printf("\n🔐🔐🔐 AuthMiddleware Got JWT 🔐🔐🔐\n")
+		fmt.Printf("  ✅ clerkID successfully extracted: '%s'\n", clerkID)
+		fmt.Printf("  📊 clerkID length: %d\n", len(clerkID))
+		fmt.Printf("  🔍 Starts with 'user_': %v\n", len(clerkID) > 5 && clerkID[:5] == "user_")
+		fmt.Printf("  📋 All JWT claims:\n")
+		for key, val := range claims {
+			fmt.Printf("     - %s: %v\n", key, val)
 		}
 
 		c.Set("clerk_id", clerkID)

@@ -9,12 +9,13 @@ import (
 )
 
 func Setup(r *gin.Engine) {
-	// CORS
+	// CORS - Allow localhost development
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{config.Cfg.FrontendURL, "http://localhost:5173", "http://localhost:3000"},
+		AllowOrigins:     []string{config.Cfg.FrontendURL, "http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"},
 		AllowCredentials: true,
+		MaxAge:           86400,
 	}))
 
 	// Health check
@@ -26,6 +27,9 @@ func Setup(r *gin.Engine) {
 
 	// Public routes (no auth needed)
 	api.GET("/posts", handlers.GetPosts)
+	// debug-only endpoint: same handler but skips auth so we can curl it easily
+	// NOTE: remove or protect this in production
+	api.GET("/transactions-debug", handlers.GetTransactions)
 
 	// Protected routes
 	auth := api.Group("/")

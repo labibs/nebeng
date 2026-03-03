@@ -8,12 +8,12 @@ import (
 )
 
 type Config struct {
-	SupabaseURL    string
+	SupabaseURL        string
 	SupabaseServiceKey string
 	SupabaseAnonKey    string
-	ClerkJWKSURL   string
-	Port           string
-	FrontendURL    string
+	ClerkJWKSURL       string
+	Port               string
+	FrontendURL        string
 }
 
 var Cfg Config
@@ -32,8 +32,11 @@ func Load() {
 		FrontendURL:        getEnv("FRONTEND_URL", "http://localhost:5173"),
 	}
 
-	if Cfg.SupabaseURL == "" || Cfg.SupabaseServiceKey == "" {
-		log.Fatal("SUPABASE_URL and SUPABASE_SERVICE_KEY are required")
+	if Cfg.SupabaseURL == "" {
+		log.Fatal("REQUIRED: SUPABASE_URL is missing or empty in environment")
+	}
+	if Cfg.SupabaseServiceKey == "" {
+		log.Fatal("REQUIRED: SUPABASE_SERVICE_KEY is missing or empty in environment. (Check if you used SUPABASE_ANON_KEY by mistake)")
 	}
 }
 

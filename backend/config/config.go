@@ -24,12 +24,12 @@ func Load() {
 	}
 
 	Cfg = Config{
-		SupabaseURL:        getEnv("SUPABASE_URL", ""),
+		SupabaseURL:        getEnv("SUPABASE_URL", "https://osoryiixxzufkvsftkai.supabase.co"),
 		SupabaseServiceKey: getEnv("SUPABASE_SERVICE_KEY", ""),
 		SupabaseAnonKey:    getEnv("SUPABASE_ANON_KEY", ""),
 		ClerkJWKSURL:       getEnv("CLERK_JWKS_URL", ""),
 		Port:               getEnv("PORT", "8080"),
-		FrontendURL:        getEnv("FRONTEND_URL", "http://localhost:5173"),
+		FrontendURL:        getEnv("FRONTEND_URL", "https://nebeng.vercel.app"),
 	}
 
 	if Cfg.SupabaseURL == "" {

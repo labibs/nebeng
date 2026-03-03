@@ -70,74 +70,45 @@ export default function ChatRoom() {
   const location = useLocation();
   const dealItemsProcessed = useRef(false);
 
-  // Auto-send deal summary if arriving from Cart "Deal" button
+  // Auto-send deal summary if arriving from Checkout
   useEffect(() => {
-    const dealItems = location.state?.dealItems;
-    const dealDetails = location.state?.dealDetails;
-    if (dealItems && dealItems.length > 0 && !dealItemsProcessed.current && supabaseUserId && conversationPostId && carrierId && depositorId) {
-      dealItemsProcessed.current = true;
+    if (location.state?.pendingDealOffer && currentUserId && conversationId) {
+      const {
+        item_ids, opponent_id, pickupLocStr, deliveryLocStr, notes, proposedFee, items
+      } = location.state.pendingDealOffer;
 
-      const summary = dealItems.map(item =>
-        `- ${item.product?.name || 'Produk'} x${item.quantity} (Rp ${(Number(item.estimated_price || 0)).toLocaleString('id-ID')})`
-      ).join('\n');
+      const itemCount = items ? items.length : item_ids.length;
+      const itemName = items && items.length > 0 ? items[0].product?.name || items[0].notes : 'Barang Jastip';
 
-      const totalProductPrice = dealItems.reduce((sum, item) => sum + (Number(item.estimated_price || 0) * item.quantity), 0);
-      let message = `[deal_barang_titipan]\n📦 Detail barang:\n${summary}\n\n⚖️ Ukuran & berat: Terlampir di rincian\n📸 Foto barang: `;
-      if (dealDetails?.proposedFee) {
-        message += `\n💰 Penawaran Ongkos: Rp ${dealDetails.proposedFee.toLocaleString('id-ID')}`;
-      }
-
-      const processAutoDeal = async () => {
-        const msgId = await sendMessage(message);
-        if (msgId) {
-          // 1. Ensure deal exists or update it
-          let dealId;
-          const { data: existingDeals } = await supabase
-            .from('deals')
-            .select('id')
-            .eq('post_id', conversationPostId)
-            .eq('carrier_id', carrierId)
-            .eq('depositor_id', depositorId)
-            .limit(1);
-
-          if (existingDeals && existingDeals.length > 0) {
-            dealId = existingDeals[0].id;
-            await supabase.from('deals').update({
-              item_description: summary,
-              item_fee: totalProductPrice,
-              agreed_fee: dealDetails?.proposedFee !== undefined ? dealDetails.proposedFee : (postInfo?.fee || 0),
-              pickup_location: dealDetails?.pickupLocation || 'TBD',
-              delivery_location: dealDetails?.deliveryLocation || 'TBD',
-              notes: dealDetails?.notes || ''
-            }).eq('id', dealId);
-          } else {
-            const { data: newDeal } = await supabase.from('deals').insert({
-              carrier_id: carrierId,
-              depositor_id: depositorId,
-              post_id: conversationPostId,
-              agreed_fee: dealDetails?.proposedFee !== undefined ? dealDetails.proposedFee : (postInfo?.fee || 0),
-              status: 'pending',
-              pickup_location: dealDetails?.pickupLocation || 'TBD',
-              delivery_location: dealDetails?.deliveryLocation || 'TBD',
-              pickup_datetime: new Date().toISOString(),
-              item_description: summary,
-              item_fee: totalProductPrice,
-              item_photos: [],
-              notes: dealDetails?.notes || ''
-            }).select('id').single();
-            dealId = newDeal?.id;
-          }
-
-          // 2. Link message to deal
-          if (dealId) {
-            await supabase.from('messages').update({ deal_id: dealId }).eq('id', msgId);
-          }
-        }
+      const payload = {
+        item_ids,
+        opponent_id,
+        pickup_location: pickupLocStr,
+        delivery_location: deliveryLocStr,
+        notes,
+        proposed_fee: proposedFee
       };
 
-      processAutoDeal();
+      const payloadStr = JSON.stringify(payload);
+      const textMessage = `[deal_offer]
+📦 ${itemCount} Barang: ${itemName}
+📍 Dari: ${pickupLocStr}
+📍 Ke: ${deliveryLocStr}
+💰 Penawaran Ongkos: Rp${proposedFee.toLocaleString('id-ID')}
+📝 Catatan: ${notes || '-'}
+<!--PAYLOAD:${payloadStr}-->`;
+
+      // Call sendMessage
+      sendMessage(textMessage).then((msgId) => {
+        if (msgId) {
+          console.log("Auto deal offer sent:", msgId);
+        }
+      });
+
+      // Bersihkan state agar tidak terkirim ulang kalau user refresh
+      window.history.replaceState({}, document.title);
     }
-  }, [location.state, supabaseUserId, conversationPostId, carrierId, depositorId]);
+  }, [location.state, currentUserId, conversationId]);
 
   const userUuId = user?.id;
 

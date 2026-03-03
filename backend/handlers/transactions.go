@@ -98,7 +98,7 @@ func isValidClerkID(id string) bool {
 
 func fetchUserDeals(clerkID string) ([]map[string]interface{}, error) {
 	// Versi bersih single-line
-	selectFields := "id,carrier_id,depositor_id,item_description,status,agreed_fee,delivery_status,pickup_location,delivery_location,pickup_datetime,created_at,post:posts!fk_deals_post(id,from_city,to_city,type,item_photo,created_at),transactions(id,deal_id,transaction_status,gross_amount,payment_type,created_at)"
+	selectFields := "id,carrier_id,depositor_id,item_description,status,agreed_fee,delivery_status,pickup_location,delivery_location,pickup_datetime,created_at,post:posts!fk_deals_post(id,from_city,to_city,type,item_photo,created_at),carrier:users!deals_carrier_id_fkey(clerk_id,name,avatar_url),depositor:users!fk_deals_depositor(clerk_id,name,avatar_url),transactions(id,deal_id,transaction_status,gross_amount,payment_type,created_at)"
 
 	query := fmt.Sprintf(
 		"deals?select=%s&or=(carrier_id.eq.%s,depositor_id.eq.%s)",
@@ -139,17 +139,19 @@ func extractAndEnrichTransactions(deals []map[string]interface{}) []map[string]i
 
 		// Buat ringkasan deal yang aman (tanpa cycle)
 		dealSummary := map[string]interface{}{
-			"id":              deal["id"],
-			"item_description": deal["item_description"],
-			"status":          deal["status"],
-			"agreed_fee":      deal["agreed_fee"],
-			"pickup_location": deal["pickup_location"],
+			"id":                deal["id"],
+			"item_description":  deal["item_description"],
+			"status":            deal["status"],
+			"agreed_fee":        deal["agreed_fee"],
+			"pickup_location":   deal["pickup_location"],
 			"delivery_location": deal["delivery_location"],
-			"pickup_datetime": deal["pickup_datetime"],
-			"carrier_id":      deal["carrier_id"],
-			"depositor_id":    deal["depositor_id"],
+			"pickup_datetime":   deal["pickup_datetime"],
+			"carrier_id":        deal["carrier_id"],
+			"depositor_id":      deal["depositor_id"],
 			// Tambah field lain yang frontend butuhkan, contoh:
-			 "post": deal["post"],  // kalau perlu info post
+			"post":      deal["post"], // kalau perlu info post
+			"carrier":   deal["carrier"],
+			"depositor": deal["depositor"],
 		}
 
 		var added int
@@ -160,7 +162,7 @@ func extractAndEnrichTransactions(deals []map[string]interface{}) []map[string]i
 			for j, item := range txs {
 				if tx, ok := item.(map[string]interface{}); ok {
 					// Hanya tambahkan summary, bukan seluruh deal
-					tx["deal_info"] = dealSummary
+					tx["deal"] = dealSummary
 					result = append(result, tx)
 					added++
 					fmt.Printf("              [Tx %d] Ditambahkan\n", j)
@@ -169,7 +171,7 @@ func extractAndEnrichTransactions(deals []map[string]interface{}) []map[string]i
 
 		case map[string]interface{}:
 			fmt.Printf("            Transactions: 1 object (bukan array)\n")
-			txs["deal_info"] = dealSummary
+			txs["deal"] = dealSummary
 			result = append(result, txs)
 			added++
 

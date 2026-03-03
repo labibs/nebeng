@@ -13,7 +13,8 @@ import {
   Info,
   Truck,
   MapPinHouse,
-  CarFront
+  CarFront,
+  PackageCheck
 } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -213,7 +214,6 @@ export default function DealPage() {
           pickup_datetime,
           item_description,
           item_photos,
-          item_fee,
           notes,
           delivery_status,
           carrier:users!deals_carrier_id_fkey (
@@ -247,12 +247,17 @@ export default function DealPage() {
         setDeal(data);
         // Cek apakah user (depositor) sudah memberi ulasan
         if (data.status === "delivered" || data.delivery_status === "delivered") {
-          const { data: reviewData } = await supabase
-            .from("reviews")
-            .select("id")
-            .eq("deal_id", dealId)
-            .maybeSingle();
-          if (reviewData) setHasReviewed(true);
+          try {
+            const { data: reviewData, error: reviewError } = await supabase
+              .from("reviews")
+              .select("id")
+              .eq("deal_id", dealId)
+              .maybeSingle();
+            if (reviewData) setHasReviewed(true);
+            if (reviewError) console.warn("Could not fetch reviews:", reviewError);
+          } catch (e) {
+            console.warn("Could not fetch reviews:", e);
+          }
         }
       }
       setLoading(false);

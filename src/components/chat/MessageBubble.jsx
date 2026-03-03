@@ -1,5 +1,9 @@
 import DealCard from './DealCard';
 import PostCard from './PostCard';
+import CartNegoModal from './CartNegoModal';
+import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../../lib/apiClient';
+import { useState } from 'react';
 
 export default function MessageBubble({
   msg,
@@ -17,6 +21,129 @@ export default function MessageBubble({
 }) {
   const isMine = msg.sender_id === currentUserId;
   const avatar = isMine ? currentUserAvatar : recipientImageUrl;
+  const navigate = useNavigate();
+
+  const [showCartNegoModal, setShowCartNegoModal] = useState(false);
+  const [cartNegoData, setCartNegoData] = useState(null);
+
+  // Pesan Deal Offer (Dari keranjang belanja)
+  if (msg.message_type === 'deal_offer') {
+    return (
+      <div className={`
+          relative max-w-md px-5 py-4 rounded-2xl shadow-lg overflow-hidden border
+          ${msg.sender_id === currentUserId
+          ? 'bg-gradient-to-r from-[#81c784]/10 to-[#66bb6a]/10 border-emerald-300 rounded-br-none'
+          : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 rounded-bl-none'
+        }
+        `}>
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <div>
+            <div className="font-bold text-blue-700 dark:text-blue-300">
+              Penawaran Keranjang
+            </div>
+            <div className="text-xs opacity-70">
+              {msg.sender_id === currentUserId ? 'Menunggu konfirmasi dari lawan...' : 'Pilih aksi'}
+            </div>
+          </div>
+        </div>
+
+        {/* Isi Pesan (hide payload) */}
+        <div className="mb-5 whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed">
+          {msg.content.replace(/^\[deal_offer\]\s*/, '').split('<!--PAYLOAD:')[0].trim()}
+        </div>
+
+        {/* Aksi Konfirmasi */}
+        {(() => {
+          const payloadMatch = msg.content.match(/<!--PAYLOAD:(.*?)-->/);
+          const payload = payloadMatch ? JSON.parse(payloadMatch[1]) : null;
+
+          // Tombol hanya untuk lawan
+          if (msg.sender_id !== currentUserId && payload) {
+            return (
+              <div className="flex gap-3">
+                <button
+                  onClick={async (e) => {
+                    e.target.disabled = true;
+                    e.target.innerText = 'Memproses...';
+                    try {
+                      const result = await apiFetch('/api/cart/deal', {
+                        method: 'POST',
+                        body: JSON.stringify(payload),
+                      });
+
+                      // Arahkan ke DealPage
+                      navigate(`/deal?deal=${result.deal_id}`);
+                    } catch (err) {
+                      console.error("Deal confirm error:", err);
+                      alert("Gagal mengonfirmasi deal: " + err.message);
+                      e.target.disabled = false;
+                      e.target.innerText = 'Terima Deal';
+                    }
+                  }}
+                  className="flex-1 btn btn-info btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Terima Deal
+                </button>
+                <button
+                  onClick={() => {
+                    const lines = msg.content.split('\n');
+                    const itemCountMatch = lines.find(l => l.startsWith('📦'))?.match(/📦 (\d+) Barang: (.*)/);
+                    const pickupLocMatch = lines.find(l => l.startsWith('📍 Dari:'))?.replace('📍 Dari:', '').trim();
+
+                    setCartNegoData({
+                      payload,
+                      itemCount: itemCountMatch ? itemCountMatch[1] : 1,
+                      itemName: itemCountMatch ? itemCountMatch[2] : 'Barang Jastip',
+                      pickupLoc: pickupLocMatch || payload.pickup_location
+                    });
+                    setShowCartNegoModal(true);
+                  }}
+                  className="flex-1 btn btn-outline btn-warning btn-sm rounded-xl font-medium hover:bg-yellow-50 dark:hover:bg-yellow-900/30 transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Nego
+                </button>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
+        <div className={`
+            absolute w-3 h-5 top-6
+            ${msg.sender_id === currentUserId ? 'right-0 translate-x-full' : 'left-0 -translate-x-full'}
+          `}>
+          <svg viewBox="0 0 8 16" className="w-full h-full drop-shadow-md">
+            <path
+              d="M0,0 Q8,8 0,16 L0,0"
+              fill={msg.sender_id === currentUserId ? '#66bb6a' : '#eff6ff'}
+              className="dark:fill-emerald-900/50"
+            />
+          </svg>
+        </div>
+
+        {/* Modal Nego Cart (Pesanan) */}
+        <CartNegoModal
+          isOpen={showCartNegoModal}
+          onClose={() => setShowCartNegoModal(false)}
+          onSend={(text) => onSendNego(text)}
+          data={cartNegoData}
+        />
+      </div>
+    );
+  }
 
   // Pesan Deal Ongkos Jastip
   if (msg.message_type === 'deal_ongkos_jastip') {
@@ -66,7 +193,7 @@ export default function MessageBubble({
         onInsertDeal={onInsertDeal}
         onUpdateDealLocation={onUpdateDealLocation}
         onUpdateDealTime={onUpdateDealTime}
-        onUpdateDealItem={onUpdateDealItem}        onUpdateDealDelivery={onUpdateDealDelivery}      />
+        onUpdateDealItem={onUpdateDealItem} onUpdateDealDelivery={onUpdateDealDelivery} />
     );
   }
 
@@ -84,7 +211,7 @@ export default function MessageBubble({
         onInsertDeal={onInsertDeal}
         onUpdateDealLocation={onUpdateDealLocation}
         onUpdateDealTime={onUpdateDealTime}
-        onUpdateDealItem={onUpdateDealItem}        onUpdateDealDelivery={onUpdateDealDelivery}      />
+        onUpdateDealItem={onUpdateDealItem} onUpdateDealDelivery={onUpdateDealDelivery} />
     );
   }
 
@@ -119,7 +246,7 @@ export default function MessageBubble({
       />
     );
   }
-  
+
 
   // Pesan Teks Biasa
   return (

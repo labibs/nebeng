@@ -1,0 +1,35 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Compiled binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+backend.exe
+backend_test.exe
+server
+
+# Test binary
+*.test
+
+# Go workspace
+go.work
+go.work.sum
+
+# Build output
+/dist
+/tmp
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

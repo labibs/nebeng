@@ -1,8 +1,9 @@
 // src/components/ChatRoom.jsx
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { apiFetch } from '../lib/apiClient';
 import NegoModal from './chat/NegoModal';
 
 export default function ChatRoom() {
@@ -22,6 +23,8 @@ export default function ChatRoom() {
   const [conversationPostId, setConversationPostId] = useState(null);
   const [showNegoModal, setShowNegoModal] = useState(false);
   const [negoInitialPrice, setNegoInitialPrice] = useState('');
+
+  const location = useLocation();
 
   const messagesEndRef = useRef(null);
   const menuRef = useRef(null);
@@ -220,6 +223,41 @@ export default function ChatRoom() {
     }
   };
 
+  // Cek state dari halaman Checkout untuk mengirim offer otomatis
+  useEffect(() => {
+    if (location.state?.pendingDealOffer && currentUserId && conversationId) {
+      const {
+        item_ids, opponent_id, pickupLocStr, deliveryLocStr, notes, proposedFee, items
+      } = location.state.pendingDealOffer;
+
+      const itemCount = items ? items.length : item_ids.length;
+      const itemName = items && items.length > 0 ? items[0].product?.name || items[0].notes : 'Barang Jastip';
+
+      const payload = {
+        item_ids,
+        opponent_id,
+        pickup_location: pickupLocStr,
+        delivery_location: deliveryLocStr,
+        notes,
+        proposed_fee: proposedFee
+      };
+
+      const payloadStr = JSON.stringify(payload);
+      const textMessage = `[deal_offer]
+📦 ${itemCount} Barang: ${itemName}
+📍 Dari: ${pickupLocStr}
+📍 Ke: ${deliveryLocStr}
+💰 Penawaran Ongkos: Rp${proposedFee.toLocaleString('id-ID')}
+📝 Catatan: ${notes || '-'}
+<!--PAYLOAD:${payloadStr}-->`;
+
+      sendMessage(null, textMessage);
+
+      // Bersihkan state agar tidak terkirim ulang kalau user refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, currentUserId, conversationId]);
+
   // Pilih template deal → otomatis tambah tag [deal_xxx]
   const selectDealType = (tag, title, template) => {
     setNewMessage(`[${tag}] ${title} ✅\n\n${template}`);
@@ -406,6 +444,95 @@ export default function ChatRoom() {
                           <path
                             d="M0,0 Q8,8 0,16 L0,0"
                             fill={msg.sender_id === currentUserId ? '#66bb6a' : '#dcfce7'}
+                            className="dark:fill-emerald-900/50"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  ) : msg.message_type === 'deal_offer' ? (
+                    // CARD DEAL OFFER (DARI CHECKOUT CART)
+                    <div className={`
+      relative max-w-md px-5 py-4 rounded-2xl shadow-lg overflow-hidden border
+      ${msg.sender_id === currentUserId
+                        ? 'bg-gradient-to-r from-[#81c784]/10 to-[#66bb6a]/10 border-emerald-300 rounded-br-none'
+                        : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 rounded-bl-none'
+                      }
+    `}>
+                      {/* Header */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="font-bold text-blue-700 dark:text-blue-300">
+                            Penawaran Keranjang
+                          </div>
+                          <div className="text-xs opacity-70">
+                            {msg.sender_id === currentUserId ? 'Menunggu konfirmasi dari lawan...' : 'Pilih aksi'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Isi Pesan (hide payload) */}
+                      <div className="mb-5 whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed">
+                        {msg.content.replace(/^\[deal_offer\]\s*/, '').split('<!--PAYLOAD:')[0].trim()}
+                      </div>
+
+                      {/* Aksi Konfirmasi */}
+                      {(() => {
+                        const payloadMatch = msg.content.match(/<!--PAYLOAD:(.*?)-->/);
+                        const payload = payloadMatch ? JSON.parse(payloadMatch[1]) : null;
+
+                        // Tombol hanya untuk lawan
+                        if (msg.sender_id !== currentUserId && payload) {
+                          return (
+                            <div className="flex gap-3">
+                              <button
+                                onClick={async (e) => {
+                                  e.target.disabled = true;
+                                  e.target.innerText = 'Memproses...';
+                                  try {
+                                    const result = await apiFetch('/api/cart/deal', {
+                                      method: 'POST',
+                                      body: JSON.stringify(payload),
+                                    });
+
+                                    // Kirim balasan deal
+                                    sendMessage(null, `Deal! Penawaran belanja keranjang dikonfirmasi ✅\nPesanan segera kubelikan ya.`);
+
+                                    // Arahkan ke DealPage
+                                    navigate(`/deal?deal=${result.deal_id}`);
+                                  } catch (err) {
+                                    console.error("Deal confirm error:", err);
+                                    alert("Gagal mengonfirmasi deal: " + err.message);
+                                    e.target.disabled = false;
+                                    e.target.innerText = 'Deal / Confirm';
+                                  }
+                                }}
+                                className="flex-1 btn btn-info btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                Terima Deal
+                              </button>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+
+                      <div className={`
+                          absolute w-3 h-5 top-6
+                          ${msg.sender_id === currentUserId ? 'right-0 translate-x-full' : 'left-0 -translate-x-full'}
+                        `}>
+                        <svg viewBox="0 0 8 16" className="w-full h-full drop-shadow-md">
+                          <path
+                            d="M0,0 Q8,8 0,16 L0,0"
+                            fill={msg.sender_id === currentUserId ? '#66bb6a' : '#eff6ff'}
                             className="dark:fill-emerald-900/50"
                           />
                         </svg>

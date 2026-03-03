@@ -62,27 +62,23 @@ export default function Checkout() {
             const pickupLocStr = pickupLocation.address || pickupLocation.name || "Peta Location";
             const deliveryLocStr = deliveryLocation.address || deliveryLocation.name || "Peta Location";
 
-            const result = await apiFetch('/api/cart/deal', {
+            // Bikin chat dulu dengan opponent kalau belum ada
+            const result = await apiFetch('/api/conversations', {
                 method: 'POST',
-                body: JSON.stringify({
-                    item_ids: Array.from(selectedIds),
-                    opponent_id: opponent.id,
-                    pickup_location: pickupLocStr,
-                    delivery_location: deliveryLocStr,
-                    notes: notes,
-                    proposed_fee: Number(proposedFee) || 0
-                }),
+                body: JSON.stringify({ opponent_id: opponent.clerk_id || opponent.id }),
             });
 
+            // Redirect ke chat dengan state membawa data offer
             navigate(`/chat/${result.conversation_id}`, {
                 state: {
-                    recipient: opponent,
-                    dealItems: items,
-                    dealDetails: {
-                        pickupLocation: `${pickupLocation.lat},${pickupLocation.lng},${pickupLocation.name || pickupLocation.address}`,
-                        deliveryLocation: `${deliveryLocation.lat},${deliveryLocation.lng},${deliveryLocation.name || deliveryLocation.address}`,
+                    pendingDealOffer: {
+                        item_ids: Array.from(selectedIds),
+                        opponent_id: opponent.id,
+                        pickupLocStr,
+                        deliveryLocStr,
                         notes,
-                        proposedFee: Number(proposedFee) || 0
+                        proposedFee: Number(proposedFee) || 0,
+                        items // for UI display in chat
                     }
                 },
                 replace: true
@@ -108,7 +104,7 @@ export default function Checkout() {
                     <ArrowLeft size={24} />
                 </button>
                 <div className="flex-1 flex items-center gap-3">
-                    <h1 className="font-bold text-lg">Konfirmasi Deal</h1>
+                    <h1 className="font-bold text-lg">Ajukan Deal</h1>
                 </div>
             </div>
 
@@ -256,7 +252,7 @@ export default function Checkout() {
                         disabled={isProcessing || !pickupLocation || !deliveryLocation}
                         className="btn w-full rounded-2xl h-14 font-black shadow-lg shadow-emerald-200/50 bg-emerald-600 border-none text-white disabled:bg-base-300 disabled:text-base-content/40 hover:bg-emerald-700 active:scale-[0.98] transition-all"
                     >
-                        {isProcessing ? <span className="loading loading-spinner"></span> : "Konfirmasi Deal"}
+                        {isProcessing ? <span className="loading loading-spinner"></span> : "Ajukan Deal"}
                     </button>
                 </div>
             </div>

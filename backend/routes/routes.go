@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"strings"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/nebeng/backend/config"
@@ -9,9 +11,15 @@ import (
 )
 
 func Setup(r *gin.Engine) {
-	// CORS - Allow localhost development
+	// Allow local dev and production frontend
+	origins := []string{"http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000"}
+	if config.Cfg.FrontendURL != "" {
+		base := strings.TrimSuffix(config.Cfg.FrontendURL, "/")
+		origins = append(origins, base, base+"/")
+	}
+
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{config.Cfg.FrontendURL, "http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000"},
+		AllowOrigins:     origins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"},
 		AllowCredentials: true,

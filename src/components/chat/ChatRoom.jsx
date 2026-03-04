@@ -94,7 +94,9 @@ export default function ChatRoom() {
         item_description: items?.map(i => i.product?.name || i.notes).join(', ') || itemName,
         item_photo: items?.[0]?.product?.image_url || items?.[0]?.warung?.item_photo || '',
         total_payment: totalPayment,
-        post_id: conversationPostId
+        post_id: conversationPostId,
+        warung_name: warungName,
+        total_item_price: totalItemPrice
       };
 
       const payloadStr = JSON.stringify(payload);

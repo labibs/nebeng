@@ -19,20 +19,27 @@ export default function CartNegoModal({ isOpen, onClose, onSend, data }) {
         if (!data || !data.payload) return;
 
         const numericFee = parseInt(fee.replace(/\D/g, '')) || 0;
+        const totalItemPrice = data.payload.total_item_price || 0;
+        const totalPayment = totalItemPrice + numericFee;
+        const warungName = data.warungName || data.payload.warung_name || 'Warung';
 
         const updatedPayload = {
             ...data.payload,
             proposed_fee: numericFee,
             delivery_location: deliveryLoc,
-            notes: notes
+            notes: notes,
+            total_payment: totalPayment
         };
 
         const payloadStr = JSON.stringify(updatedPayload);
         const textMessage = `[deal_offer]
+🏪 Warung: ${warungName}
 📦 ${data.itemCount} Barang: ${data.itemName}
 📍 Dari: ${data.pickupLoc}
 📍 Ke: ${deliveryLoc}
-💰 Penawaran Ongkos: Rp${numericFee.toLocaleString('id-ID')}
+💰 Harga Barang: Rp${totalItemPrice.toLocaleString('id-ID')}
+💰 Jastip/Ongkos: Rp${numericFee.toLocaleString('id-ID')}
+🔥 Total Pembayaran: Rp${totalPayment.toLocaleString('id-ID')}
 📝 Catatan: ${notes || '-'}
 <!--PAYLOAD:${payloadStr}-->`;
 

@@ -177,7 +177,7 @@ func DealCart(c *gin.Context) {
 	ids := strings.Join(quotedIDs, ",")
 	resBody, status, err := sb.DefaultClient.DoRequest("PATCH",
 		fmt.Sprintf("warung_cart_items?id=in.(%s)", ids),
-		map[string]interface{}{"status": "deal"},
+		map[string]interface{}{"status": "accepted"},
 	)
 	if err != nil || status >= 400 {
 		fmt.Printf("Supabase error updating cart items: status=%d, body=%s, err=%v\n", status, string(resBody), err)

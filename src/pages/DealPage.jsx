@@ -516,7 +516,7 @@ export default function DealPage() {
         .from("warung_cart_items")
         .update({ status: "pending" })
         .eq("user_id", deal.depositor_id)
-        .eq("status", "deal");
+        .eq("status", "accepted");
 
       alert("Deal dibatalkan. Barang telah dikembalikan ke Keranjang.");
       sendSystemMessage("Deal telah dibatalkan oleh pengguna. ❌");

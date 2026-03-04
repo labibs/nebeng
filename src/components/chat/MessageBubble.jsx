@@ -113,11 +113,13 @@ export default function MessageBubble({
                   <button
                     onClick={() => {
                       const lines = msg.content.split('\n');
+                      const warungNameMatch = lines.find(l => l.startsWith('🏪'))?.replace('🏪 Warung:', '').trim();
                       const itemCountMatch = lines.find(l => l.startsWith('📦'))?.match(/📦 (\d+) Barang: (.*)/);
                       const pickupLocMatch = lines.find(l => l.startsWith('📍 Dari:'))?.replace('📍 Dari:', '').trim();
 
                       setCartNegoData({
                         payload,
+                        warungName: warungNameMatch || payload.warung_name || 'Warung',
                         itemCount: itemCountMatch ? itemCountMatch[1] : 1,
                         itemName: itemCountMatch ? itemCountMatch[2] : 'Barang Jastip',
                         pickupLoc: pickupLocMatch || payload.pickup_location

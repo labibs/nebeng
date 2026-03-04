@@ -573,7 +573,7 @@ export default function ChatRoom() {
     }
 
     // Update delivery_location dengan koordinat
-    const locationString = `${locationData.lat},${locationData.lng},${locationData.name}`;
+    const locationString = `${locationData.lat},${locationData.lng}, ${locationData.name}`;
     const { error: updateError } = await supabase
       .from('deals')
       .update({ delivery_location: locationString })

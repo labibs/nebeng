@@ -82,8 +82,8 @@ export default function Checkout() {
 
         setIsProcessing(true);
         try {
-            const pickupLocStr = pickupLocation.address || pickupLocation.name || "Peta Location";
-            const deliveryLocStr = deliveryLocation.address || deliveryLocation.name || "Peta Location";
+            const pickupLocStr = `${pickupLocation.lat},${pickupLocation.lng}, ${pickupLocation.name || pickupLocation.address || "Peta Location"}`;
+            const deliveryLocStr = `${deliveryLocation.lat},${deliveryLocation.lng}, ${deliveryLocation.name || deliveryLocation.address || "Peta Location"}`;
 
             // Bikin chat dulu dengan opponent kalau belum ada
             const result = await apiFetch('/api/conversations', {

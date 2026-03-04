@@ -186,8 +186,6 @@ func DealCart(c *gin.Context) {
 	}
 
 	// 2. Create record in "deals" table
-	// Current user (receiver of the deal_offer) is the Carrier (the one who clicks "Terima Deal")
-	// The person who sent the deal_offer (opponent_id in payload) is the Depositor
 	newDeal := map[string]interface{}{
 		"post_id":           body.PostID,
 		"carrier_id":        clerkID,
@@ -195,24 +193,29 @@ func DealCart(c *gin.Context) {
 		"pickup_location":   body.PickupLocation,
 		"delivery_location": body.DeliveryLocation,
 		"item_description":  body.ItemDescription,
-		"item_photo":        body.ItemPhotos,
+		"item_photos":       body.ItemPhotos,
 		"agreed_fee":        body.TotalPayment,
 		"status":            "completed", // Sesuai permintaan: status completed
 		"delivery_status":   "draft",     // Sesuai permintaan: delivery_status draft
-		// pickup_datetime set ke waktu sekarang (Supabase default handled or explicitly set if needed)
 	}
 
-	dealRes, _, err := sb.DefaultClient.DoRequest("POST", "deals", newDeal)
-	if err != nil {
-		fmt.Printf("Supabase error creating deal: %v\n", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create deal record"})
+	dealRes, dealStatus, err := sb.DefaultClient.DoRequest("POST", "deals", newDeal)
+	if err != nil || dealStatus >= 400 {
+		fmt.Printf("Supabase error creating deal:\nstatus=%d\nbody=%s\nerr=%v\nData: %+v\n", dealStatus, string(dealRes), err, newDeal)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create deal record", "details": string(dealRes)})
 		return
 	}
 
 	var dealResult []map[string]interface{}
-	json.Unmarshal(dealRes, &dealResult)
+	if err := json.Unmarshal(dealRes, &dealResult); err != nil {
+		fmt.Printf("Error unmarshaling created deal: %v\nBody: %s\n", err, string(dealRes))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse created deal", "details": string(dealRes)})
+		return
+	}
+
 	if len(dealResult) == 0 {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve created deal id"})
+		fmt.Printf("No deal record returned. Body: %s\n", string(dealRes))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve created deal id", "details": string(dealRes)})
 		return
 	}
 	dealID := fmt.Sprintf("%v", dealResult[0]["id"])

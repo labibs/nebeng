@@ -90,7 +90,11 @@ export default function ChatRoom() {
         pickup_location: pickupLocStr,
         delivery_location: deliveryLocStr,
         notes,
-        proposed_fee: proposedFee
+        proposed_fee: proposedFee,
+        item_description: items?.map(i => i.product?.name || i.notes).join(', ') || itemName,
+        item_photo: items?.[0]?.product?.image_url || items?.[0]?.warung?.item_photo || '',
+        total_payment: totalPayment,
+        post_id: conversationPostId
       };
 
       const payloadStr = JSON.stringify(payload);

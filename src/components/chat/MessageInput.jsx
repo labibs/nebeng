@@ -140,7 +140,8 @@ export default function MessageInput({
             <button
               type="button"
               onClick={() => setShowDealMenu(!showDealMenu)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-300 transition-colors"
+              disabled={true} // Sementara di-disable sesuai permintaan
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <svg className="w-6 h-6 text-emerald-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}

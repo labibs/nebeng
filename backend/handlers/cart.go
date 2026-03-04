@@ -155,6 +155,10 @@ func DealCart(c *gin.Context) {
 		DeliveryLocation string   `json:"delivery_location"`
 		Notes            string   `json:"notes"`
 		ProposedFee      float64  `json:"proposed_fee"`
+		ItemDescription  string   `json:"item_description"`
+		ItemPhotos       string   `json:"item_photo"`
+		TotalPayment     float64  `json:"total_payment"`
+		PostID           string   `json:"post_id"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil || len(body.ItemIDs) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "item_ids are required"})
@@ -181,7 +185,39 @@ func DealCart(c *gin.Context) {
 		return
 	}
 
-	// 2. Find existing conversation between the two users
+	// 2. Create record in "deals" table
+	// Current user (receiver of the deal_offer) is the Carrier (the one who clicks "Terima Deal")
+	// The person who sent the deal_offer (opponent_id in payload) is the Depositor
+	newDeal := map[string]interface{}{
+		"post_id":           body.PostID,
+		"carrier_id":        clerkID,
+		"depositor_id":      body.OpponentID,
+		"pickup_location":   body.PickupLocation,
+		"delivery_location": body.DeliveryLocation,
+		"item_description":  body.ItemDescription,
+		"item_photo":        body.ItemPhotos,
+		"agreed_fee":        body.TotalPayment,
+		"status":            "completed", // Sesuai permintaan: status completed
+		"delivery_status":   "draft",     // Sesuai permintaan: delivery_status draft
+		// pickup_datetime set ke waktu sekarang (Supabase default handled or explicitly set if needed)
+	}
+
+	dealRes, _, err := sb.DefaultClient.DoRequest("POST", "deals", newDeal)
+	if err != nil {
+		fmt.Printf("Supabase error creating deal: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create deal record"})
+		return
+	}
+
+	var dealResult []map[string]interface{}
+	json.Unmarshal(dealRes, &dealResult)
+	if len(dealResult) == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve created deal id"})
+		return
+	}
+	dealID := fmt.Sprintf("%v", dealResult[0]["id"])
+
+	// 3. Find existing conversation between the two users
 	var conversationID string
 
 	// Get all conversations where current user is a participant
@@ -237,5 +273,8 @@ func DealCart(c *gin.Context) {
 		})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"conversation_id": conversationID})
+	c.JSON(http.StatusOK, gin.H{
+		"conversation_id": conversationID,
+		"deal_id":         dealID,
+	})
 }

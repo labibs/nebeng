@@ -69,5 +69,10 @@ func Setup(r *gin.Engine) {
 		// Transactions
 		auth.GET("transactions", handlers.GetTransactions)
 		auth.POST("transactions/pay", handlers.InitiatePayment)
+
+		// Deals
+		auth.GET("deals/post/:post_id", handlers.GetDealByPost)
+		auth.GET("deals/:id/messages", handlers.GetDealMessages)
+		auth.GET("deals/post/:post_id/info", handlers.GetPostForDeal)
 	}
 }

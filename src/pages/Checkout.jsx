@@ -41,6 +41,29 @@ export default function Checkout() {
                 });
             }
         }
+
+        // Fetch current location for default delivery
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    const res = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+                    )
+                    const data = await res.json();
+                    setDeliveryLocation({
+                        lat: latitude,
+                        lng: longitude,
+                        address: data.display_name,
+                        name: data.name || data.display_name,
+                    });
+                } catch (err) {
+                    console.error("Error reverse geocoding delivery location:", err);
+                }
+            }, (error) => {
+                console.error("Error getting geolocation:", error);
+            });
+        }
     }, [selectedIds, items, opponent, navigate]);
 
     if (!selectedIds || !items || !opponent) return null;

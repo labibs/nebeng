@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { MapContainer, TileLayer, Marker, useMapEvents, ZoomControl, useMap } from "react-leaflet"
 import { ArrowLeft } from "lucide-react";
 import L from "leaflet"
@@ -38,6 +38,24 @@ export default function LocationPicker({ label, value, onSelect }) {
   const [query, setQuery] = useState("")
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      if (value) {
+        setPosition(value)
+      } else if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setPosition({
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude
+            })
+          },
+          (err) => console.error("Error getting location for map center:", err)
+        )
+      }
+    }
+  }, [open, value])
 
   const searchLocation = async (q) => {
     setQuery(q)

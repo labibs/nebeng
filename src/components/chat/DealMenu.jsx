@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { supabase } from '../../lib/supabaseClient';
+import { apiFetch } from '../../lib/apiClient';
 import SlideToUnlock from './SlideToUnlock';
 
 export default function DealMenu({
@@ -11,7 +12,7 @@ export default function DealMenu({
   onOpenItem,
   onOpenDelivery,
   postId,
-  postInfo,
+  postInfo: initialPostInfo,
   currentUserId,
   conversationId, // WAJIB: id conversation chat
 }) {
@@ -19,50 +20,31 @@ export default function DealMenu({
   const [lastPendingMessage, setLastPendingMessage] = useState(null); // pesan deal terakhir yang masih pending
   const [loading, setLoading] = useState(true);
   const [dealData, setDealData] = useState(null);
+  const [postInfo, setPostInfo] = useState(initialPostInfo);
   const [allDone, setAllDone] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function fetchMessages() {
-      if (!postId || !conversationId) {
+    async function fetchData() {
+      if (!postId) {
         setLoading(false);
         return;
       }
 
       try {
-        const { data: approved, error: approvedError } = await supabase
-          .from('messages')
-          .select('message_type, deal_id')
-          .eq('post_id', postId)
-          .neq('message_type', 'text')
-          .not('deal_id', 'is', null)
-          .order('created_at', { ascending: false })
-          .limit(10);
+        // 1. Fetch Post Info (lebih akurat dari backend)
+        const postData = await apiFetch(`/deals/post/${postId}/info`);
+        if (postData) setPostInfo(postData);
 
-        if (approvedError) throw approvedError;
+        // 2. Fetch Latest Deal associated with this post
+        const deal = await apiFetch(`/deals/post/${postId}`);
+        setDealData(deal);
 
-        // ----> pastikan hanya ambil deal_id pertama yang valid
-        const dealId = approved?.[0]?.deal_id;
+        if (deal?.id) {
+          // 3. Fetch negotiation messages for this deal
+          const messages = await apiFetch(`/deals/${deal.id}/messages`);
+          setApprovedMessages(messages || []);
 
-        let dealResult = null;
-
-        if (dealId) {
-          const { data, error } = await supabase
-            .from('deals')
-            .select('id, agreed_fee, item_fee, pickup_location, delivery_location, pickup_datetime, item_description, status')
-            .eq('post_id', postId)
-            .eq('id', dealId)
-            .maybeSingle();
-
-          if (!error) {
-            dealResult = data;
-          }
-        }
-
-        // simpan ke GLOBAL STATE
-        setDealData(dealResult);
-
-        if (dealId) {
           const REQUIRED_STEPS = [
             'deal_ongkos_jastip',
             'deal_lokasi_ketemuan',
@@ -71,66 +53,24 @@ export default function DealMenu({
             'deal_barang_titipan'
           ];
 
-          // cek message_type yang sudah ada untuk deal_id ini
-          const { data: dealSteps, error: stepsError } = await supabase
-            .from('messages')
-            .select('message_type')
-            .eq('deal_id', dealId)
-            .in('message_type', REQUIRED_STEPS);
-
-          if (!stepsError) {
-            const completedTypes = dealSteps?.map(m => m.message_type) || [];
-
-            // cek apakah semua step sudah terpenuhi
-            const allDone = REQUIRED_STEPS.every(type =>
-              completedTypes.includes(type)
-            );
-
-            // ⬇️ simpan ke state global komponen
-            setAllDone(allDone);
-
-            // kalau lengkap → update status deal menjadi completed
-            if (allDone && dealResult?.status !== 'completed') {
-              await supabase
-                .from('deals')
-                .update({ status: 'completed' })
-                .eq('id', dealId);
-
-              // Tambah pesan sistem
-              await supabase.from('messages').insert({
-                conversation_id: conversationId,
-                sender_id: currentUserId,
-                message_type: 'system',
-                content: '[system] Kesepakatan selesai! Silakan lanjut ke Pembayaran.',
-                post_id: postId
-              });
-            }
-          }
+          const completedTypes = messages?.map(m => m.message_type) || [];
+          const done = REQUIRED_STEPS.every(type => completedTypes.includes(type));
+          setAllDone(done);
         }
 
-        const { data: pending, error: pendingError } = await supabase
-          .from('posts')
-          .select('fee, from_city, to_city, travel_date, item_description')
-          .eq('id', postId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (pendingError && pendingError.code !== 'PGRST116')
-          throw pendingError;
-
-        setApprovedMessages(approved || []);
-        setLastPendingMessage(pending);
-        setLoading(false);
+        // 4. Fetch the original post defaults for pending view
+        // (Tetap simpan info awal untuk state pending)
+        setLastPendingMessage(postData);
 
       } catch (err) {
-        console.error('Error fetching deal messages:', err);
+        console.error('Error fetching deal data:', err);
+      } finally {
         setLoading(false);
       }
     }
 
-    fetchMessages();
-  }, [postId, conversationId]);
+    fetchData();
+  }, [postId]);
 
   const formatRupiah = (value) => {
     const num = Number(value);
@@ -182,7 +122,7 @@ export default function DealMenu({
         : 'Sudah deal',
       ket: !isCompleted('deal_ongkos_jastip')
         ? formatRupiah(lastPendingMessage?.fee)
-        : getApprovedValue('deal_ongkos_jastip', 'fee', true) || formatRupiah(dealData.agreed_fee),
+        : getApprovedValue('deal_ongkos_jastip', 'fee', true) || formatRupiah(dealData?.agreed_fee),
       icon: <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -250,7 +190,7 @@ export default function DealMenu({
         : 'Sudah deal',
       ket: !isCompleted('deal_barang_titipan')
         ? (lastPendingMessage?.item_description || '-')
-        : getApprovedValue('deal_barang_titipan', 'item_description') || dealData.item_description,
+        : getApprovedValue('deal_barang_titipan', 'item_description') || dealData?.item_description,
       icon: <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
           d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -291,16 +231,18 @@ export default function DealMenu({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 text-sm text-base-content/80">
-                <span className="font-semibold">{postInfo?.from_city || '-'}</span>
+                <span className="font-semibold">{dealData?.pickup_location?.split(",")[2]?.trim() || postInfo?.from_city || '-'}</span>
                 <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
-                <span className="font-semibold">{postInfo?.to_city || '-'}</span>
+                <span className="font-semibold">{dealData?.delivery_location?.split(",")[2]?.trim() || postInfo?.to_city || '-'}</span>
               </div>
-              <p className="font-semibold text-base opacity-70 mt-1">Pilih Jenis Deal </p>
+              <p className="font-semibold text-base opacity-70 mt-1 truncate">
+                {dealData?.item_description || postInfo?.item_description || 'Detail Deal'}
+              </p>
             </div>
             <div className="badge badge-primary badge-sm font-medium">
-              {postInfo?.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}
+              {dealData ? 'Deal Aktif' : (postInfo?.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa')}
             </div>
           </div>
         </div>
@@ -351,8 +293,8 @@ export default function DealMenu({
                     .from("transactions")
                     .upsert(
                       {
-                        deal_id: dealData.id,
-                        gross_amount: Number(dealData.agreed_fee || 0) + Number(dealData.item_fee || 0),
+                        deal_id: dealData?.id,
+                        gross_amount: Number(dealData?.agreed_fee || 0) + Number(dealData?.item_fee || 0),
                         transaction_status: "draft",
                       },
                       {
@@ -364,7 +306,7 @@ export default function DealMenu({
 
                   if (error) throw error;
 
-                  navigate(`/deal?deal=${dealData.id}&trx=${trx.id}`);
+                  navigate(`/deal?deal=${dealData?.id}&trx=${trx.id}`);
                 } catch (err) {
                   console.error("Gagal membuat / update transaksi:", err.message);
                 }

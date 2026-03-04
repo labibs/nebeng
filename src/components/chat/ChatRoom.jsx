@@ -79,6 +79,10 @@ export default function ChatRoom() {
 
       const itemCount = items ? items.length : item_ids.length;
       const itemName = items && items.length > 0 ? items[0].product?.name || items[0].notes : 'Barang Jastip';
+      const warungName = items && items.length > 0 ? items[0].warung?.name : 'Warung';
+
+      const totalItemPrice = items ? items.reduce((sum, i) => sum + (Number(i.estimated_price || 0) * i.quantity), 0) : 0;
+      const totalPayment = totalItemPrice + proposedFee;
 
       const payload = {
         item_ids,
@@ -91,10 +95,13 @@ export default function ChatRoom() {
 
       const payloadStr = JSON.stringify(payload);
       const textMessage = `[deal_offer]
+🏪 Warung: ${warungName}
 📦 ${itemCount} Barang: ${itemName}
 📍 Dari: ${pickupLocStr}
 📍 Ke: ${deliveryLocStr}
-💰 Penawaran Ongkos: Rp${proposedFee.toLocaleString('id-ID')}
+💰 Harga Barang: Rp${totalItemPrice.toLocaleString('id-ID')}
+💰 Jastip/Ongkos: Rp${proposedFee.toLocaleString('id-ID')}
+🔥 Total Pembayaran: Rp${totalPayment.toLocaleString('id-ID')}
 📝 Catatan: ${notes || '-'}
 <!--PAYLOAD:${payloadStr}-->`;
 

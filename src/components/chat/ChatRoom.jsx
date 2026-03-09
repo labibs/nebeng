@@ -87,19 +87,21 @@ export default function ChatRoom() {
       const payload = {
         item_ids,
         opponent_id,
+        carrier_id: opponent_id, // Default: opponent is current courier if I'm from Checkout
+        depositor_id: currentUserId,
+        post_id: conversationPostId || null,
+        agreed_fee: totalPayment,
+        status: 'pending',
         pickup_location: pickupLocStr,
         delivery_location: deliveryLocStr,
-        notes,
-        proposed_fee: proposedFee,
+        pickup_datetime: new Date().toISOString().replace('T', ' ').split('.')[0] + '+07',
         item_description: items?.map(i => i.product?.name || i.notes).join(', ') || itemName,
         item_photos: (items?.[0]?.product?.image_url || items?.[0]?.warung?.item_photo) ? [items[0].product?.image_url || items[0].warung?.item_photo] : [],
-        total_payment: totalPayment,
-        post_id: conversationPostId,
-        warung_name: warungName,
-        total_item_price: totalItemPrice,
-        status: 'pending',
+        notes: notes || "",
         delivery_status: 'draft',
-        agreed_fee: totalPayment
+        // Optional extras
+        warung_name: warungName,
+        total_payment: totalPayment
       };
 
       const payloadStr = JSON.stringify(payload);

@@ -152,15 +152,21 @@ func DealCart(c *gin.Context) {
 	var body struct {
 		ItemIDs          []string    `json:"item_ids"`
 		OpponentID       string      `json:"opponent_id"`
+		CarrierID        string      `json:"carrier_id"`
+		DepositorID      string      `json:"depositor_id"`
 		PickupLocation   string      `json:"pickup_location"`
 		DeliveryLocation string      `json:"delivery_location"`
 		ProposedFee      float64     `json:"proposed_fee"`
+		AgreedFee        float64     `json:"agreed_fee"`
 		ItemDescription  string      `json:"item_description"`
 		ItemPhotos       interface{} `json:"item_photos"` // can be string or []interface{}
 		ItemPhoto        interface{} `json:"item_photo"`  // legacy support
 		Notes            string      `json:"notes"`
 		TotalPayment     float64     `json:"total_payment"`
-		PostID           string      `json:"post_id"`
+		PostID           interface{} `json:"post_id"` // can be null
+		Status           string      `json:"status"`
+		DeliveryStatus   string      `json:"delivery_status"`
+		PickupDatetime   string      `json:"pickup_datetime"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil || len(body.ItemIDs) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "item_ids are required"})
@@ -215,19 +221,49 @@ func DealCart(c *gin.Context) {
 	}
 
 	// 2. Create record in "deals" table
+	carrierID := clerkID
+	if body.CarrierID != "" {
+		carrierID = body.CarrierID
+	}
+	depositorID := body.OpponentID
+	if body.DepositorID != "" {
+		depositorID = body.DepositorID
+	}
+	agreedFee := body.TotalPayment
+	if body.AgreedFee > 0 {
+		agreedFee = body.AgreedFee
+	} else if body.ProposedFee > 0 && agreedFee == 0 {
+		agreedFee = body.ProposedFee
+	}
+
+	pickupDT := time.Now().UTC().Format("2006-01-02 15:04:05+00")
+	if body.PickupDatetime != "" {
+		pickupDT = body.PickupDatetime
+	}
+
+	statusStr := "completed"
+	if body.Status != "" {
+		statusStr = body.Status
+	}
+
+	deliveryStatusStr := "draft"
+	if body.DeliveryStatus != "" {
+		deliveryStatusStr = body.DeliveryStatus
+	}
+
 	newDeal := map[string]interface{}{
 		"post_id":           body.PostID,
-		"carrier_id":        clerkID,
-		"depositor_id":      body.OpponentID,
+		"carrier_id":        carrierID,
+		"depositor_id":      depositorID,
 		"pickup_location":   body.PickupLocation,
 		"delivery_location": body.DeliveryLocation,
 		"item_description":  body.ItemDescription,
 		"item_photos":       itemPhotos,
-		"agreed_fee":        body.TotalPayment,
+		"agreed_fee":        agreedFee,
 		"notes":             body.Notes,
-		"pickup_datetime":   time.Now().UTC().Format("2006-01-02 15:04:05+00"),
-		"status":            "completed", // or body.Status if we want to be dynamic
-		"delivery_status":   "draft",
+		"pickup_datetime":   pickupDT,
+		"status":            statusStr,
+		"delivery_status":   deliveryStatusStr,
 	}
 
 	dealRes, dealStatus, err := sb.DefaultClient.DoRequest("POST", "deals", newDeal)

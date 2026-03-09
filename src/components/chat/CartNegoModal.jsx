@@ -26,6 +26,7 @@ export default function CartNegoModal({ isOpen, onClose, onSend, data }) {
         const updatedPayload = {
             ...data.payload,
             proposed_fee: numericFee,
+            agreed_fee: totalPayment,
             delivery_location: deliveryLoc,
             notes: notes,
             total_payment: totalPayment,
@@ -34,6 +35,10 @@ export default function CartNegoModal({ isOpen, onClose, onSend, data }) {
                 ? data.payload.item_photos
                 : (data.payload.item_photo ? [data.payload.item_photo] : [])
         };
+        // Refresh pickup_datetime if missing or update it
+        if (!updatedPayload.pickup_datetime) {
+            updatedPayload.pickup_datetime = new Date().toISOString().replace('T', ' ').split('.')[0] + '+07';
+        }
 
         const payloadStr = JSON.stringify(updatedPayload);
         const textMessage = `[deal_offer]

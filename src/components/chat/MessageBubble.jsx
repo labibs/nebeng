@@ -26,8 +26,17 @@ export default function MessageBubble({
   const [showCartNegoModal, setShowCartNegoModal] = useState(false);
   const [cartNegoData, setCartNegoData] = useState(null);
 
+  // Helper untuk menghilangkan koordinat (lat,lng, ) dari tampilan
+  const stripCoordinates = (text) => {
+    if (!text) return '';
+    // Regex untuk mencocokkan pattern "-7.123,110.123, " atau "7.123,-110.123, "
+    return text.replace(/[-+]?\d*\.\d+,\s*[-+]?\d*\.\d+,\s*/g, '');
+  };
+
   // Pesan Deal Offer (Dari keranjang belanja)
   if (msg.message_type === 'deal_offer') {
+    const displayContent = stripCoordinates(msg.content.replace(/^\[deal_offer\]\s*/, '').split('<!--PAYLOAD:')[0].trim());
+
     return (
       <div className={`chat ${msg.sender_id === currentUserId ? 'chat-end' : 'chat-start'}`}>
         <div className="chat-image avatar">
@@ -46,7 +55,7 @@ export default function MessageBubble({
         </div>
 
         <div className={`
-            relative max-w-md px-5 py-4 rounded-2xl shadow-lg overflow-hidden border
+            relative max-[85vw] md:max-w-md px-5 py-4 rounded-2xl shadow-lg overflow-hidden border
             ${msg.sender_id === currentUserId
             ? 'bg-gradient-to-r from-[#81c784]/10 to-[#66bb6a]/10 border-emerald-300 rounded-br-none'
             : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 rounded-bl-none'
@@ -72,7 +81,7 @@ export default function MessageBubble({
 
           {/* Isi Pesan (hide payload) */}
           <div className="mb-5 whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed">
-            {msg.content.replace(/^\[deal_offer\]\s*/, '').split('<!--PAYLOAD:')[0].trim()}
+            {displayContent}
           </div>
 
           {/* Aksi Konfirmasi */}
@@ -100,7 +109,7 @@ export default function MessageBubble({
                         console.error("Deal confirm error:", err);
                         alert("Gagal mengonfirmasi deal: " + err.message);
                         e.target.disabled = false;
-                        e.target.innerText = 'Terima Deal';
+                        e.target.innerText = 'Terima';
                       }
                     }}
                     className="flex-1 btn btn-info btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"
@@ -108,7 +117,7 @@ export default function MessageBubble({
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    Terima Deal
+                    Terima
                   </button>
                   <button
                     onClick={() => {

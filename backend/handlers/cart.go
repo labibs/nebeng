@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nebeng/backend/middleware"
@@ -149,16 +150,17 @@ func DealCart(c *gin.Context) {
 	clerkID := middleware.GetClerkID(c)
 
 	var body struct {
-		ItemIDs          []string `json:"item_ids"`
-		OpponentID       string   `json:"opponent_id"`
-		PickupLocation   string   `json:"pickup_location"`
-		DeliveryLocation string   `json:"delivery_location"`
-		Notes            string   `json:"notes"`
-		ProposedFee      float64  `json:"proposed_fee"`
-		ItemDescription  string   `json:"item_description"`
-		ItemPhotos       string   `json:"item_photo"`
-		TotalPayment     float64  `json:"total_payment"`
-		PostID           string   `json:"post_id"`
+		ItemIDs          []string    `json:"item_ids"`
+		OpponentID       string      `json:"opponent_id"`
+		PickupLocation   string      `json:"pickup_location"`
+		DeliveryLocation string      `json:"delivery_location"`
+		ProposedFee      float64     `json:"proposed_fee"`
+		ItemDescription  string      `json:"item_description"`
+		ItemPhotos       interface{} `json:"item_photos"` // can be string or []interface{}
+		ItemPhoto        interface{} `json:"item_photo"`  // legacy support
+		Notes            string      `json:"notes"`
+		TotalPayment     float64     `json:"total_payment"`
+		PostID           string      `json:"post_id"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil || len(body.ItemIDs) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "item_ids are required"})
@@ -167,6 +169,33 @@ func DealCart(c *gin.Context) {
 	if body.OpponentID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "opponent_id is required"})
 		return
+	}
+
+	// Normalize item_photos to []string
+	var itemPhotos []string
+	if body.ItemPhotos != nil {
+		switch v := body.ItemPhotos.(type) {
+		case string:
+			if v != "" {
+				itemPhotos = []string{v}
+			}
+		case []interface{}:
+			for _, p := range v {
+				if s, ok := p.(string); ok && s != "" {
+					itemPhotos = append(itemPhotos, s)
+				}
+			}
+		case []string:
+			itemPhotos = v
+		}
+	}
+	if len(itemPhotos) == 0 && body.ItemPhoto != nil {
+		if s, ok := body.ItemPhoto.(string); ok && s != "" {
+			itemPhotos = []string{s}
+		}
+	}
+	if itemPhotos == nil {
+		itemPhotos = []string{}
 	}
 
 	// 1. Update cart items status to "deal"
@@ -193,10 +222,12 @@ func DealCart(c *gin.Context) {
 		"pickup_location":   body.PickupLocation,
 		"delivery_location": body.DeliveryLocation,
 		"item_description":  body.ItemDescription,
-		"item_photos":       body.ItemPhotos,
+		"item_photos":       itemPhotos,
 		"agreed_fee":        body.TotalPayment,
-		"status":            "completed", // Sesuai permintaan: status completed
-		"delivery_status":   "draft",     // Sesuai permintaan: delivery_status draft
+		"notes":             body.Notes,
+		"pickup_datetime":   time.Now().UTC().Format("2006-01-02 15:04:05+00"),
+		"status":            "completed", // or body.Status if we want to be dynamic
+		"delivery_status":   "draft",
 	}
 
 	dealRes, dealStatus, err := sb.DefaultClient.DoRequest("POST", "deals", newDeal)

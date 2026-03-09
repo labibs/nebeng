@@ -28,7 +28,11 @@ export default function CartNegoModal({ isOpen, onClose, onSend, data }) {
             proposed_fee: numericFee,
             delivery_location: deliveryLoc,
             notes: notes,
-            total_payment: totalPayment
+            total_payment: totalPayment,
+            // Pastikan item_photos tetap array
+            item_photos: Array.isArray(data.payload.item_photos)
+                ? data.payload.item_photos
+                : (data.payload.item_photo ? [data.payload.item_photo] : [])
         };
 
         const payloadStr = JSON.stringify(updatedPayload);

@@ -92,11 +92,14 @@ export default function ChatRoom() {
         notes,
         proposed_fee: proposedFee,
         item_description: items?.map(i => i.product?.name || i.notes).join(', ') || itemName,
-        item_photo: items?.[0]?.product?.image_url || items?.[0]?.warung?.item_photo || '',
+        item_photos: (items?.[0]?.product?.image_url || items?.[0]?.warung?.item_photo) ? [items[0].product?.image_url || items[0].warung?.item_photo] : [],
         total_payment: totalPayment,
         post_id: conversationPostId,
         warung_name: warungName,
-        total_item_price: totalItemPrice
+        total_item_price: totalItemPrice,
+        status: 'pending',
+        delivery_status: 'draft',
+        agreed_fee: totalPayment
       };
 
       const payloadStr = JSON.stringify(payload);

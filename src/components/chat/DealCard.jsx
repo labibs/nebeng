@@ -57,6 +57,12 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
   const [initialItemData, setInitialItemData] = useState({});
   const [mapInteractive, setMapInteractive] = useState(false);
 
+  // Helper untuk menghilangkan koordinat (lat,lng, ) dari tampilan
+  const stripCoordinates = (text) => {
+    if (!text) return '';
+    return text.replace(/[-+]?\d*\.\d+,\s*[-+]?\d*\.\d+,\s*/g, '');
+  };
+
   // Tentukan jenis deal
   const dealType = msg.message_type || (msg.content.includes('[deal_ongkos_jastip]') ? 'deal_ongkos_jastip' : msg.content.includes('[deal_lokasi_ketemuan]') ? 'deal_lokasi_ketemuan' : msg.content.includes('[deal_waktu_ketemuan]') ? 'deal_waktu_ketemuan' : msg.content.includes('[deal_lokasi_pengantaran]') ? 'deal_lokasi_pengantaran' : msg.content.includes('[deal_barang_titipan]') ? 'deal_barang_titipan' : null);
 
@@ -173,7 +179,7 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
 
         <div
           className={`
-            relative max-w-md px-5 py-4 rounded-2xl shadow-lg overflow-hidden border
+            relative max-w-[85vw] md:max-w-md px-5 py-4 rounded-2xl shadow-lg overflow-hidden border
             ${isMine
               ? (dealType === 'deal_ongkos_jastip'
                 ? 'bg-linear-to-r from-[#81c784]/10 to-[#66bb6a]/10 border-emerald-300 rounded-br-none'
@@ -246,12 +252,12 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
           {dealType === 'deal_ongkos_jastip' ? (
             <div className="mb-5 whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed">
               💰 Ongkos awal jastip : Rp {postInfo?.fee ? parseInt(postInfo.fee).toLocaleString('id-ID') : '-'} <br />
-              {msg.content.replace(/^\[[^\]]+\]\s*/, '').trim()}
+              {stripCoordinates(msg.content.replace(/^\[[^\]]+\]\s*/, '').trim())}
             </div>
           ) : dealType === 'deal_lokasi_ketemuan' && extractedData.lat && extractedData.lng && extractedData.cleanedMessage ? (
             <div className="mb-5">
               <div className="whitespace-pre-wrap text-sm leading-relaxed mb-3">
-                {extractedData.cleanedMessage}
+                {stripCoordinates(extractedData.cleanedMessage)}
 
                 {extractedData.gmapsUrl && (
                   <a
@@ -314,7 +320,7 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
           ) : dealType === 'deal_lokasi_pengantaran' && extractedData.lat && extractedData.lng ? (
             <div className="mb-5">
               <div className="whitespace-pre-wrap text-sm leading-relaxed mb-3">
-                {extractedData.cleanedMessage}
+                {stripCoordinates(extractedData.cleanedMessage)}
 
                 {extractedData.gmapsUrl && (
                   <a
@@ -375,17 +381,17 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
             </div>
           ) : dealType === 'deal_waktu_ketemuan' ? (
             <div className="mb-5 whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed">
-              {msg.content.replace(/^\[[^\]]+\]\s*/, '').trim()}
+              {stripCoordinates(msg.content.replace(/^\[[^\]]+\]\s*/, '').trim())}
             </div>
           ) : dealType === 'deal_barang_titipan' ? (
             <div className="mb-5">
               <div className="whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed mb-3">
-                {msg.content
+                {stripCoordinates(msg.content
                   .replace(/^\[[^\]]+\]\s*/, '') // Remove tag
                   .split('\n')
                   .filter(line => !line.startsWith('📸 Foto barang:') && !line.startsWith('💰 Penawaran Ongkos:')) // Remove photo URLs line and fee
                   .join('\n')
-                  .trim()}
+                  .trim())}
               </div>
               {extractedData.ongkos !== null && (
                 <div className="mb-3 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
@@ -410,7 +416,7 @@ export default function DealCard({ msg, isMine, avatar, postInfo, currentUserId,
             </div>
           ) : (
             <div className="mb-5 whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed">
-              {msg.content.replace(/^\[[^\]]+\]\s*/, '').trim()}
+              {stripCoordinates(msg.content.replace(/^\[[^\]]+\]\s*/, '').trim())}
             </div>
           )}
 

@@ -74,6 +74,14 @@ export default function Checkout() {
         0
     );
 
+    // Helper untuk mengambil alamat pendek (misal: "Jl. Merdeka, Menteng")
+    const getShortAddress = (address) => {
+        if (!address) return "";
+        const parts = address.split(',').map(p => p.trim());
+        // Ambil maksimal 2 bagian pertama agar ringkas
+        return parts.slice(0, 2).join(', ');
+    };
+
     const handleConfirmDeal = async () => {
         if (!pickupLocation || !deliveryLocation) {
             alert("Lokasi pickup dan delivery harus diisi");
@@ -82,8 +90,12 @@ export default function Checkout() {
 
         setIsProcessing(true);
         try {
-            const pickupLocStr = `${pickupLocation.lat},${pickupLocation.lng}, ${pickupLocation.name || pickupLocation.address || "Peta Location"}`;
-            const deliveryLocStr = `${deliveryLocation.lat},${deliveryLocation.lng}, ${deliveryLocation.name || deliveryLocation.address || "Peta Location"}`;
+            // Prioritaskan alamat pendek untuk tampilan label, tapi tetap simpan lat,lng
+            const pickupLabel = getShortAddress(pickupLocation.address) || pickupLocation.name || "Peta Location";
+            const deliveryLabel = getShortAddress(deliveryLocation.address) || deliveryLocation.name || "Peta Location";
+
+            const pickupLocStr = `${pickupLocation.lat},${pickupLocation.lng}, ${pickupLabel}`;
+            const deliveryLocStr = `${deliveryLocation.lat},${deliveryLocation.lng}, ${deliveryLabel}`;
 
             // Bikin chat dulu dengan opponent kalau belum ada
             const result = await apiFetch('/api/conversations', {

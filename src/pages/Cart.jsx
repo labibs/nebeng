@@ -54,6 +54,14 @@ export default function Cart() {
     };
   }, [user]);
 
+  // Helper untuk mengambil alamat pendek (misal: "Jl. Merdeka, Menteng")
+  const getShortAddress = (address) => {
+    if (!address) return "";
+    const parts = address.split(',').map(p => p.trim());
+    // Ambil maksimal 2 bagian pertama agar ringkas
+    return parts.slice(0, 2).join(', ');
+  };
+
   const groupItems = () => {
     const kurirGroups = {};
     const pembeliGroups = {};
@@ -98,6 +106,7 @@ export default function Cart() {
           key,
           warungId: item.warung?.id,
           warungName: item.warung?.name,
+          warungAddress: item.warung?.address,
           warungStatus: status,
           partnerId: isMyRequest ? item.warung?.created_by_clerk_id : item.user_id,
           partnerName,
@@ -301,7 +310,7 @@ export default function Cart() {
                           <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm bg-gray-100">
                             {group.partnerAvatar ? <img src={group.partnerAvatar} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-500"><User size={20} /></div>}
                           </div>
-                          <div><p className="font-bold text-sm">{group.partnerName}</p><p className="text-[10px] opacity-60 uppercase tracking-wider">{group.warungName}</p></div>
+                          <div><p className="font-bold text-sm">{group.partnerName}</p><p className="text-[10px] opacity-60 tracking-wider">{getShortAddress(group.warungAddress)}</p></div>
                         </div>
                         <button onClick={() => toggleSelectGroup(group.key, kurirGroups)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90">
                           <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-200' : 'border-gray-300'}`}>
@@ -340,7 +349,7 @@ export default function Cart() {
                           <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm bg-gray-100">
                             {group.partnerAvatar ? <img src={group.partnerAvatar} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-500"><User size={20} /></div>}
                           </div>
-                          <div><p className="font-bold text-sm">{group.partnerName}</p><span className="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">Rekomendasi</span></div>
+                          <div><p className="font-bold text-sm">{group.partnerName}</p><p className="text-[9px] opacity-60 uppercase tracking-wider block mb-0.5">{getShortAddress(group.warungAddress)}</p><span className="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">Rekomendasi</span></div>
                         </div>
                         <button onClick={() => toggleSelectGroup(group.key, pembeliGroups)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90">
                           <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-200' : 'border-gray-300'}`}>
@@ -379,7 +388,7 @@ export default function Cart() {
                           <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm bg-gray-100">
                             {group.partnerAvatar ? <img src={group.partnerAvatar} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-500"><User size={20} /></div>}
                           </div>
-                          <div><p className="font-bold text-sm">{group.partnerName}</p><span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">Customer</span></div>
+                          <div><p className="font-bold text-sm">{group.partnerName}</p><p className="text-[9px] opacity-60 uppercase tracking-wider block mb-0.5">{getShortAddress(group.warungAddress)}</p><span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">Customer</span></div>
                         </div>
                         <button onClick={() => toggleSelectGroup(group.key, milikGroups)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90">
                           <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-200' : 'border-gray-300'}`}>

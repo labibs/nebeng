@@ -251,8 +251,13 @@ func DealCart(c *gin.Context) {
 		deliveryStatusStr = body.DeliveryStatus
 	}
 
+	var postID interface{} = body.PostID
+	if body.PostID == nil || body.PostID == "" {
+		postID = nil
+	}
+
 	newDeal := map[string]interface{}{
-		"post_id":           body.PostID,
+		"post_id":           postID,
 		"carrier_id":        carrierID,
 		"depositor_id":      depositorID,
 		"pickup_location":   body.PickupLocation,

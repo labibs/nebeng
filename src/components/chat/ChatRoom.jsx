@@ -194,8 +194,6 @@ export default function ChatRoom() {
       return;
     }
 
-    let dealId;
-
     // ===============================
     // 2️⃣ Jika BELUM ADA deal → INSERT (dipertahankan seperti logic milikmu)
     // ===============================
@@ -205,17 +203,18 @@ export default function ChatRoom() {
         .insert({
           carrier_id: carrierId,
           depositor_id: depositorId,
-          post_id: postId,
+          post_id: finalPostId,
           agreed_fee: agreedFee,
           status: "pending",
 
           // default fields — dipertahankan 👍
           pickup_location: "TBD",
           delivery_location: "TBD",
-          pickup_datetime: "2026-01-20 12:00:00",
+          pickup_datetime: new Date().toISOString().replace('T', ' ').split('.')[0] + '+07',
           item_description: "TBD",
           item_photos: [],
           notes: "",
+          delivery_status: "draft"
         })
         .select("id")
         .single();
@@ -272,15 +271,14 @@ export default function ChatRoom() {
   };
 
   const updateDealLocation = async (postId, locationData, msgId) => {
-    console.log('cekiin', postId, locationData, msgId)
-    if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
+    if (!postInfo?.clerk_user_id || !currentUserId) return;
 
+    const finalPostId = postId || conversationPostId;
     // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
-    // Ambil yang terbaru jika ada multiple
     const { data: existingDeals, error: fetchError } = await supabase
       .from('deals')
       .select('id')
-      .eq('post_id', postId)
+      .eq('post_id', finalPostId)
       .eq('carrier_id', carrierId)
       .eq('depositor_id', depositorId)
       .order('created_at', { ascending: false })
@@ -301,15 +299,16 @@ export default function ChatRoom() {
         .insert({
           carrier_id: carrierId,
           depositor_id: depositorId,
-          post_id: postId,
-          agreed_fee: postInfo?.fee || 0, // Ambil dari post info jika ada
+          post_id: finalPostId,
+          agreed_fee: postInfo?.fee || 0,
           status: 'pending',
           pickup_location: 'TBD',
           delivery_location: 'TBD',
-          pickup_datetime: '2026-01-20 12:00:00',
+          pickup_datetime: new Date().toISOString().replace('T', ' ').split('.')[0] + '+07',
           item_description: 'TBD',
           item_photos: [],
           notes: '',
+          delivery_status: 'draft'
         })
         .select('id')
         .single();
@@ -356,13 +355,14 @@ export default function ChatRoom() {
   };
 
   const updateDealTime = async (postId, timeData, msgId) => {
-    if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
+    if (!postInfo?.clerk_user_id || !currentUserId) return;
 
+    const finalPostId = postId || conversationPostId;
     // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
     const { data: existingDeals, error: fetchError } = await supabase
       .from('deals')
       .select('id')
-      .eq('post_id', postId)
+      .eq('post_id', finalPostId)
       .eq('carrier_id', carrierId)
       .eq('depositor_id', depositorId)
       .order('created_at', { ascending: false })
@@ -383,15 +383,16 @@ export default function ChatRoom() {
         .insert({
           carrier_id: carrierId,
           depositor_id: depositorId,
-          post_id: postId,
-          agreed_fee: postInfo?.fee || 0, // Ambil dari post info jika ada
+          post_id: finalPostId,
+          agreed_fee: postInfo?.fee || 0,
           status: 'pending',
           pickup_location: 'TBD',
           delivery_location: 'TBD',
-          pickup_datetime: '2026-01-20 12:00:00',
+          pickup_datetime: new Date().toISOString().replace('T', ' ').split('.')[0] + '+07',
           item_description: 'TBD',
           item_photos: [],
           notes: '',
+          delivery_status: 'draft'
         })
         .select('id')
         .single();
@@ -413,7 +414,7 @@ export default function ChatRoom() {
       .from('deals')
       .update({
         pickup_datetime: timeData.datetime,
-        notes: timeData.notes || ''
+        notes: (timeData.notes || '')
       })
       .eq('id', dealId);
 
@@ -440,13 +441,14 @@ export default function ChatRoom() {
   };
 
   const updateDealItem = async (postId, itemData, msgId) => {
-    if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
+    if (!postInfo?.clerk_user_id || !currentUserId) return;
 
+    const finalPostId = postId || conversationPostId;
     // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
     const { data: existingDeals, error: fetchError } = await supabase
       .from('deals')
       .select('id')
-      .eq('post_id', postId)
+      .eq('post_id', finalPostId)
       .eq('carrier_id', carrierId)
       .eq('depositor_id', depositorId)
       .order('created_at', { ascending: false })
@@ -467,15 +469,16 @@ export default function ChatRoom() {
         .insert({
           carrier_id: carrierId,
           depositor_id: depositorId,
-          post_id: postId,
-          agreed_fee: postInfo?.fee || 0, // Ambil dari post info jika ada
+          post_id: finalPostId,
+          agreed_fee: postInfo?.fee || 0,
           status: 'pending',
           pickup_location: 'TBD',
           delivery_location: 'TBD',
-          pickup_datetime: '2026-01-20 12:00:00',
+          pickup_datetime: new Date().toISOString().replace('T', ' ').split('.')[0] + '+07',
           item_description: 'TBD',
           item_photos: [],
           notes: '',
+          delivery_status: 'draft'
         })
         .select('id')
         .single();
@@ -524,14 +527,14 @@ export default function ChatRoom() {
   };
 
   const updateDealDelivery = async (postId, locationData, msgId) => {
-    console.log('isinya apa', postId, locationData, msgId)
-    if (!postInfo?.clerk_user_id || !currentUserId || !postId) return;
+    if (!postInfo?.clerk_user_id || !currentUserId) return;
 
+    const finalPostId = postId || conversationPostId;
     // Cari deal yang sudah ada berdasarkan post_id, carrier_id, depositor_id
     const { data: existingDeals, error: fetchError } = await supabase
       .from('deals')
       .select('id')
-      .eq('post_id', postId)
+      .eq('post_id', finalPostId)
       .eq('carrier_id', carrierId)
       .eq('depositor_id', depositorId)
       .order('created_at', { ascending: false })
@@ -552,15 +555,16 @@ export default function ChatRoom() {
         .insert({
           carrier_id: carrierId,
           depositor_id: depositorId,
-          post_id: postId,
-          agreed_fee: postInfo?.fee || 0, // Ambil dari post info jika ada
+          post_id: finalPostId,
+          agreed_fee: postInfo?.fee || 0,
           status: 'pending',
           pickup_location: 'TBD',
           delivery_location: 'TBD',
-          pickup_datetime: '2026-01-20 12:00:00',
+          pickup_datetime: new Date().toISOString().replace('T', ' ').split('.')[0] + '+07',
           item_description: 'TBD',
           item_photos: [],
           notes: '',
+          delivery_status: 'draft'
         })
         .select('id')
         .single();
@@ -604,7 +608,6 @@ export default function ChatRoom() {
         console.error("Gagal update message.deal_id:", msgError);
       }
     }
-
   };
 
   // Fetch recipient

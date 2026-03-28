@@ -29,6 +29,7 @@ export default function CartNegoModal({ isOpen, onClose, onSend, data }) {
             agreed_fee: totalPayment,
             delivery_location: deliveryLoc,
             notes: notes,
+            total_item_price: totalItemPrice,
             total_payment: totalPayment,
             // Pastikan item_photos tetap array
             item_photos: Array.isArray(data.payload.item_photos)

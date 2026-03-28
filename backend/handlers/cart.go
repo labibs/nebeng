@@ -158,6 +158,7 @@ func DealCart(c *gin.Context) {
 		DeliveryLocation string      `json:"delivery_location"`
 		ProposedFee      float64     `json:"proposed_fee"`
 		AgreedFee        float64     `json:"agreed_fee"`
+		TotalItemPrice   float64     `json:"total_item_price"`
 		ItemDescription  string      `json:"item_description"`
 		ItemPhotos       interface{} `json:"item_photos"` // can be string or []interface{}
 		ItemPhoto        interface{} `json:"item_photo"`  // legacy support
@@ -264,6 +265,7 @@ func DealCart(c *gin.Context) {
 		"delivery_location": body.DeliveryLocation,
 		"item_description":  body.ItemDescription,
 		"item_photos":       itemPhotos,
+		"item_fee":          body.TotalItemPrice,
 		"agreed_fee":        agreedFee,
 		"notes":             body.Notes,
 		"pickup_datetime":   pickupDT,

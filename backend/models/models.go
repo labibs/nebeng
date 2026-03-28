@@ -116,6 +116,7 @@ type Deal struct {
 	ID               string   `json:"id"`
 	Status           string   `json:"status"`
 	AgreedFee        float64  `json:"agreed_fee"`
+	ItemFee          float64  `json:"item_fee"`
 	CarrierID        string   `json:"carrier_id"`
 	DepositorID      string   `json:"depositor_id"`
 	PickupLocation   string   `json:"pickup_location"`

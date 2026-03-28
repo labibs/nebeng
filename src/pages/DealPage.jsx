@@ -14,7 +14,8 @@ import {
   Truck,
   MapPinHouse,
   CarFront,
-  PackageCheck
+  PackageCheck,
+  Wallet
 } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -109,6 +110,126 @@ function afterSecondComma(text) {
   return parts.slice(2).join(",").trim();
 }
 
+function parseLocation(location) {
+  if (!location || typeof location !== "string") return null;
+
+  const parts = location.split(",");
+  if (parts.length < 2) return null;
+
+  const lat = parseFloat(parts[0]);
+  const lng = parseFloat(parts[1]);
+
+  if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+
+  return {
+    lat,
+    lng,
+    address: parts.slice(2).join(",").trim(),
+  };
+}
+
+function extractCityFromAddress(address) {
+  if (!address || typeof address !== "string") return null;
+
+  const parts = address
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (!parts.length) return null;
+
+  const cityPart = parts.find((part) =>
+    /^(kota|kabupaten|kab\.|city)\s/i.test(part)
+  );
+
+  if (cityPart) return cityPart;
+
+  return parts.length >= 2 ? parts[parts.length - 2] : parts[0];
+}
+
+function normalizeItemPhotos(itemPhotos) {
+  if (Array.isArray(itemPhotos)) {
+    return itemPhotos.filter((photo) => typeof photo === "string" && photo.trim());
+  }
+
+  if (typeof itemPhotos === "string") {
+    const trimmed = itemPhotos.trim();
+    if (!trimmed) return [];
+
+    if (trimmed.startsWith("[")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return Array.isArray(parsed)
+          ? parsed.filter((photo) => typeof photo === "string" && photo.trim())
+          : [];
+      } catch {
+        return [];
+      }
+    }
+
+    return [trimmed];
+  }
+
+  return [];
+}
+
+function parseRupiahNumber(value) {
+  if (typeof value === "number") return value;
+  if (typeof value !== "string") return null;
+
+  const digits = value.replace(/[^\d]/g, "");
+  return digits ? Number(digits) : null;
+}
+
+function parseDealOfferPayload(content) {
+  if (!content || typeof content !== "string") return null;
+
+  const payloadMatch = content.match(/<!--PAYLOAD:(.*?)-->/);
+  if (!payloadMatch) return null;
+
+  try {
+    return JSON.parse(payloadMatch[1]);
+  } catch {
+    return null;
+  }
+}
+
+function parsePriceBreakdownFromMessage(message) {
+  if (!message) return null;
+
+  if (message.message_type === "deal_offer") {
+    const payload = parseDealOfferPayload(message.content);
+    if (!payload) return null;
+
+    const jastipFee = Number(payload.proposed_fee ?? 0) || 0;
+    const itemPrice = Number(payload.total_item_price ?? 0) || 0;
+    const total = Number(payload.total_payment ?? payload.agreed_fee ?? itemPrice + jastipFee) || 0;
+
+    if (!jastipFee && !itemPrice && !total) return null;
+
+    return { itemPrice, jastipFee, total };
+  }
+
+  if (message.message_type === "deal_ongkos_jastip") {
+    const feeMatch = message.content?.match(/Rp\s*([0-9.,]+)/i);
+    const parsedFee = feeMatch ? parseRupiahNumber(feeMatch[1]) : null;
+    if (parsedFee) {
+      return { itemPrice: null, jastipFee: parsedFee, total: null };
+    }
+  }
+
+  return null;
+}
+
+function matchesDealParticipants(payload, deal) {
+  if (!payload || !deal) return false;
+
+  return (
+    String(payload.carrier_id || "") === String(deal.carrier_id || "") &&
+    String(payload.depositor_id || "") === String(deal.depositor_id || "")
+  );
+}
+
 function PaymentOption({
   value,
   title,
@@ -160,6 +281,7 @@ export default function DealPage() {
   const [showTrackingModal, setShowTrackingModal] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [priceBreakdown, setPriceBreakdown] = useState(null);
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -209,6 +331,7 @@ export default function DealPage() {
           carrier_id,
           depositor_id,
           agreed_fee,
+          item_fee,
           pickup_location,
           delivery_location,
           pickup_datetime,
@@ -227,7 +350,7 @@ export default function DealPage() {
             name,
             avatar_url
           ),
-          
+
           post:posts!fk_deals_post (
             id,
             from_city,
@@ -265,6 +388,56 @@ export default function DealPage() {
 
     fetchDeal();
   }, [dealId]);
+
+  useEffect(() => {
+    if (!dealId || !deal) return;
+
+    async function fetchPriceBreakdown() {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("message_type, content, created_at")
+        .eq("deal_id", dealId)
+        .in("message_type", ["deal_offer", "deal_ongkos_jastip"])
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.warn("Could not fetch deal price breakdown:", error);
+        return;
+      }
+
+      let parsedBreakdown = (data || [])
+        .map(parsePriceBreakdownFromMessage)
+        .find(Boolean);
+
+      if (!parsedBreakdown && deal?.post?.id) {
+        const { data: fallbackMessages, error: fallbackError } = await supabase
+          .from("messages")
+          .select("message_type, content, created_at, sender_id")
+          .eq("post_id", deal.post.id)
+          .in("message_type", ["deal_offer", "deal_ongkos_jastip"])
+          .order("created_at", { ascending: false })
+          .limit(30);
+
+        if (!fallbackError) {
+          parsedBreakdown = (fallbackMessages || [])
+            .map((message) => {
+              const payload = parseDealOfferPayload(message.content);
+              if (message.message_type === "deal_offer" && !matchesDealParticipants(payload, deal)) {
+                return null;
+              }
+              return parsePriceBreakdownFromMessage(message);
+            })
+            .find(Boolean);
+        }
+      }
+
+      if (parsedBreakdown) {
+        setPriceBreakdown(parsedBreakdown);
+      }
+    }
+
+    fetchPriceBreakdown();
+  }, [dealId, deal]);
 
 
 
@@ -558,6 +731,29 @@ export default function DealPage() {
     : deal?.carrier;
   const opponentRole = isCarrierLogin ? "Customer" : "Kurir";
   const opponentType = isCarrierLogin ? "Bawa" : "Nitip";
+  const pickupLocationData = parseLocation(deal?.pickup_location);
+  const deliveryLocationData = parseLocation(deal?.delivery_location);
+  const itemPhotos = normalizeItemPhotos(deal?.item_photos);
+  const headerItemPhoto =
+    itemPhotos[0] ||
+    deal?.post?.item_photo ||
+    "/default-item.jpg";
+  const pickupCity =
+    extractCityFromAddress(pickupLocationData?.address) ||
+    deal?.post?.from_city ||
+    "-";
+  const deliveryCity =
+    extractCityFromAddress(deliveryLocationData?.address) ||
+    deal?.post?.to_city ||
+    "-";
+  const agreedFee = Number(deal?.agreed_fee || 0);
+  const storedItemFee = Number(deal?.item_fee || 0);
+  const grossAmount = Number(transaction?.gross_amount || 0);
+  const itemFee = storedItemFee || priceBreakdown?.itemPrice || Math.max(0, grossAmount - agreedFee);
+  const jastipFee = priceBreakdown?.jastipFee ?? Math.max(0, agreedFee - itemFee);
+  const totalTransactionAmount =
+    priceBreakdown?.total ??
+    (grossAmount || agreedFee || (itemFee + jastipFee));
 
   const startChatWithDeal = async (deal, currentClerkId) => {
     // Tentukan lawan chat
@@ -612,7 +808,7 @@ export default function DealPage() {
                 <div className="avatar flex-shrink-0">
                   <div className="w-11 h-11 rounded-xl overflow-hidden ring-2 ring-emerald-500/20">
                     <img
-                      src={deal.post?.item_photo || "/default-item.jpg"}
+                      src={headerItemPhoto}
                       alt="Barang"
                       className="w-full h-full object-cover"
                     />
@@ -630,7 +826,7 @@ export default function DealPage() {
 
                   <div className="flex items-center gap-2 text-sm text-base-content/80">
                     <span className="font-semibold">
-                      {deal.post?.from_city || "-"}
+                      {pickupCity}
                     </span>
 
                     <svg
@@ -648,7 +844,7 @@ export default function DealPage() {
                     </svg>
 
                     <span className="font-semibold">
-                      {deal.post?.to_city || "-"}
+                      {deliveryCity}
                     </span>
                   </div>
                 </div>
@@ -788,7 +984,7 @@ export default function DealPage() {
               Ringkasan Transaksi
             </h2>
             <p className="text-sm opacity-100">
-              <OpponentSummary />
+              <OpponentSummary isCarrierLogin={isCarrierLogin} />
             </p>
 
           </div>
@@ -800,7 +996,7 @@ export default function DealPage() {
               title="Deskripsi Barang"
               value={deal.item_description}
               type="photos"
-              extraData={deal.item_photos}
+              extraData={itemPhotos}
             />
 
             <InfoRowCollapse
@@ -808,11 +1004,7 @@ export default function DealPage() {
               title="Lokasi Penjemputan"
               value={afterSecondComma(deal.pickup_location)}
               type="location"
-              extraData={{
-                lat: parseFloat(deal.pickup_location.split(",")[0]),
-                lng: parseFloat(deal.pickup_location.split(",")[1]),
-                address: deal.pickup_location.split(",").slice(2).join(","),
-              }}
+              extraData={pickupLocationData}
             />
 
             <InfoRowCollapse
@@ -820,11 +1012,7 @@ export default function DealPage() {
               title="Lokasi Pengantaran"
               value={afterSecondComma(deal.delivery_location)}
               type="location"
-              extraData={{
-                lat: parseFloat(deal.delivery_location.split(",")[0]),
-                lng: parseFloat(deal.delivery_location.split(",")[1]),
-                address: deal.delivery_location.split(",").slice(2).join(","),
-              }}
+              extraData={deliveryLocationData}
             />
 
             <InfoRowCollapse
@@ -852,25 +1040,46 @@ export default function DealPage() {
             <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 space-y-3">
               <p className="text-sm opacity-70">Penghasilan dari Jastip</p>
               <p className="text-3xl font-extrabold text-emerald-600">
-                {deal.agreed_fee
-                  ? Number(deal.agreed_fee).toLocaleString("id-ID", {
+                {jastipFee
+                  ? jastipFee.toLocaleString("id-ID", {
                     style: "currency",
                     currency: "IDR",
                   })
                   : "-"}
               </p>
+              <p className="text-sm text-base-content/60">
+                Ongkos jastip yang menjadi penghasilan Anda
+              </p>
 
               {/* Perincian biaya */}
               <div className="text-sm text-gray-600 space-y-1">
                 <div className="flex justify-between">
-                  <span>Biaya Penanganan</span>
-                  <span>Rp 0</span>
+                  <span>Harga Barang</span>
+                  <span>
+                    {itemFee
+                      ? itemFee.toLocaleString("id-ID", {
+                        style: "currency",
+                        currency: "IDR",
+                      })
+                      : "-"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Ongkos Jastip</span>
+                  <span>
+                    {jastipFee
+                      ? jastipFee.toLocaleString("id-ID", {
+                        style: "currency",
+                        currency: "IDR",
+                      })
+                      : "-"}
+                  </span>
                 </div>
                 <div className="flex justify-between font-semibold">
-                  <span>Total yang diterima</span>
+                  <span>Total Nominal Transaksi</span>
                   <span>
-                    {deal.agreed_fee
-                      ? Number(deal.agreed_fee).toLocaleString("id-ID", {
+                    {totalTransactionAmount
+                      ? totalTransactionAmount.toLocaleString("id-ID", {
                         style: "currency",
                         currency: "IDR",
                       })
@@ -889,8 +1098,8 @@ export default function DealPage() {
             <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 space-y-3">
               <p className="text-sm opacity-70">Total Biaya Nebeng</p>
               <p className="text-3xl font-extrabold text-emerald-600">
-                {deal.agreed_fee || deal.item_fee
-                  ? (Number(deal.agreed_fee || 0) + Number(deal.item_fee || 0)).toLocaleString("id-ID", {
+                {totalTransactionAmount
+                  ? totalTransactionAmount.toLocaleString("id-ID", {
                     style: "currency",
                     currency: "IDR",
                   })
@@ -902,8 +1111,8 @@ export default function DealPage() {
                 <div className="flex justify-between">
                   <span>Biaya Barang</span>
                   <span>
-                    {deal.item_fee
-                      ? Number(deal.item_fee).toLocaleString("id-ID", {
+                    {itemFee
+                      ? itemFee.toLocaleString("id-ID", {
                         style: "currency",
                         currency: "IDR",
                       })
@@ -917,8 +1126,8 @@ export default function DealPage() {
                 <div className="flex justify-between font-semibold">
                   <span>Biaya Nitip</span>
                   <span>
-                    {deal.agreed_fee
-                      ? Number(deal.agreed_fee).toLocaleString("id-ID", {
+                    {jastipFee
+                      ? jastipFee.toLocaleString("id-ID", {
                         style: "currency",
                         currency: "IDR",
                       })
@@ -1089,6 +1298,3 @@ export default function DealPage() {
     </>
   );
 }
-
-
-

@@ -101,6 +101,7 @@ export default function ChatRoom() {
         delivery_status: 'draft',
         // Optional extras
         warung_name: warungName,
+        total_item_price: totalItemPrice,
         total_payment: totalPayment
       };
 

@@ -294,7 +294,7 @@ export default function DealMenu({
                     .upsert(
                       {
                         deal_id: dealData?.id,
-                        gross_amount: Number(dealData?.agreed_fee || 0) + Number(dealData?.item_fee || 0),
+                        gross_amount: Number(dealData?.agreed_fee || 0),
                         transaction_status: "draft",
                       },
                       {

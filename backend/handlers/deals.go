@@ -36,8 +36,7 @@ func GetDealByPost(c *gin.Context) {
 	dealId := messages[0]["deal_id"]
 
 	// 2. Fetch the deal details
-	// Note: item_fee is removed because it's reported missing/invalid (400)
-	dealQuery := fmt.Sprintf("deals?select=id,agreed_fee,pickup_location,delivery_location,pickup_datetime,item_description,status&id=eq.%v", dealId)
+	dealQuery := fmt.Sprintf("deals?select=id,agreed_fee,item_fee,pickup_location,delivery_location,pickup_datetime,item_description,status&id=eq.%v", dealId)
 	dealData, _, err := sb.DefaultClient.DoRequest("GET", dealQuery, nil)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch deal details"})

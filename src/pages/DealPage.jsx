@@ -15,7 +15,6 @@ import {
   MapPinHouse,
   CarFront,
   PackageCheck,
-  Wallet
 } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -25,6 +24,7 @@ import SlideToRunning from "../components/transaksi/SlideToRunning";
 import SlideToDelivered from "../components/transaksi/SlideToDelivered";
 import ReviewBottomSheet from "../components/transaksi/ReviewBottomSheet";
 import DealStatusBadge from "../components/common/DealStatusBadge";
+import SlideToUnlock from "../components/chat/SlideToUnlock";
 
 function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
   const [open, setOpen] = useState(false);
@@ -33,12 +33,17 @@ function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
 
   return (
     <div className="border-b border-base-300/40 py-2">
-      <div className="flex justify-between items-start gap-3 cursor-pointer" onClick={toggle}>
+      <div
+        className="flex justify-between items-start gap-3 cursor-pointer"
+        onClick={toggle}
+      >
         <div className="flex gap-3 items-start">
           <Icon className="w-5 h-5 text-emerald-500 mt-0.5" />
           <div>
             <p className="text-sm font-medium">{title}</p>
-            <p className="text-sm opacity-70 whitespace-pre-wrap">{value || "-"}</p>
+            <p className="text-sm opacity-70 whitespace-pre-wrap">
+              {value || "-"}
+            </p>
           </div>
         </div>
 
@@ -96,7 +101,6 @@ function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
               </div>
             </div>
           )}
-
         </div>
       )}
     </div>
@@ -139,7 +143,7 @@ function extractCityFromAddress(address) {
   if (!parts.length) return null;
 
   const cityPart = parts.find((part) =>
-    /^(kota|kabupaten|kab\.|city)\s/i.test(part)
+    /^(kota|kabupaten|kab\.|city)\s/i.test(part),
   );
 
   if (cityPart) return cityPart;
@@ -149,7 +153,9 @@ function extractCityFromAddress(address) {
 
 function normalizeItemPhotos(itemPhotos) {
   if (Array.isArray(itemPhotos)) {
-    return itemPhotos.filter((photo) => typeof photo === "string" && photo.trim());
+    return itemPhotos.filter(
+      (photo) => typeof photo === "string" && photo.trim(),
+    );
   }
 
   if (typeof itemPhotos === "string") {
@@ -203,7 +209,10 @@ function parsePriceBreakdownFromMessage(message) {
 
     const jastipFee = Number(payload.proposed_fee ?? 0) || 0;
     const itemPrice = Number(payload.total_item_price ?? 0) || 0;
-    const total = Number(payload.total_payment ?? payload.agreed_fee ?? itemPrice + jastipFee) || 0;
+    const total =
+      Number(
+        payload.total_payment ?? payload.agreed_fee ?? itemPrice + jastipFee,
+      ) || 0;
 
     if (!jastipFee && !itemPrice && !total) return null;
 
@@ -260,7 +269,9 @@ function PaymentOption({
         <p className="font-medium">{title}</p>
         <p className="text-sm opacity-70">{desc}</p>
       </div>
-      {badge && <span className="badge badge-outline badge-success">{badge}</span>}
+      {badge && (
+        <span className="badge badge-outline badge-success">{badge}</span>
+      )}
     </label>
   );
 }
@@ -299,7 +310,10 @@ export default function DealPage() {
 
     const script = document.createElement("script");
     script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
-    script.setAttribute("data-client-key", import.meta.env.VITE_MIDTRANS_CLIENT_KEY || "SB-Mid-client-XXXX"); // ganti dengan client key sandbox kamu
+    script.setAttribute(
+      "data-client-key",
+      import.meta.env.VITE_MIDTRANS_CLIENT_KEY || "SB-Mid-client-XXXX",
+    ); // ganti dengan client key sandbox kamu
     script.async = true;
 
     script.onload = () => console.log("✅ Midtrans Snap script loaded");
@@ -325,7 +339,8 @@ export default function DealPage() {
     async function fetchDeal() {
       const { data, error } = await supabase
         .from("deals")
-        .select(`
+        .select(
+          `
           id,
           status,
           carrier_id,
@@ -359,7 +374,8 @@ export default function DealPage() {
             item_photo,
             created_at
           )
-        `)
+        `,
+        )
         .eq("id", dealId)
         .single();
 
@@ -369,7 +385,10 @@ export default function DealPage() {
       } else {
         setDeal(data);
         // Cek apakah user (depositor) sudah memberi ulasan
-        if (data.status === "delivered" || data.delivery_status === "delivered") {
+        if (
+          data.status === "delivered" ||
+          data.delivery_status === "delivered"
+        ) {
           try {
             const { data: reviewData, error: reviewError } = await supabase
               .from("reviews")
@@ -377,7 +396,8 @@ export default function DealPage() {
               .eq("deal_id", dealId)
               .maybeSingle();
             if (reviewData) setHasReviewed(true);
-            if (reviewError) console.warn("Could not fetch reviews:", reviewError);
+            if (reviewError)
+              console.warn("Could not fetch reviews:", reviewError);
           } catch (e) {
             console.warn("Could not fetch reviews:", e);
           }
@@ -422,7 +442,10 @@ export default function DealPage() {
           parsedBreakdown = (fallbackMessages || [])
             .map((message) => {
               const payload = parseDealOfferPayload(message.content);
-              if (message.message_type === "deal_offer" && !matchesDealParticipants(payload, deal)) {
+              if (
+                message.message_type === "deal_offer" &&
+                !matchesDealParticipants(payload, deal)
+              ) {
                 return null;
               }
               return parsePriceBreakdownFromMessage(message);
@@ -438,8 +461,6 @@ export default function DealPage() {
 
     fetchPriceBreakdown();
   }, [dealId, deal]);
-
-
 
   // Fetch transaction
   useEffect(() => {
@@ -466,18 +487,18 @@ export default function DealPage() {
     const dealChannel = supabase
       .channel(`deal-realtime-${dealId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'deals',
+          event: "UPDATE",
+          schema: "public",
+          table: "deals",
           filter: `id=eq.${dealId}`,
         },
         (payload) => {
-          console.log('🔄 Real-time Deal update:', payload.new);
+          console.log("🔄 Real-time Deal update:", payload.new);
           // Merging with existing deal data to preserve joined fields (carrier, depositor, post)
           setDeal((prev) => (prev ? { ...prev, ...payload.new } : payload.new));
-        }
+        },
       )
       .subscribe();
 
@@ -487,17 +508,17 @@ export default function DealPage() {
       trxChannel = supabase
         .channel(`trx-realtime-${trxId}`)
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'transactions',
+            event: "UPDATE",
+            schema: "public",
+            table: "transactions",
             filter: `id=eq.${trxId}`,
           },
           (payload) => {
-            console.log('🔄 Real-time Transaction update:', payload.new);
+            console.log("🔄 Real-time Transaction update:", payload.new);
             setTransaction(payload.new);
-          }
+          },
         )
         .subscribe();
     }
@@ -533,7 +554,7 @@ export default function DealPage() {
       if (convError || !conv.length) return;
 
       // Find the one that also has the depositor and correct post_id
-      const conversationIds = conv.map(c => c.conversation_id);
+      const conversationIds = conv.map((c) => c.conversation_id);
 
       const { data: finalConv, error: finalError } = await supabase
         .from("conversations")
@@ -544,7 +565,9 @@ export default function DealPage() {
 
       if (finalError || !finalConv) {
         // Fallback: check other participants if direct find fails
-        console.warn("Conversation not found for system message, falling back...");
+        console.warn(
+          "Conversation not found for system message, falling back...",
+        );
         // This is heuristic, usually there's only one relevant conversation
       }
 
@@ -556,7 +579,7 @@ export default function DealPage() {
         sender_id: clerkId,
         message_type: "system",
         content: `[system] ${content}`,
-        post_id: deal.post.id || deal.post_id
+        post_id: deal.post.id || deal.post_id,
       });
     } catch (err) {
       console.error("Gagal kirim pesan sistem:", err);
@@ -577,7 +600,7 @@ export default function DealPage() {
     }
 
     // Update local state
-    setDeal(prev => ({ ...prev, delivery_status: "running" }));
+    setDeal((prev) => ({ ...prev, delivery_status: "running" }));
 
     // 2. Mulai live tracking
     startLiveTracking();
@@ -596,20 +619,18 @@ export default function DealPage() {
         async (pos) => {
           const { latitude, longitude } = pos.coords;
 
-          await supabase
-            .from("deal_live_locations")
-            .upsert({
-              deal_id: deal.id,          // BIGINT
-              courier_id: deal.carrier_id, // TEXT (clerk_id)
-              lat: latitude,
-              lng: longitude,
-              updated_at: new Date(),
-            });
+          await supabase.from("deal_live_locations").upsert({
+            deal_id: deal.id, // BIGINT
+            courier_id: deal.carrier_id, // TEXT (clerk_id)
+            lat: latitude,
+            lng: longitude,
+            updated_at: new Date(),
+          });
         },
         (err) => {
           console.error("GPS error:", err);
         },
-        { enableHighAccuracy: true }
+        { enableHighAccuracy: true },
       );
     };
 
@@ -626,7 +647,7 @@ export default function DealPage() {
       .from("deals")
       .update({
         delivery_status: "delivered",
-        status: "completed" // Finalize the deal session
+        status: "completed", // Finalize the deal session
       })
       .eq("id", deal.id)
       .eq("carrier_id", deal.carrier_id);
@@ -637,10 +658,10 @@ export default function DealPage() {
     }
 
     // Update local state
-    setDeal(prev => ({
+    setDeal((prev) => ({
       ...prev,
       delivery_status: "delivered",
-      status: "completed"
+      status: "completed",
     }));
 
     // 2. Mulai live tracking
@@ -666,7 +687,12 @@ export default function DealPage() {
   };
 
   const handleCancelDeal = async () => {
-    if (!window.confirm("Apakah Anda yakin ingin membatalkan deal ini? Item akan dikembalikan ke keranjang.")) return;
+    if (
+      !window.confirm(
+        "Apakah Anda yakin ingin membatalkan deal ini? Item akan dikembalikan ke keranjang.",
+      )
+    )
+      return;
 
     try {
       // 1. Update status deal & transaction
@@ -710,6 +736,49 @@ export default function DealPage() {
     setSelectedDealId(null);
   };
 
+  const handleCreateTransaction = async () => {
+    if (!deal?.id) return;
+
+    try {
+      setPaying(true);
+
+      const payload = {
+        deal_id: deal.id,
+        gross_amount: totalTransactionAmount,
+        transaction_status: "draft",
+      };
+
+      const { data, error } = await supabase
+        .from("transactions")
+        .upsert(payload, { onConflict: "deal_id" })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setTransaction(data);
+      navigate(`/deal?deal=${deal.id}&trx=${data.id}`, { replace: true });
+      return data;
+    } catch (error) {
+      console.error("Gagal membuat transaksi:", error);
+      alert("Gagal melanjutkan ke transaksi. Coba lagi.");
+      return null;
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  const handleProceedToPayment = async () => {
+    const currentTransaction = transaction || (await handleCreateTransaction());
+    if (!currentTransaction?.id) return;
+
+    await handlePay({
+      transactionId: currentTransaction.id,
+      navigate,
+      setPaying,
+    });
+  };
+
   if (loading) return <p className="p-8 text-center">Memuat...</p>;
   if (!deal) return <p className="p-8 text-center">Deal tidak ditemukan</p>;
 
@@ -726,18 +795,15 @@ export default function DealPage() {
   const delivered = ["delivered"].includes(deal?.delivery_status);
 
   const isCarrierLogin = deal?.carrier_id === clerkId;
-  const opponent = isCarrierLogin
-    ? deal?.depositor
-    : deal?.carrier;
+  const opponent = isCarrierLogin ? deal?.depositor : deal?.carrier;
   const opponentRole = isCarrierLogin ? "Customer" : "Kurir";
   const opponentType = isCarrierLogin ? "Bawa" : "Nitip";
+  const needsTransaction = !transaction;
   const pickupLocationData = parseLocation(deal?.pickup_location);
   const deliveryLocationData = parseLocation(deal?.delivery_location);
   const itemPhotos = normalizeItemPhotos(deal?.item_photos);
   const headerItemPhoto =
-    itemPhotos[0] ||
-    deal?.post?.item_photo ||
-    "/default-item.jpg";
+    itemPhotos[0] || deal?.post?.item_photo || "/default-item.jpg";
   const pickupCity =
     extractCityFromAddress(pickupLocationData?.address) ||
     deal?.post?.from_city ||
@@ -749,11 +815,13 @@ export default function DealPage() {
   const agreedFee = Number(deal?.agreed_fee || 0);
   const storedItemFee = Number(deal?.item_fee || 0);
   const grossAmount = Number(transaction?.gross_amount || 0);
-  const itemFee = storedItemFee || priceBreakdown?.itemPrice || Math.max(0, grossAmount - agreedFee);
-  const jastipFee = priceBreakdown?.jastipFee ?? Math.max(0, agreedFee - itemFee);
+  const itemFee = storedItemFee || priceBreakdown?.itemPrice || 0;
+  const jastipFee =
+    agreedFee ||
+    priceBreakdown?.jastipFee ||
+    Math.max(0, grossAmount - itemFee);
   const totalTransactionAmount =
-    priceBreakdown?.total ??
-    (grossAmount || agreedFee || (itemFee + jastipFee));
+    priceBreakdown?.total ?? (grossAmount || itemFee + jastipFee);
 
   const startChatWithDeal = async (deal, currentClerkId) => {
     // Tentukan lawan chat
@@ -796,9 +864,22 @@ export default function DealPage() {
       <div className="min-h-screen bg-base-200 flex flex-col pb-24">
         {/* Header */}
         <div className="sticky top-0 z-10 navbar bg-base-100/90 backdrop-blur-xl border-b border-base-300/40">
-          <button onClick={() => navigate(-1)} className="btn btn-ghost btn-circle">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <button
+            onClick={() => navigate(-1)}
+            className="btn btn-ghost btn-circle"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </button>
           <div className="flex-1 flex items-center justify-between gap-2 px-0 -translate-x-4">
@@ -825,9 +906,7 @@ export default function DealPage() {
                   />
 
                   <div className="flex items-center gap-2 text-sm text-base-content/80">
-                    <span className="font-semibold">
-                      {pickupCity}
-                    </span>
+                    <span className="font-semibold">{pickupCity}</span>
 
                     <svg
                       className="w-5 h-5 text-emerald-500"
@@ -843,9 +922,7 @@ export default function DealPage() {
                       />
                     </svg>
 
-                    <span className="font-semibold">
-                      {deliveryCity}
-                    </span>
+                    <span className="font-semibold">{deliveryCity}</span>
                   </div>
                 </div>
               </div>
@@ -853,7 +930,6 @@ export default function DealPage() {
             <span className="badge badge-primary badge-sm font-medium">
               {opponentType}
             </span>
-
           </div>
         </div>
 
@@ -877,9 +953,7 @@ export default function DealPage() {
                   <p className="font-semibold text-lg truncate">
                     {opponent?.name || "-"}
                   </p>
-                  <p className="text-sm opacity-70">
-                    {opponentRole}
-                  </p>
+                  <p className="text-sm opacity-70">{opponentRole}</p>
                 </div>
               </div>
 
@@ -894,16 +968,14 @@ export default function DealPage() {
             </div>
 
             {/* EXTEND CARD – MUNCUL SAAT RUNNING */}
-            {(deal?.delivery_status === "running" && !isCarrierLogin) && (
+            {deal?.delivery_status === "running" && !isCarrierLogin && (
               <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3 animate-in fade-in slide-in-from-top-2">
                 <div className="flex items-center justify-between gap-3">
                   {/* Status */}
                   <div className="flex items-center gap-2 text-emerald-700">
                     <Truck className="w-5 h-5" />
                     <div>
-                      <p className="text-sm font-semibold">
-                        Sedang Mengantar
-                      </p>
+                      <p className="text-sm font-semibold">Sedang Mengantar</p>
                       <p className="text-xs opacity-70">
                         Kurir dalam perjalanan
                       </p>
@@ -921,43 +993,41 @@ export default function DealPage() {
                 </div>
               </div>
             )}
-            {(deal?.delivery_status === "draft" && transaction?.transaction_status === "paid" && !isCarrierLogin) && (
-              <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3 animate-in fade-in slide-in-from-top-2">
-                <div className="flex items-center justify-between gap-3">
-                  {/* Status */}
-                  <div className="flex items-center gap-2 text-emerald-700">
-                    <CarFront className="w-5 h-5" />
-                    <div>
-                      <p className="text-sm font-semibold">
-                        Sedang Menunggu
-                      </p>
-                      <p className="text-xs opacity-70">
-                        Persiapan keberangkatan
-                      </p>
+            {deal?.delivery_status === "draft" &&
+              transaction?.transaction_status === "paid" &&
+              !isCarrierLogin && (
+                <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center justify-between gap-3">
+                    {/* Status */}
+                    <div className="flex items-center gap-2 text-emerald-700">
+                      <CarFront className="w-5 h-5" />
+                      <div>
+                        <p className="text-sm font-semibold">Sedang Menunggu</p>
+                        <p className="text-xs opacity-70">
+                          Persiapan keberangkatan
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Action */}
-                  {/* <button
+                    {/* Action */}
+                    {/* <button
                   onClick={() => openLiveTracking(deal.id)}
                   className="btn btn-sm bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
                 >
                   <MapPin className="w-4 h-4" />
                   Posisi Kurir
                 </button> */}
+                  </div>
                 </div>
-              </div>
-            )}
-            {(deal?.delivery_status === "delivered" && !isCarrierLogin) && (
+              )}
+            {deal?.delivery_status === "delivered" && !isCarrierLogin && (
               <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3 animate-in fade-in slide-in-from-top-2">
                 <div className="flex items-center justify-between gap-3">
                   {/* Status */}
                   <div className="flex items-center gap-2 text-emerald-700">
                     <MapPinHouse className="w-5 h-5" />
                     <div>
-                      <p className="text-sm font-semibold">
-                        Tiba Ditujuan
-                      </p>
+                      <p className="text-sm font-semibold">Tiba Ditujuan</p>
                       <p className="text-xs opacity-70">
                         Barang sudah diterima
                       </p>
@@ -986,7 +1056,6 @@ export default function DealPage() {
             <p className="text-sm opacity-100">
               <OpponentSummary isCarrierLogin={isCarrierLogin} />
             </p>
-
           </div>
 
           {/* Detail Item */}
@@ -1021,13 +1090,13 @@ export default function DealPage() {
               value={
                 deal.pickup_datetime
                   ? new Date(deal.pickup_datetime).toLocaleString("id-ID", {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
                   : "-"
               }
               type="text"
@@ -1042,9 +1111,9 @@ export default function DealPage() {
               <p className="text-3xl font-extrabold text-emerald-600">
                 {jastipFee
                   ? jastipFee.toLocaleString("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
-                  })
+                      style: "currency",
+                      currency: "IDR",
+                    })
                   : "-"}
               </p>
               <p className="text-sm text-base-content/60">
@@ -1058,9 +1127,9 @@ export default function DealPage() {
                   <span>
                     {itemFee
                       ? itemFee.toLocaleString("id-ID", {
-                        style: "currency",
-                        currency: "IDR",
-                      })
+                          style: "currency",
+                          currency: "IDR",
+                        })
                       : "-"}
                   </span>
                 </div>
@@ -1069,9 +1138,9 @@ export default function DealPage() {
                   <span>
                     {jastipFee
                       ? jastipFee.toLocaleString("id-ID", {
-                        style: "currency",
-                        currency: "IDR",
-                      })
+                          style: "currency",
+                          currency: "IDR",
+                        })
                       : "-"}
                   </span>
                 </div>
@@ -1080,9 +1149,9 @@ export default function DealPage() {
                   <span>
                     {totalTransactionAmount
                       ? totalTransactionAmount.toLocaleString("id-ID", {
-                        style: "currency",
-                        currency: "IDR",
-                      })
+                          style: "currency",
+                          currency: "IDR",
+                        })
                       : "-"}
                   </span>
                 </div>
@@ -1100,9 +1169,9 @@ export default function DealPage() {
               <p className="text-3xl font-extrabold text-emerald-600">
                 {totalTransactionAmount
                   ? totalTransactionAmount.toLocaleString("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
-                  })
+                      style: "currency",
+                      currency: "IDR",
+                    })
                   : "-"}
               </p>
 
@@ -1113,9 +1182,9 @@ export default function DealPage() {
                   <span>
                     {itemFee
                       ? itemFee.toLocaleString("id-ID", {
-                        style: "currency",
-                        currency: "IDR",
-                      })
+                          style: "currency",
+                          currency: "IDR",
+                        })
                       : "-"}
                   </span>
                 </div>
@@ -1128,9 +1197,9 @@ export default function DealPage() {
                   <span>
                     {jastipFee
                       ? jastipFee.toLocaleString("id-ID", {
-                        style: "currency",
-                        currency: "IDR",
-                      })
+                          style: "currency",
+                          currency: "IDR",
+                        })
                       : "-"}
                   </span>
                 </div>
@@ -1140,7 +1209,6 @@ export default function DealPage() {
               Dana akan diteruskan ke kurir setelah barang diterima.
             </p> */}
             </div>
-
           )}
           {/* Metode Pembayaran - hanya muncul jika draft */}
           {canPay && !isCarrierLogin && (
@@ -1152,7 +1220,7 @@ export default function DealPage() {
                   title="Transfer / E-Wallet"
                   desc="GoPay, ShopeePay, QRIS, VA Bank"
                   checked={true}
-                  onChange={() => { }}
+                  onChange={() => {}}
                   badge="Rekomendasi"
                 />
                 <PaymentOption
@@ -1171,8 +1239,18 @@ export default function DealPage() {
                 onClick={handleCancelDeal}
                 className="btn btn-ghost btn-sm text-error hover:bg-error/10 w-full rounded-xl gap-2 font-medium"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
                 Batalkan Deal & Kembalikan ke Keranjang
               </button>
@@ -1186,8 +1264,18 @@ export default function DealPage() {
                 onClick={() => setShowReviewModal(true)}
                 className="btn btn-primary w-full rounded-2xl gap-2 font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.921-.755 1.688-1.54 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.921-.755 1.688-1.54 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                  />
                 </svg>
                 Beri Ulasan ke Jastiper
               </button>
@@ -1198,19 +1286,41 @@ export default function DealPage() {
             <div className="mt-6 px-4 pb-4">
               <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 p-4 rounded-2xl flex items-center gap-3 border border-emerald-200 dark:border-emerald-800/30">
                 <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 </div>
-                <div className="text-sm font-semibold">Ulasan sudah terkirim. Terima kasih!</div>
+                <div className="text-sm font-semibold">
+                  Ulasan sudah terkirim. Terima kasih!
+                </div>
               </div>
             </div>
           )}
         </div>
-        {canPay && !isCarrierLogin && (
+        {needsTransaction && (
+          <div className="fixed bottom-4 left-4 right-4 z-20">
+            <div className="bg-base-100/95 backdrop-blur-xl border border-base-300/40 shadow-xl rounded-2xl p-4">
+              <SlideToUnlock onComplete={handleProceedToPayment} />
+            </div>
+          </div>
+        )}
+        {canPay && !isCarrierLogin && !needsTransaction && (
           <div className="fixed bottom-4 left-4 right-4 z-20">
             <div className="bg-base-100/95 backdrop-blur-xl border border-base-300/40 shadow-xl rounded-2xl p-4 flex gap-3">
-              <button className="btn btn-outline flex-1 rounded-xl" onClick={() => navigate(-1)}>
+              <button
+                className="btn btn-outline flex-1 rounded-xl"
+                onClick={() => navigate(-1)}
+              >
                 Kembali
               </button>
               <button
@@ -1224,31 +1334,15 @@ export default function DealPage() {
                 }
                 disabled={paying}
               >
-                {paying ? <span className="loading loading-spinner"></span> : "Bayar Sekarang"}
+                {paying ? (
+                  <span className="loading loading-spinner"></span>
+                ) : (
+                  "Bayar Sekarang"
+                )}
               </button>
             </div>
           </div>
         )}
-        {/* Status Pembayaran untuk Kurir (jika belum bayar) */}
-        {isCarrierLogin && transaction?.transaction_status !== "paid" && (
-          <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl bg-base-100 shadow-sm p-3 border border-base-300">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                <Wallet className="h-4 w-4 text-blue-600" />
-              </div>
-              <span className="text-xs font-medium opacity-70">Status Pembayaran</span>
-            </div>
-            <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${transaction?.transaction_status === "pending"
-              ? "bg-yellow-100 text-yellow-800"
-              : transaction?.transaction_status === "failed"
-                ? "bg-red-100 text-red-800"
-                : "bg-gray-100 text-gray-700"
-              }`}>
-              {transaction?.transaction_status?.toUpperCase() || "BELUM BAYAR"}
-            </span>
-          </div>
-        )}
-
         {/* Kurir Mulai Jalan (Paid & Draft) */}
         {isCarrierLogin && paid && deal.delivery_status === "draft" && (
           <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl bg-base-100 shadow-sm p-3 border border-base-300">

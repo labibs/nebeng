@@ -4,12 +4,40 @@ import { supabase } from "../lib/supabaseClient";
 import { apiFetch } from "../lib/apiClient";
 import { FileText, Wallet, BaggageClaim, Truck, MapPin } from "lucide-react";
 import { handlePay } from "../lib/handlePay";
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
 import LiveTrackingModal from "../components/transaksi/LiveTrackingModal";
 import TransaksiHeader from "../components/transaksi/TransaksiHeader";
 import DealStatusBadge from "../components/common/DealStatusBadge";
 
 // ⬆️ sesuaikan path supabase client kamu
+
+function normalizeItemPhotos(itemPhotos) {
+  if (Array.isArray(itemPhotos)) {
+    return itemPhotos.filter(
+      (photo) => typeof photo === "string" && photo.trim(),
+    );
+  }
+
+  if (typeof itemPhotos === "string") {
+    const trimmed = itemPhotos.trim();
+    if (!trimmed) return [];
+
+    if (trimmed.startsWith("[")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return Array.isArray(parsed)
+          ? parsed.filter((photo) => typeof photo === "string" && photo.trim())
+          : [];
+      } catch {
+        return [];
+      }
+    }
+
+    return [trimmed];
+  }
+
+  return [];
+}
 
 export default function TransaksiPage() {
   const { user, isLoaded } = useUser();
@@ -44,9 +72,15 @@ export default function TransaksiPage() {
   async function fetchTransactions() {
     try {
       console.log("\n");
-      console.log("╔════════════════════════════════════════════════════════════╗");
-      console.log("║ 🚀 === Transaksi Page: fetchTransactions START ===       ║");
-      console.log("╚════════════════════════════════════════════════════════════╝");
+      console.log(
+        "╔════════════════════════════════════════════════════════════╗",
+      );
+      console.log(
+        "║ 🚀 === Transaksi Page: fetchTransactions START ===       ║",
+      );
+      console.log(
+        "╚════════════════════════════════════════════════════════════╝",
+      );
       console.log("📌 User loaded:", isLoaded);
       console.log("👤 User object exists:", !!user);
       console.log("🔑 User Clerk ID:", user?.id);
@@ -54,28 +88,47 @@ export default function TransaksiPage() {
       console.log("\n🌐 API Request Details:");
       console.log("   Method: GET");
       console.log("   Endpoint: /api/transactions");
-      console.log("   API URL:", import.meta.env.VITE_API_URL || 'http://localhost:8080');
+      console.log(
+        "   API URL:",
+        import.meta.env.VITE_API_URL || "http://localhost:8080",
+      );
       console.log("\n⏳ Calling API...");
-      
-      const data = await apiFetch('/api/transactions');
-      
-      console.log("\n╔════════════════════════════════════════════════════════════╗");
-      console.log("║ ✅ API Response Received                                ║");
-      console.log("╚════════════════════════════════════════════════════════════╝");
+
+      const data = await apiFetch("/api/transactions");
+
+      console.log(
+        "\n╔════════════════════════════════════════════════════════════╗",
+      );
+      console.log(
+        "║ ✅ API Response Received                                ║",
+      );
+      console.log(
+        "╚════════════════════════════════════════════════════════════╝",
+      );
       console.log("📊 Response Type:", typeof data);
       console.log("📊 Is Array:", Array.isArray(data));
-      console.log("📊 Item Count:", Array.isArray(data) ? data.length : 'N/A');
+      console.log("📊 Item Count:", Array.isArray(data) ? data.length : "N/A");
       console.log("📄 Response Data:", JSON.stringify(data, null, 2));
-      
-      console.log("\n✅ Setting state with", Array.isArray(data) ? data.length : 0, 'items');
-      
+
+      console.log(
+        "\n✅ Setting state with",
+        Array.isArray(data) ? data.length : 0,
+        "items",
+      );
+
       setRows(data || []);
       setTransaksi(data || []);
       return data || [];
     } catch (err) {
-      console.log("\n╔════════════════════════════════════════════════════════════╗");
-      console.log("║ ❌ API Request Failed                                   ║");
-      console.log("╚════════════════════════════════════════════════════════════╝");
+      console.log(
+        "\n╔════════════════════════════════════════════════════════════╗",
+      );
+      console.log(
+        "║ ❌ API Request Failed                                   ║",
+      );
+      console.log(
+        "╚════════════════════════════════════════════════════════════╝",
+      );
       console.error("❌ Error fetching transactions:", err);
       console.error("   Error message:", err.message);
       console.error("   Full error:", err);
@@ -92,20 +145,20 @@ export default function TransaksiPage() {
     const channel = supabase
       .channel(`transaksi-list-realtime-${clerkId}`)
       .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'transactions' },
+        "postgres_changes",
+        { event: "*", schema: "public", table: "transactions" },
         () => {
-          console.log('🔄 Real-time Transaction update in list, refetching...');
+          console.log("🔄 Real-time Transaction update in list, refetching...");
           fetchTransactions();
-        }
+        },
       )
       .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'deals' },
+        "postgres_changes",
+        { event: "*", schema: "public", table: "deals" },
         () => {
-          console.log('🔄 Real-time Deal update in list, refetching...');
+          console.log("🔄 Real-time Deal update in list, refetching...");
           fetchTransactions();
-        }
+        },
       )
       .subscribe();
 
@@ -130,7 +183,6 @@ export default function TransaksiPage() {
     );
   }
 
-
   const openLiveTracking = (dealId) => {
     setSelectedDealId(dealId);
     setShowTrackingModal(true);
@@ -140,7 +192,6 @@ export default function TransaksiPage() {
     setShowTrackingModal(false);
     setSelectedDealId(null);
   };
-
 
   return (
     <>
@@ -186,7 +237,6 @@ export default function TransaksiPage() {
             </div>
           ) : (
             rows.map((trx) => (
-
               <div
                 key={trx.id}
                 onClick={(e) => {
@@ -217,7 +267,11 @@ export default function TransaksiPage() {
                     <div className="avatar">
                       <div className="w-16 h-16 rounded-2xl overflow-hidden bg-base-200 shadow-sm border border-base-300/30">
                         <img
-                          src={trx.deal?.post?.item_photo || "/default-avatar.png"}
+                          src={
+                            normalizeItemPhotos(trx.deal?.item_photos)[0] ||
+                            trx.deal?.post?.item_photo ||
+                            "/default-avatar.png"
+                          }
                           alt=""
                           className="object-cover w-full h-full"
                         />
@@ -237,14 +291,29 @@ export default function TransaksiPage() {
                         )}
                       </div>
                       <p className="font-bold text-base leading-tight truncate">
-                        {trx.deal?.item_description || "Detail barang tidak ada"}
+                        {trx.deal?.item_description ||
+                          "Detail barang tidak ada"}
                       </p>
                       <div className="flex items-center gap-1.5 text-xs opacity-60 mt-0.5">
-                        <span className="font-medium">{trx.deal?.post?.from_city}</span>
-                        <svg className="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        <span className="font-medium">
+                          {trx.deal?.post?.from_city}
+                        </span>
+                        <svg
+                          className="w-3 h-3 text-emerald-500"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M14 5l7 7m0 0l-7 7m7-7H3"
+                          />
                         </svg>
-                        <span className="font-medium">{trx.deal?.post?.to_city}</span>
+                        <span className="font-medium">
+                          {trx.deal?.post?.to_city}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -254,7 +323,7 @@ export default function TransaksiPage() {
                     <p className="font-bold text-emerald-600">
                       Rp{" "}
                       {Number(
-                        trx.gross_amount ?? trx.deal?.agreed_fee ?? 0
+                        trx.gross_amount ?? trx.deal?.agreed_fee ?? 0,
                       ).toLocaleString("id-ID")}
                     </p>
                     <p className="text-xs text-base-content/50">
@@ -291,13 +360,17 @@ export default function TransaksiPage() {
 
                 {/* ================= EXTEND (RUNNING ONLY) ================= */}
                 {trx.deal?.delivery_status === "running" && (
-                  <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3
-                                animate-in fade-in slide-in-from-top-2">
+                  <div
+                    className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3
+                                animate-in fade-in slide-in-from-top-2"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-emerald-700">
                         <Truck className="w-5 h-5" />
                         <div>
-                          <p className="text-sm font-semibold">Sedang Mengantar</p>
+                          <p className="text-sm font-semibold">
+                            Sedang Mengantar
+                          </p>
                           <p className="text-xs opacity-70">
                             Kurir dalam perjalanan
                           </p>
@@ -331,7 +404,6 @@ export default function TransaksiPage() {
           onClose={closeLiveTracking}
         />
       )}
-
     </>
   );
 }

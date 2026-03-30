@@ -98,7 +98,7 @@ func isValidClerkID(id string) bool {
 
 func fetchUserDeals(clerkID string) ([]map[string]interface{}, error) {
 	// Versi bersih single-line
-	selectFields := "id,carrier_id,depositor_id,item_description,status,agreed_fee,item_fee,delivery_status,pickup_location,delivery_location,pickup_datetime,created_at,post:posts!fk_deals_post(id,from_city,to_city,type,item_photo,created_at),carrier:users!deals_carrier_id_fkey(clerk_id,name,avatar_url),depositor:users!fk_deals_depositor(clerk_id,name,avatar_url),transactions(id,deal_id,transaction_status,gross_amount,payment_type,created_at)"
+	selectFields := "id,carrier_id,depositor_id,item_description,item_photos,status,agreed_fee,item_fee,delivery_status,pickup_location,delivery_location,pickup_datetime,created_at,post:posts!fk_deals_post(id,from_city,to_city,type,item_photo,created_at),carrier:users!deals_carrier_id_fkey(clerk_id,name,avatar_url),depositor:users!fk_deals_depositor(clerk_id,name,avatar_url),transactions(id,deal_id,transaction_status,gross_amount,payment_type,created_at)"
 
 	query := fmt.Sprintf(
 		"deals?select=%s&or=(carrier_id.eq.%s,depositor_id.eq.%s)",
@@ -141,6 +141,7 @@ func extractAndEnrichTransactions(deals []map[string]interface{}) []map[string]i
 		dealSummary := map[string]interface{}{
 			"id":                deal["id"],
 			"item_description":  deal["item_description"],
+			"item_photos":       deal["item_photos"],
 			"status":            deal["status"],
 			"agreed_fee":        deal["agreed_fee"],
 			"item_fee":          deal["item_fee"],

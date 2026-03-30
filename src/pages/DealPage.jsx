@@ -789,8 +789,13 @@ export default function DealPage() {
         ? "badge-error"
         : "badge-warning";
 
-  const canPay = ["draft", "pending"].includes(transaction?.transaction_status);
+  const canPay = ["draft", "pending", "expire", "expired"].includes(
+    transaction?.transaction_status,
+  );
   const paid = ["paid"].includes(transaction?.transaction_status);
+  const paymentExpired = ["expire", "expired"].includes(
+    transaction?.transaction_status,
+  );
   const running = ["running"].includes(deal?.delivery_status);
   const delivered = ["delivered"].includes(deal?.delivery_status);
 
@@ -1210,10 +1215,16 @@ export default function DealPage() {
             </p> */}
             </div>
           )}
-          {/* Metode Pembayaran - hanya muncul jika draft */}
+          {/* Metode Pembayaran - muncul jika masih bisa bayar / bayar ulang */}
           {canPay && !isCarrierLogin && (
             <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40">
               <h2 className="font-semibold text-lg mb-3">Metode Pembayaran</h2>
+              {paymentExpired && (
+                <div className="mb-3 rounded-xl border border-error/20 bg-error/5 px-3 py-2 text-sm text-error">
+                  Pembayaran sebelumnya sudah kedaluwarsa. Silakan buat sesi
+                  pembayaran baru.
+                </div>
+              )}
               <div className="space-y-2">
                 <PaymentOption
                   value="midtrans"
@@ -1307,7 +1318,7 @@ export default function DealPage() {
             </div>
           )}
         </div>
-        {needsTransaction && (
+        {needsTransaction && !isCarrierLogin && (
           <div className="fixed bottom-4 left-4 right-4 z-20">
             <div className="bg-base-100/95 backdrop-blur-xl border border-base-300/40 shadow-xl rounded-2xl p-4">
               <SlideToUnlock onComplete={handleProceedToPayment} />
@@ -1336,6 +1347,8 @@ export default function DealPage() {
               >
                 {paying ? (
                   <span className="loading loading-spinner"></span>
+                ) : paymentExpired ? (
+                  "Bayar Ulang"
                 ) : (
                   "Bayar Sekarang"
                 )}

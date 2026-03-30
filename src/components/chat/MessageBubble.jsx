@@ -1,9 +1,10 @@
-import DealCard from './DealCard';
-import PostCard from './PostCard';
-import CartNegoModal from './CartNegoModal';
-import { useNavigate } from 'react-router-dom';
-import { apiFetch } from '../../lib/apiClient';
-import { useState } from 'react';
+import DealCard from "./DealCard";
+import PostCard from "./PostCard";
+import CartNegoModal from "./CartNegoModal";
+import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../../lib/apiClient";
+import { useEffect, useState } from "react";
+import { supabase } from "../../lib/supabaseClient";
 
 export default function MessageBubble({
   msg,
@@ -25,20 +26,61 @@ export default function MessageBubble({
 
   const [showCartNegoModal, setShowCartNegoModal] = useState(false);
   const [cartNegoData, setCartNegoData] = useState(null);
+  const [hasTransaction, setHasTransaction] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function checkTransaction() {
+      if (!msg?.deal_id) {
+        if (isMounted) setHasTransaction(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("id")
+        .eq("deal_id", msg.deal_id)
+        .limit(1);
+
+      if (!isMounted) return;
+
+      if (error) {
+        console.error("Gagal cek transaksi deal_offer:", error);
+        setHasTransaction(false);
+        return;
+      }
+
+      setHasTransaction(Array.isArray(data) && data.length > 0);
+    }
+
+    checkTransaction();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [msg?.deal_id]);
 
   // Helper untuk menghilangkan koordinat (lat,lng, ) dari tampilan
   const stripCoordinates = (text) => {
-    if (!text) return '';
+    if (!text) return "";
     // Regex untuk mencocokkan pattern "-7.123,110.123, " atau "7.123,-110.123, "
-    return text.replace(/[-+]?\d*\.\d+,\s*[-+]?\d*\.\d+,\s*/g, '');
+    return text.replace(/[-+]?\d*\.\d+,\s*[-+]?\d*\.\d+,\s*/g, "");
   };
 
   // Pesan Deal Offer (Dari keranjang belanja)
-  if (msg.message_type === 'deal_offer') {
-    const displayContent = stripCoordinates(msg.content.replace(/^\[deal_offer\]\s*/, '').split('<!--PAYLOAD:')[0].trim());
+  if (msg.message_type === "deal_offer") {
+    const displayContent = stripCoordinates(
+      msg.content
+        .replace(/^\[deal_offer\]\s*/, "")
+        .split("<!--PAYLOAD:")[0]
+        .trim(),
+    );
 
     return (
-      <div className={`chat ${msg.sender_id === currentUserId ? 'chat-end' : 'chat-start'}`}>
+      <div
+        className={`chat ${msg.sender_id === currentUserId ? "chat-end" : "chat-start"}`}
+      >
         <div className="chat-image avatar">
           <div className="w-10 rounded-full">
             <img src={avatar} alt="avatar" />
@@ -47,26 +89,38 @@ export default function MessageBubble({
 
         <div className="chat-header">
           <time className="text-xs opacity-70">
-            {new Date(msg.created_at).toLocaleTimeString('id-ID', {
-              hour: '2-digit',
-              minute: '2-digit',
+            {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
             })}
           </time>
         </div>
 
-        <div className={`
+        <div
+          className={`
             relative max-[85vw] md:max-w-md px-5 py-4 rounded-2xl shadow-lg overflow-hidden border
-            ${msg.sender_id === currentUserId
-            ? 'bg-gradient-to-r from-[#81c784]/10 to-[#66bb6a]/10 border-emerald-300 rounded-br-none'
-            : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 rounded-bl-none'
-          }
-          `}>
+            ${
+              msg.sender_id === currentUserId
+                ? "bg-gradient-to-r from-[#81c784]/10 to-[#66bb6a]/10 border-emerald-300 rounded-br-none"
+                : "bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 rounded-bl-none"
+            }
+          `}
+        >
           {/* Header */}
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                />
               </svg>
             </div>
             <div>
@@ -74,7 +128,11 @@ export default function MessageBubble({
                 Ajukan Deal
               </div>
               <div className="text-xs opacity-70">
-                {msg.sender_id === currentUserId ? 'Menunggu konfirmasi dari lawan...' : 'Pilih aksi'}
+                {hasTransaction || msg.deal_id
+                  ? "Sudah deal"
+                  : msg.sender_id === currentUserId
+                    ? "Menunggu konfirmasi dari lawan..."
+                    : "Pilih aksi"}
               </div>
             </div>
           </div>
@@ -90,18 +148,37 @@ export default function MessageBubble({
             const payload = payloadMatch ? JSON.parse(payloadMatch[1]) : null;
 
             // Tombol hanya untuk lawan
-            if (msg.sender_id !== currentUserId && payload) {
+            if (
+              msg.sender_id !== currentUserId &&
+              payload &&
+              !msg.deal_id &&
+              !hasTransaction
+            ) {
               return (
                 <div className="flex gap-3">
                   <button
                     onClick={async (e) => {
                       e.target.disabled = true;
-                      e.target.innerText = 'Memproses...';
+                      e.target.innerText = "Memproses...";
                       try {
-                        const result = await apiFetch('/api/cart/deal', {
-                          method: 'POST',
+                        const result = await apiFetch("/api/cart/deal", {
+                          method: "POST",
                           body: JSON.stringify(payload),
                         });
+
+                        if (result?.deal_id && msg?.id) {
+                          const { error: msgError } = await supabase
+                            .from("messages")
+                            .update({ deal_id: result.deal_id })
+                            .eq("id", msg.id);
+
+                          if (msgError) {
+                            console.error(
+                              "Gagal update message.deal_id:",
+                              msgError,
+                            );
+                          }
+                        }
 
                         // Arahkan ke DealPage
                         navigate(`/deal?deal=${result.deal_id}`);
@@ -109,36 +186,67 @@ export default function MessageBubble({
                         console.error("Deal confirm error:", err);
                         alert("Gagal mengonfirmasi deal: " + err.message);
                         e.target.disabled = false;
-                        e.target.innerText = 'Terima';
+                        e.target.innerText = "Terima";
                       }
                     }}
                     className="flex-1 btn btn-info btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                     Terima
                   </button>
                   <button
                     onClick={() => {
-                      const lines = msg.content.split('\n');
-                      const warungNameMatch = lines.find(l => l.startsWith('🏪'))?.replace('🏪 Warung:', '').trim();
-                      const itemCountMatch = lines.find(l => l.startsWith('📦'))?.match(/📦 (\d+) Barang: (.*)/);
-                      const pickupLocMatch = lines.find(l => l.startsWith('📍 Dari:'))?.replace('📍 Dari:', '').trim();
+                      const lines = msg.content.split("\n");
+                      const warungNameMatch = lines
+                        .find((l) => l.startsWith("🏪"))
+                        ?.replace("🏪 Warung:", "")
+                        .trim();
+                      const itemCountMatch = lines
+                        .find((l) => l.startsWith("📦"))
+                        ?.match(/📦 (\d+) Barang: (.*)/);
+                      const pickupLocMatch = lines
+                        .find((l) => l.startsWith("📍 Dari:"))
+                        ?.replace("📍 Dari:", "")
+                        .trim();
 
                       setCartNegoData({
                         payload,
-                        warungName: warungNameMatch || payload.warung_name || 'Warung',
+                        warungName:
+                          warungNameMatch || payload.warung_name || "Warung",
                         itemCount: itemCountMatch ? itemCountMatch[1] : 1,
-                        itemName: itemCountMatch ? itemCountMatch[2] : 'Barang Jastip',
-                        pickupLoc: pickupLocMatch || payload.pickup_location
+                        itemName: itemCountMatch
+                          ? itemCountMatch[2]
+                          : "Barang Jastip",
+                        pickupLoc: pickupLocMatch || payload.pickup_location,
                       });
                       setShowCartNegoModal(true);
                     }}
                     className="flex-1 btn btn-outline btn-warning btn-sm rounded-xl font-medium hover:bg-yellow-50 dark:hover:bg-yellow-900/30 transition-all"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
                     Nego
                   </button>
@@ -149,14 +257,16 @@ export default function MessageBubble({
           })()}
 
           {/* Tail lancip */}
-          <div className={`
+          <div
+            className={`
               absolute w-3 h-5 top-6
-              ${msg.sender_id === currentUserId ? 'right-0 translate-x-full' : 'left-0 -translate-x-full'}
-            `}>
+              ${msg.sender_id === currentUserId ? "right-0 translate-x-full" : "left-0 -translate-x-full"}
+            `}
+          >
             <svg viewBox="0 0 8 16" className="w-full h-full drop-shadow-md">
               <path
                 d="M0,0 Q8,8 0,16 L0,0"
-                fill={msg.sender_id === currentUserId ? '#66bb6a' : '#eff6ff'}
+                fill={msg.sender_id === currentUserId ? "#66bb6a" : "#eff6ff"}
                 className="dark:fill-emerald-900/50"
               />
             </svg>
@@ -165,8 +275,10 @@ export default function MessageBubble({
 
         {/* Status terbaca - hanya untuk pesan sendiri */}
         {msg.sender_id === currentUserId && (
-          <div className={`chat-footer text-xs mt-1 ${msg.is_read ? 'text-blue-500' : 'opacity-70'}`}>
-            {msg.is_read ? 'Terbaca ✓✓' : 'Terkirim ✓'}
+          <div
+            className={`chat-footer text-xs mt-1 ${msg.is_read ? "text-blue-500" : "opacity-70"}`}
+          >
+            {msg.is_read ? "Terbaca ✓✓" : "Terkirim ✓"}
           </div>
         )}
 
@@ -182,7 +294,7 @@ export default function MessageBubble({
   }
 
   // Pesan Deal Ongkos Jastip
-  if (msg.message_type === 'deal_ongkos_jastip') {
+  if (msg.message_type === "deal_ongkos_jastip") {
     return (
       <DealCard
         msg={msg}
@@ -199,7 +311,7 @@ export default function MessageBubble({
   }
 
   // Pesan Deal Lokasi Ketemuan
-  if (msg.message_type === 'deal_lokasi_ketemuan') {
+  if (msg.message_type === "deal_lokasi_ketemuan") {
     return (
       <DealCard
         msg={msg}
@@ -216,7 +328,7 @@ export default function MessageBubble({
   }
 
   // Pesan Deal Waktu Ketemuan
-  if (msg.message_type === 'deal_waktu_ketemuan') {
+  if (msg.message_type === "deal_waktu_ketemuan") {
     return (
       <DealCard
         msg={msg}
@@ -229,12 +341,14 @@ export default function MessageBubble({
         onInsertDeal={onInsertDeal}
         onUpdateDealLocation={onUpdateDealLocation}
         onUpdateDealTime={onUpdateDealTime}
-        onUpdateDealItem={onUpdateDealItem} onUpdateDealDelivery={onUpdateDealDelivery} />
+        onUpdateDealItem={onUpdateDealItem}
+        onUpdateDealDelivery={onUpdateDealDelivery}
+      />
     );
   }
 
   // Pesan Deal Barang Titipan
-  if (msg.message_type === 'deal_barang_titipan') {
+  if (msg.message_type === "deal_barang_titipan") {
     return (
       <DealCard
         msg={msg}
@@ -247,12 +361,14 @@ export default function MessageBubble({
         onInsertDeal={onInsertDeal}
         onUpdateDealLocation={onUpdateDealLocation}
         onUpdateDealTime={onUpdateDealTime}
-        onUpdateDealItem={onUpdateDealItem} onUpdateDealDelivery={onUpdateDealDelivery} />
+        onUpdateDealItem={onUpdateDealItem}
+        onUpdateDealDelivery={onUpdateDealDelivery}
+      />
     );
   }
 
   // Pesan Deal Lokasi Pengantaran
-  if (msg.message_type === 'deal_lokasi_pengantaran') {
+  if (msg.message_type === "deal_lokasi_pengantaran") {
     return (
       <DealCard
         msg={msg}
@@ -272,21 +388,15 @@ export default function MessageBubble({
   }
 
   // Pesan Post Card
-  if (msg.message_type === 'post_card') {
+  if (msg.message_type === "post_card") {
     return (
-      <PostCard
-        msg={msg}
-        isMine={isMine}
-        avatar={avatar}
-        postInfo={postInfo}
-      />
+      <PostCard msg={msg} isMine={isMine} avatar={avatar} postInfo={postInfo} />
     );
   }
 
-
   // Pesan Teks Biasa
   return (
-    <div className={`chat ${isMine ? 'chat-end' : 'chat-start'}`}>
+    <div className={`chat ${isMine ? "chat-end" : "chat-start"}`}>
       <div className="chat-image avatar">
         <div className="w-10 rounded-full">
           <img src={avatar} alt="avatar" />
@@ -295,9 +405,9 @@ export default function MessageBubble({
 
       <div className="chat-header">
         <time className="text-xs opacity-70">
-          {new Date(msg.created_at).toLocaleTimeString('id-ID', {
-            hour: '2-digit',
-            minute: '2-digit',
+          {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
           })}
         </time>
       </div>
@@ -305,9 +415,10 @@ export default function MessageBubble({
       <div
         className={`
           relative max-w-xs lg:max-w-md px-4 py-3 rounded-2xl text-white shadow-md
-          ${isMine
-            ? 'bg-gradient-to-r from-[#81c784] to-[#66bb6a] rounded-br-none'
-            : 'bg-emerald-600 rounded-bl-none'
+          ${
+            isMine
+              ? "bg-gradient-to-r from-[#81c784] to-[#66bb6a] rounded-br-none"
+              : "bg-emerald-600 rounded-bl-none"
           }
         `}
       >
@@ -316,8 +427,10 @@ export default function MessageBubble({
 
       {/* Status terbaca - hanya untuk pesan sendiri */}
       {isMine && (
-        <div className={`chat-footer text-xs mt-1 ${msg.is_read ? 'text-blue-500' : 'opacity-70'}`}>
-          {msg.is_read ? 'Terbaca ✓✓' : 'Terkirim ✓'}
+        <div
+          className={`chat-footer text-xs mt-1 ${msg.is_read ? "text-blue-500" : "opacity-70"}`}
+        >
+          {msg.is_read ? "Terbaca ✓✓" : "Terkirim ✓"}
         </div>
       )}
     </div>

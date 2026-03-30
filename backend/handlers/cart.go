@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"net/http"
 	"strings"
 	"time"
@@ -273,23 +274,79 @@ func DealCart(c *gin.Context) {
 		"delivery_status":   deliveryStatusStr,
 	}
 
-	dealRes, dealStatus, err := sb.DefaultClient.DoRequest("POST", "deals", newDeal)
-	if err != nil || dealStatus >= 400 {
-		fmt.Printf("Supabase error creating deal:\nstatus=%d\nbody=%s\nerr=%v\nData: %+v\n", dealStatus, string(dealRes), err, newDeal)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create deal record", "details": string(dealRes)})
+	var existingDealQuery string
+	if postID == nil {
+		existingDealQuery = fmt.Sprintf(
+			"deals?select=id&carrier_id=eq.%s&depositor_id=eq.%s&item_description=eq.%s&order=created_at.desc&limit=1",
+			carrierID,
+			depositorID,
+			url.QueryEscape(body.ItemDescription),
+		)
+	} else {
+		existingDealQuery = fmt.Sprintf(
+			"deals?select=id&post_id=eq.%v&carrier_id=eq.%s&depositor_id=eq.%s&order=created_at.desc&limit=1",
+			postID,
+			carrierID,
+			depositorID,
+		)
+	}
+
+	existingDealRes, existingDealStatus, err := sb.DefaultClient.DoRequest("GET", existingDealQuery, nil)
+	if err != nil || existingDealStatus >= 400 {
+		fmt.Printf("Supabase error finding existing deal:\nstatus=%d\nbody=%s\nerr=%v\n", existingDealStatus, string(existingDealRes), err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check existing deal", "details": string(existingDealRes)})
+		return
+	}
+
+	var existingDeals []map[string]interface{}
+	if err := json.Unmarshal(existingDealRes, &existingDeals); err != nil {
+		fmt.Printf("Error unmarshaling existing deal: %v\nBody: %s\n", err, string(existingDealRes))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse existing deal", "details": string(existingDealRes)})
 		return
 	}
 
 	var dealResult []map[string]interface{}
-	if err := json.Unmarshal(dealRes, &dealResult); err != nil {
-		fmt.Printf("Error unmarshaling created deal: %v\nBody: %s\n", err, string(dealRes))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse created deal", "details": string(dealRes)})
-		return
+	if len(existingDeals) > 0 {
+		existingDealID := fmt.Sprintf("%v", existingDeals[0]["id"])
+		dealRes, dealStatus, err := sb.DefaultClient.DoRequest(
+			"PATCH",
+			fmt.Sprintf("deals?id=eq.%s", existingDealID),
+			newDeal,
+		)
+		if err != nil || dealStatus >= 400 {
+			fmt.Printf("Supabase error updating deal:\nstatus=%d\nbody=%s\nerr=%v\nData: %+v\n", dealStatus, string(dealRes), err, newDeal)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update existing deal", "details": string(dealRes)})
+			return
+		}
+
+		if len(dealRes) > 0 {
+			if err := json.Unmarshal(dealRes, &dealResult); err != nil {
+				fmt.Printf("Error unmarshaling updated deal: %v\nBody: %s\n", err, string(dealRes))
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse updated deal", "details": string(dealRes)})
+				return
+			}
+		}
+
+		if len(dealResult) == 0 {
+			dealResult = []map[string]interface{}{{"id": existingDealID}}
+		}
+	} else {
+		dealRes, dealStatus, err := sb.DefaultClient.DoRequest("POST", "deals", newDeal)
+		if err != nil || dealStatus >= 400 {
+			fmt.Printf("Supabase error creating deal:\nstatus=%d\nbody=%s\nerr=%v\nData: %+v\n", dealStatus, string(dealRes), err, newDeal)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create deal record", "details": string(dealRes)})
+			return
+		}
+
+		if err := json.Unmarshal(dealRes, &dealResult); err != nil {
+			fmt.Printf("Error unmarshaling created deal: %v\nBody: %s\n", err, string(dealRes))
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse created deal", "details": string(dealRes)})
+			return
+		}
 	}
 
 	if len(dealResult) == 0 {
-		fmt.Printf("No deal record returned. Body: %s\n", string(dealRes))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve created deal id", "details": string(dealRes)})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve deal id"})
 		return
 	}
 	dealID := fmt.Sprintf("%v", dealResult[0]["id"])

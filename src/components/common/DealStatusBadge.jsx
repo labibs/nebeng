@@ -4,7 +4,7 @@ export default function DealStatusBadge({
   deliveryStatus,
   size = "md", // sm | md | lg
 }) {
-  let label = "Sedang Nego";
+  let label = "Ulang Pembayaran";
   let color = "badge-outline badge-ghost opacity-60";
 
   // 1️⃣ DELIVERY STATUS (PRIORITAS TERTINGGI)
@@ -17,11 +17,17 @@ export default function DealStatusBadge({
   }
 
   // 2️⃣ TRANSACTION STATUS
-  else if (transactionStatus === "pending") {
+  else if (transactionStatus === "draft") {
+    label = "Sudah Deal";
+    color = "badge-primary badge-outline font-medium";
+  } else if (transactionStatus === "pending") {
     label = "Menunggu Bayar";
     color = "badge-warning";
-  } else if (transactionStatus === "expire") {
-    label = "Bayar Expired";
+  } else if (
+    transactionStatus === "expire" ||
+    transactionStatus === "expired"
+  ) {
+    label = "Transaksi Ulang";
     color = "badge-error";
   } else if (transactionStatus === "fail") {
     label = "Bayar Gagal";
@@ -40,9 +46,5 @@ export default function DealStatusBadge({
     color = "badge-error badge-outline opacity-70";
   }
 
-  return (
-    <span className={`badge ${color} badge-${size}`}>
-      {label}
-    </span>
-  );
+  return <span className={`badge ${color} badge-${size}`}>{label}</span>;
 }

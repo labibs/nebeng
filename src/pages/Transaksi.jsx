@@ -39,12 +39,48 @@ function normalizeItemPhotos(itemPhotos) {
   return [];
 }
 
+function parseLocationAddress(location) {
+  if (!location || typeof location !== "string") return "";
+
+  const parts = location.split(",");
+  if (parts.length < 3) return location.trim();
+
+  return parts.slice(2).join(",").trim();
+}
+
+function extractCityFromAddress(address) {
+  if (!address || typeof address !== "string") return "";
+
+  const parts = address
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (!parts.length) return "";
+
+  const cityPart = parts.find((part) =>
+    /^(kota|kabupaten|kab\.|city)\s/i.test(part),
+  );
+
+  if (cityPart) return cityPart;
+
+  return parts.length >= 2 ? parts[parts.length - 2] : parts[0];
+}
+
+function getRouteLabel(location, fallback) {
+  return (
+    extractCityFromAddress(parseLocationAddress(location)) || fallback || "-"
+  );
+}
+
 export default function TransaksiPage() {
+  const ITEMS_PER_PAGE = 10;
   const { user, isLoaded } = useUser();
   const [clerkId, setClerkId] = useState(null);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
   const [selectedDealId, setSelectedDealId] = useState(null);
   const [selectedDeal, setSelectedDeal] = useState(null);
@@ -116,9 +152,13 @@ export default function TransaksiPage() {
         "items",
       );
 
-      setRows(data || []);
-      setTransaksi(data || []);
-      return data || [];
+      const sortedData = [...(data || [])].sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at),
+      );
+
+      setRows(sortedData);
+      setTransaksi(sortedData);
+      return sortedData;
     } catch (err) {
       console.log(
         "\n╔════════════════════════════════════════════════════════════╗",
@@ -167,6 +207,10 @@ export default function TransaksiPage() {
     };
   }, [clerkId]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [rows.length]);
+
   if (!isLoaded || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -192,6 +236,12 @@ export default function TransaksiPage() {
     setShowTrackingModal(false);
     setSelectedDealId(null);
   };
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / ITEMS_PER_PAGE));
+  const paginatedRows = rows.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
   return (
     <>
@@ -236,113 +286,123 @@ export default function TransaksiPage() {
               </p>
             </div>
           ) : (
-            rows.map((trx) => (
-              <div
-                key={trx.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/deal?deal=${trx.deal?.id}&trx=${trx.id}`);
-                }}
-                className="cursor-pointer rounded-2xl bg-base-100 border border-base-300/30
+            paginatedRows.map((trx) => {
+              const pickupLabel = getRouteLabel(
+                trx.deal?.pickup_location,
+                trx.deal?.post?.from_city,
+              );
+              const deliveryLabel = getRouteLabel(
+                trx.deal?.delivery_location,
+                trx.deal?.post?.to_city,
+              );
+
+              return (
+                <div
+                  key={trx.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/deal?deal=${trx.deal?.id}&trx=${trx.id}`);
+                  }}
+                  className="cursor-pointer rounded-2xl bg-base-100 border border-base-300/30
                         hover:bg-base-200/30 transition overflow-hidden"
-              >
-                {/* ================= HEADER ================= */}
-                <div className="px-4 pt-4 flex items-center justify-between">
-                  <span className="text-xs font-medium px-3 py-1 rounded-full bg-base-200 text-base-content/70">
-                    {new Date(trx.created_at).toLocaleDateString("id-ID")}
-                  </span>
+                >
+                  {/* ================= HEADER ================= */}
+                  <div className="px-4 pt-4 flex items-center justify-between">
+                    <span className="text-xs font-medium px-3 py-1 rounded-full bg-base-200 text-base-content/70">
+                      {new Date(trx.created_at).toLocaleDateString("id-ID")}
+                    </span>
 
-                  <DealStatusBadge
-                    dealStatus={trx.deal?.status}
-                    transactionStatus={trx.transaction_status}
-                    deliveryStatus={trx.deal?.delivery_status}
-                    size="sm"
-                  />
-                </div>
+                    <DealStatusBadge
+                      dealStatus={trx.deal?.status}
+                      transactionStatus={trx.transaction_status}
+                      deliveryStatus={trx.deal?.delivery_status}
+                      size="sm"
+                    />
+                  </div>
 
-                {/* ================= BODY ================= */}
-                <div className="p-4 flex items-center justify-between gap-4">
-                  {/* Left */}
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="avatar">
-                      <div className="w-16 h-16 rounded-2xl overflow-hidden bg-base-200 shadow-sm border border-base-300/30">
-                        <img
-                          src={
-                            normalizeItemPhotos(trx.deal?.item_photos)[0] ||
-                            trx.deal?.post?.item_photo ||
-                            "/default-avatar.png"
-                          }
-                          alt=""
-                          className="object-cover w-full h-full"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        {trx.deal?.carrier_id === clerkId ? (
-                          <span className="badge badge-error badge-xs font-bold text-[10px] px-1.5 py-2 rounded-md">
-                            JASTIPER
-                          </span>
-                        ) : (
-                          <span className="badge badge-info badge-xs font-bold text-[10px] px-1.5 py-2 rounded-md">
-                            NITIPERS
-                          </span>
-                        )}
-                      </div>
-                      <p className="font-bold text-base leading-tight truncate">
-                        {trx.deal?.item_description ||
-                          "Detail barang tidak ada"}
-                      </p>
-                      <div className="flex items-center gap-1.5 text-xs opacity-60 mt-0.5">
-                        <span className="font-medium">
-                          {trx.deal?.post?.from_city}
-                        </span>
-                        <svg
-                          className="w-3 h-3 text-emerald-500"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={3}
-                            d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  {/* ================= BODY ================= */}
+                  <div className="p-4 flex items-center justify-between gap-4">
+                    {/* Left */}
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="avatar">
+                        <div className="w-16 h-16 rounded-2xl overflow-hidden bg-base-200 shadow-sm border border-base-300/30">
+                          <img
+                            src={
+                              normalizeItemPhotos(trx.deal?.item_photos)[0] ||
+                              trx.deal?.post?.item_photo ||
+                              "/default-avatar.png"
+                            }
+                            alt=""
+                            className="object-cover w-full h-full"
                           />
-                        </svg>
-                        <span className="font-medium">
-                          {trx.deal?.post?.to_city}
-                        </span>
+                        </div>
                       </div>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          {trx.deal?.carrier_id === clerkId ? (
+                            <span className="badge badge-error badge-xs font-bold text-[10px] px-1.5 py-2 rounded-md">
+                              JASTIPER
+                            </span>
+                          ) : (
+                            <span className="badge badge-info badge-xs font-bold text-[10px] px-1.5 py-2 rounded-md">
+                              NITIPERS
+                            </span>
+                          )}
+                        </div>
+                        <p className="font-bold text-base leading-tight truncate">
+                          {trx.deal?.item_description ||
+                            "Detail barang tidak ada"}
+                        </p>
+                        <div className="flex items-center gap-1.5 text-xs opacity-60 mt-0.5 min-w-0">
+                          <span className="font-medium truncate flex-1 min-w-0">
+                            {pickupLabel}
+                          </span>
+                          <svg
+                            className="w-3 h-3 text-emerald-500 shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={3}
+                              d="M14 5l7 7m0 0l-7 7m7-7H3"
+                            />
+                          </svg>
+                          <span className="font-medium truncate flex-1 min-w-0 text-right">
+                            {deliveryLabel}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right */}
+                    <div className="text-right">
+                      <p className="font-bold text-emerald-600">
+                        Rp{" "}
+                        {Number(
+                          trx.gross_amount ?? trx.deal?.agreed_fee ?? 0,
+                        ).toLocaleString("id-ID")}
+                      </p>
+                      <p className="text-xs text-base-content/50">
+                        {trx.payment_type?.toUpperCase()}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Right */}
-                  <div className="text-right">
-                    <p className="font-bold text-emerald-600">
-                      Rp{" "}
-                      {Number(
-                        trx.gross_amount ?? trx.deal?.agreed_fee ?? 0,
-                      ).toLocaleString("id-ID")}
-                    </p>
-                    <p className="text-xs text-base-content/50">
-                      {trx.payment_type?.toUpperCase()}
-                    </p>
-                  </div>
-                </div>
+                  {/* ================= FOOTER ================= */}
+                  <div className="px-4 pb-4 flex items-center justify-between border-t border-base-300/20">
+                    <span className="text-xs text-base-content/50">
+                      {trx.deal?.carrier_id === clerkId
+                        ? `Customer: ${trx.deal?.depositor?.name ?? "-"}`
+                        : `Kurir: ${trx.deal?.carrier?.name ?? "-"}`}
+                    </span>
 
-                {/* ================= FOOTER ================= */}
-                <div className="px-4 pb-4 flex items-center justify-between border-t border-base-300/20">
-                  <span className="text-xs text-base-content/50">
-                    {trx.deal?.carrier_id === clerkId
-                      ? `Customer: ${trx.deal?.depositor?.name ?? "-"}`
-                      : `Kurir: ${trx.deal?.carrier?.name ?? "-"}`}
-                  </span>
-
-                  <div className="flex items-center gap-3">
-                    {/* Live tracking icon (ringkas) */}
-                    {/* {trx.deal?.delivery_status === "running" && (
+                    <div className="flex items-center gap-3">
+                      {/* Live tracking icon (ringkas) */}
+                      {/* {trx.deal?.delivery_status === "running" && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -355,44 +415,73 @@ export default function TransaksiPage() {
                       <BaggageClaim size={20} />
                     </button>
                   )} */}
-                  </div>
-                </div>
-
-                {/* ================= EXTEND (RUNNING ONLY) ================= */}
-                {trx.deal?.delivery_status === "running" && (
-                  <div
-                    className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3
-                                animate-in fade-in slide-in-from-top-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-emerald-700">
-                        <Truck className="w-5 h-5" />
-                        <div>
-                          <p className="text-sm font-semibold">
-                            Sedang Mengantar
-                          </p>
-                          <p className="text-xs opacity-70">
-                            Kurir dalam perjalanan
-                          </p>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedDeal(trx.deal);
-                          openLiveTracking();
-                        }}
-                        className="btn btn-xs bg-emerald-600 hover:bg-emerald-700 text-white"
-                      >
-                        <MapPin className="w-4 h-4" />
-                        Posisi Kurir
-                      </button>
                     </div>
                   </div>
-                )}
-              </div>
-            ))
+
+                  {/* ================= EXTEND (RUNNING ONLY) ================= */}
+                  {trx.deal?.delivery_status === "running" && (
+                    <div
+                      className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3
+                                animate-in fade-in slide-in-from-top-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-emerald-700">
+                          <Truck className="w-5 h-5" />
+                          <div>
+                            <p className="text-sm font-semibold">
+                              Sedang Mengantar
+                            </p>
+                            <p className="text-xs opacity-70">
+                              Kurir dalam perjalanan
+                            </p>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedDeal(trx.deal);
+                            openLiveTracking();
+                          }}
+                          className="btn btn-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                        >
+                          <MapPin className="w-4 h-4" />
+                          Posisi Kurir
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+
+          {!loading && rows.length > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-between gap-3 pt-2">
+              <button
+                type="button"
+                className="btn btn-sm btn-outline"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              >
+                Prev
+              </button>
+
+              <span className="text-sm text-base-content/70">
+                Halaman {currentPage} dari {totalPages}
+              </span>
+
+              <button
+                type="button"
+                className="btn btn-sm btn-outline"
+                disabled={currentPage === totalPages}
+                onClick={() =>
+                  setCurrentPage((page) => Math.min(totalPages, page + 1))
+                }
+              >
+                Next
+              </button>
+            </div>
           )}
         </div>
       </div>

@@ -5,7 +5,8 @@ import { v4 as uuidv4 } from "https://esm.sh/uuid";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
@@ -20,7 +21,7 @@ serve(async (req) => {
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
     // Ambil transaksi dari DB
@@ -31,8 +32,13 @@ serve(async (req) => {
       .single();
 
     if (trxError || !trx) throw new Error("Transaksi tidak ditemukan");
-    if (trx.transaction_status !== "draft" && trx.transaction_status !== "pending")
+    if (
+      trx.transaction_status !== "draft" &&
+      trx.transaction_status !== "pending" &&
+      trx.transaction_status !== "expired"
+    ) {
       throw new Error("Transaksi sudah dibayar atau dibatalkan");
+    }
 
     const isProduction = false;
     const midtransBaseUrl = isProduction
@@ -41,12 +47,13 @@ serve(async (req) => {
     const authString = btoa(Deno.env.get("MIDTRANS_SERVER_KEY")! + ":");
 
     // 1️⃣ Jika snap_token masih valid di DB → return langsung
-    if (trx.snap_token) {
+    // Jangan pakai token lama kalau transaksi sudah expired.
+    if (trx.snap_token && trx.transaction_status !== "expired") {
       console.log("Snap token sudah ada di DB, return token lama.");
-      return new Response(
-        JSON.stringify({ snap_token: trx.snap_token }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ snap_token: trx.snap_token }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // 2️⃣ Cek status transaksi di Midtrans
@@ -63,18 +70,28 @@ serve(async (req) => {
 
     if (statusResponse.ok) {
       existingMidtransData = await statusResponse.json();
-      console.log("Transaksi ditemukan di Midtrans:", existingMidtransData.transaction_status);
+      console.log(
+        "Transaksi ditemukan di Midtrans:",
+        existingMidtransData.transaction_status,
+      );
     } else if (statusResponse.status === 404) {
       console.log("Order_id belum ada di Midtrans → aman buat baru");
     } else {
-      console.warn("Error cek status Midtrans:", statusResponse.status, await statusResponse.text());
+      console.warn(
+        "Error cek status Midtrans:",
+        statusResponse.status,
+        await statusResponse.text(),
+      );
     }
 
     // 3️⃣ Blokir transaksi final
     const finalStatuses = ["settlement", "capture", "deny"];
-    if (existingMidtransData && finalStatuses.includes(existingMidtransData.transaction_status)) {
+    if (
+      existingMidtransData &&
+      finalStatuses.includes(existingMidtransData.transaction_status)
+    ) {
       throw new Error(
-        `Transaksi dengan order_id lama sudah ${existingMidtransData.transaction_status} di Midtrans`
+        `Transaksi dengan order_id lama sudah ${existingMidtransData.transaction_status} di Midtrans`,
       );
     }
 
@@ -124,7 +141,11 @@ serve(async (req) => {
     // 5️⃣ Simpan snap_token dan midtrans_order_id ke DB
     const { error: updateError } = await supabaseAdmin
       .from("transactions")
-      .update({ snap_token: data.token, order_id: midtransOrderId })
+      .update({
+        snap_token: data.token,
+        order_id: midtransOrderId,
+        transaction_status: "pending",
+      })
       .eq("id", trx.id);
 
     if (updateError) console.warn("Gagal update snap_token:", updateError);
@@ -135,9 +156,12 @@ serve(async (req) => {
     });
   } catch (err) {
     console.error("Error:", err);
-    return new Response(JSON.stringify({ error: err.message || "Internal error" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: err.message || "Internal error" }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 });

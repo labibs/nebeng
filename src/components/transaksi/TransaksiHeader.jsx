@@ -5,24 +5,21 @@ export default function TransaksiHeader({ searchQuery, setSearchQuery }) {
   const inputRef = useRef(null);
 
   return (
-    <div className="sticky top-0 z-10 navbar bg-base-100/80 dark:bg-base-900/80 backdrop-blur-xl shadow-md border-b border-base-300/20">
-      {/* Title */}
+    <div className="sticky top-0 z-10 navbar border-b border-base-300/20 bg-base-100/80 shadow-md backdrop-blur-xl">
       <div className="flex-1">
-        <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#81c784] to-[#a5d6a7]">
+        <h3 className="bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] bg-clip-text text-2xl font-extrabold text-transparent">
           Transaksi
         </h3>
       </div>
 
-      {/* Actions */}
       <div className="flex-none flex items-center gap-3">
         <div className="relative">
-          {/* Search Button */}
           <button
             onClick={() => {
               setIsSearchOpen(!isSearchOpen);
               setTimeout(() => inputRef.current?.focus(), 100);
             }}
-            className="btn btn-ghost btn-circle text-green-600/70"
+            className="btn btn-ghost btn-circle text-[#4e73df]/70"
             aria-label="Search"
           >
             <svg
@@ -40,12 +37,11 @@ export default function TransaksiHeader({ searchQuery, setSearchQuery }) {
             </svg>
           </button>
 
-          {/* Search Input */}
           <div
             className={`absolute right-14 top-0 w-64 transition-all duration-300 ease-in-out ${
               isSearchOpen
-                ? "opacity-100 visible translate-y-0"
-                : "opacity-0 invisible -translate-y-2 pointer-events-none"
+                ? "visible translate-y-0 opacity-100"
+                : "invisible -translate-y-2 opacity-0 pointer-events-none"
             }`}
           >
             <input
@@ -54,10 +50,8 @@ export default function TransaksiHeader({ searchQuery, setSearchQuery }) {
               placeholder="Cari transaksi, deal, rute..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onBlur={() =>
-                setTimeout(() => setIsSearchOpen(false), 200)
-              }
-              className="input input-bordered w-full bg-base-100 dark:bg-base-800 border-base-300/50 shadow-xl focus:outline-none focus:border-[#81c784]"
+              onBlur={() => setTimeout(() => setIsSearchOpen(false), 200)}
+              className="input input-bordered w-full border-base-300/50 bg-base-100 shadow-xl focus:border-[#4e73df] focus:outline-none dark:bg-base-800"
             />
 
             {searchQuery && (

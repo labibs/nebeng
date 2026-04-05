@@ -1,5 +1,4 @@
-// src/components/chat/ChatHeader.jsx
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 export default function ChatHeader({ recipient }) {
   const navigate = useNavigate();
@@ -14,7 +13,7 @@ export default function ChatHeader({ recipient }) {
 
       <div className="flex-1 flex items-center gap-3">
         <div className="avatar online">
-          <div className="w-12 rounded-full ring ring-emerald-500 ring-offset-base-100 ring-offset-2">
+          <div className="w-12 rounded-full ring ring-[#4e73df]/30 ring-offset-2 ring-offset-base-100">
             <img src={recipient.imageUrl} alt={recipient.name} />
           </div>
         </div>

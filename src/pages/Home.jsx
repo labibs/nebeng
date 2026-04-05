@@ -291,7 +291,7 @@ export default function Home() {
               {/* Search button */}
               <button
                 onClick={() => setSearchOpen(true)}
-                className="btn btn-ghost btn-circle text-green-600/70"
+                className="btn btn-ghost btn-circle text-[#4e73df]/70"
                 aria-label="Search"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -340,7 +340,7 @@ export default function Home() {
     <div className="px-4 pt-6 pb-4 overflow-y-auto">
       <div className="max-w-2xl mx-auto w-full">
         <div className="bg-gradient-to-br
-        from-[#e8f5e9] via-[#f3faf5] to-[#d7efe3]
+        from-[#eef4ff] via-[#f5f8ff] to-[#dfe9ff]
         text-slate-800
         
         dark:from-[#020617] dark:via-[#020617] dark:to-[#020617]
@@ -526,7 +526,7 @@ export default function Home() {
       className={`
         flex-1 px-4 py-3 rounded-xl text-sm font-medium text-left transition-all
         ${dateFilterMode === 'custom'
-          ? 'bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white text-white shadow-md'
+          ? 'bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] text-white text-white shadow-md'
           : 'bg-base-200/60 text-base-content/70 hover:bg-base-200'
         }
       `}
@@ -584,7 +584,7 @@ export default function Home() {
       <div className="max-w-2xl mx-auto w-full">
         <button
           onClick={() => setSearchOpen(false)} // Langsung terapkan & tutup
-          className="btn bg-gradient-to-r from-[#81c784] to-[#66bb6a] text-white btn-lg w-full rounded-2xl shadow-lg"
+          className="btn bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] text-white btn-lg w-full rounded-2xl shadow-lg"
         >
           Terapkan Pencarian
         </button>

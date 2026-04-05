@@ -164,7 +164,7 @@ export default function Checkout() {
                 {/* Ringkasan Item */}
                 <div className="bg-base-100 rounded-2xl p-4 shadow-sm border border-base-300">
                     <div className="flex items-center gap-2 mb-4">
-                        <ClipboardList className="text-emerald-500 w-5 h-5" />
+                        <ClipboardList className="text-[#4e73df] w-5 h-5" />
                         <h2 className="font-bold text-base">Ringkasan Pesanan</h2>
                     </div>
                     <div className="space-y-3">
@@ -195,7 +195,7 @@ export default function Checkout() {
                         </div>
                         <div className="flex justify-between items-center border-t border-base-200 pt-2 mt-2">
                             <p className="font-bold text-base-content/70">Total Penawaran</p>
-                            <p className="font-black text-lg text-emerald-600">Rp {(totalPrice + (Number(proposedFee) || 0)).toLocaleString('id-ID')}</p>
+                            <p className="font-black text-lg text-[#4e73df]">Rp {(totalPrice + (Number(proposedFee) || 0)).toLocaleString('id-ID')}</p>
                         </div>
                     </div>
                 </div>
@@ -203,14 +203,14 @@ export default function Checkout() {
                 {/* Form Pengiriman */}
                 <div className="bg-base-100 rounded-2xl p-4 shadow-sm border border-base-300 space-y-4">
                     <div className="flex items-center gap-2 mb-2">
-                        <Truck className="text-emerald-500 w-5 h-5" />
+                        <Truck className="text-[#4e73df] w-5 h-5" />
                         <h2 className="font-bold text-base">Detail Pengiriman & Penawaran</h2>
                     </div>
 
                     <div className="form-control w-full space-y-2">
                         <label className="label py-1">
                             <span className="label-text font-semibold flex items-center gap-1">
-                                <MapPin className="w-4 h-4 text-emerald-600" /> Lokasi Pickup/Beli (Warung/Lokasi)
+                                <MapPin className="w-4 h-4 text-[#4e73df]" /> Lokasi Pickup/Beli (Warung/Lokasi)
                             </span>
                         </label>
                         <LocationPicker
@@ -223,7 +223,7 @@ export default function Checkout() {
                     <div className="form-control w-full space-y-2">
                         <label className="label py-1">
                             <span className="label-text font-semibold flex items-center gap-1">
-                                <MapPin className="w-4 h-4 text-emerald-600" /> Tujuan Pengantaran
+                                <MapPin className="w-4 h-4 text-[#4e73df]" /> Tujuan Pengantaran
                             </span>
                         </label>
                         <LocationPicker
@@ -236,7 +236,7 @@ export default function Checkout() {
                     <div className="form-control w-full space-y-2">
                         <label className="label py-1">
                             <span className="label-text font-semibold flex items-center gap-1">
-                                <Wallet className="w-4 h-4 text-emerald-600" /> Penawaran Ongkos/Jastip
+                                <Wallet className="w-4 h-4 text-[#4e73df]" /> Penawaran Ongkos/Jastip
                             </span>
                         </label>
                         <div className="relative">
@@ -244,7 +244,7 @@ export default function Checkout() {
                             <input
                                 type="number"
                                 placeholder="0"
-                                className="w-full py-3 pl-12 pr-4 rounded-2xl border bg-white/70 dark:bg-white/5 font-medium text-sm focus:outline-none focus:border-emerald-500"
+                                className="w-full py-3 pl-12 pr-4 rounded-2xl border bg-white/70 dark:bg-white/5 font-medium text-sm focus:outline-none focus:border-[#4e73df]"
                                 value={proposedFee}
                                 onChange={(e) => setProposedFee(e.target.value)}
                             />
@@ -276,7 +276,7 @@ export default function Checkout() {
                     <div className="flex justify-between items-end px-1">
                         <div>
                             <p className="text-xs font-medium text-base-content/70 mb-1">Total Pembayaran</p>
-                            <p className="font-black text-xl text-emerald-600 leading-none">Rp {(totalPrice + (Number(proposedFee) || 0)).toLocaleString('id-ID')}</p>
+                            <p className="font-black text-xl text-[#4e73df] leading-none">Rp {(totalPrice + (Number(proposedFee) || 0)).toLocaleString('id-ID')}</p>
                         </div>
                         <div className="text-right">
                             <p className="text-[11px] font-medium text-base-content/50">Termasuk Jastip <br />Rp {(Number(proposedFee) || 0).toLocaleString('id-ID')}</p>
@@ -285,7 +285,7 @@ export default function Checkout() {
                     <button
                         onClick={handleConfirmDeal}
                         disabled={isProcessing || !pickupLocation || !deliveryLocation}
-                        className="btn w-full rounded-2xl h-14 font-black shadow-lg shadow-emerald-200/50 bg-emerald-600 border-none text-white disabled:bg-base-300 disabled:text-base-content/40 hover:bg-emerald-700 active:scale-[0.98] transition-all"
+                        className="btn w-full rounded-2xl h-14 font-black shadow-lg shadow-blue-200/50 bg-[#4e73df] border-none text-white disabled:bg-base-300 disabled:text-base-content/40 hover:bg-[#3b59bd] active:scale-[0.98] transition-all"
                     >
                         {isProcessing ? <span className="loading loading-spinner"></span> : "Ajukan Deal"}
                     </button>

@@ -288,20 +288,20 @@ export default function Cart() {
     >
       <CartHeader />
 
-      <div className="min-h-screen bg-gradient-to-br from-green-100 to-emerald-200 dark:from-slate-900 dark:to-slate-800 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#eef4ff] to-[#dfe9ff] p-4 dark:from-slate-900 dark:to-slate-800">
         {loading ? (
-          <div className="flex justify-center py-20"><span className="loading loading-spinner loading-lg text-emerald-600"></span></div>
+          <div className="flex justify-center py-20"><span className="loading loading-spinner loading-lg text-[#4e73df]"></span></div>
         ) : items.length === 0 || !hasVisibleSections ? (
           <div className="flex flex-col items-center justify-center py-24 px-6 text-center animate-fade-in">
             <div className="w-32 h-32 bg-white/50 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-8 shadow-xl backdrop-blur-sm relative">
-              <ShoppingCart size={64} className="text-emerald-500/40" />
-              <div className="absolute -top-1 -right-1 w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg animate-bounce">
+              <ShoppingCart size={64} className="text-[#4e73df]/40" />
+              <div className="absolute -top-1 -right-1 w-10 h-10 bg-[#4e73df] rounded-full flex items-center justify-center text-white shadow-lg animate-bounce">
                 <Plus size={24} />
               </div>
             </div>
             <h3 className="text-2xl font-black mb-3 text-slate-800 dark:text-white">Wah, Keranjang Kosong!</h3>
             <p className="text-base opacity-60 text-slate-600 dark:text-slate-300 max-w-xs mx-auto mb-10">Mulai titip kebutuhanmu ke teman perjalanan atau tetangga di Market.</p>
-            <button onClick={() => navigate("/market")} className="btn btn-primary btn-lg rounded-2xl px-12 font-bold shadow-xl bg-emerald-600 border-none text-white">Cari Jastiper</button>
+            <button onClick={() => navigate("/market")} className="btn btn-primary btn-lg rounded-2xl px-12 font-bold shadow-xl bg-[#4e73df] border-none text-white hover:bg-[#3b59bd]">Cari Jastiper</button>
           </div>
         ) : (
           <>
@@ -326,7 +326,7 @@ export default function Cart() {
                           <div><p className="font-bold text-sm">{group.partnerName}</p><p className="text-[10px] opacity-60 tracking-wider">{getShortAddress(group.warungAddress)}</p></div>
                         </div>
                         <button onClick={() => toggleSelectGroup(group.key, kurirGroups)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90">
-                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-200' : 'border-gray-300'}`}>
+                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-[#4e73df] border-[#4e73df] shadow-md shadow-blue-200' : 'border-gray-300'}`}>
                             {group.items.every(it => selectedIds.has(it.id)) && (
                               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
                                 <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -350,22 +350,22 @@ export default function Cart() {
                 <section>
                   <h2 className="text-xl font-black mb-4 px-2 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg"><Plus size={20} /></div>
-                      <span className="bg-gradient-to-r from-emerald-700 to-teal-700 bg-clip-text text-transparent">Permintaan Nitip</span>
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4e73df] to-[#6c8ef8] flex items-center justify-center text-white shadow-lg"><Plus size={20} /></div>
+                      <span className="bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] bg-clip-text text-transparent">Permintaan Nitip</span>
                     </div>
-                    <div className="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-bold border border-emerald-200">{Object.keys(pembeliGroups).length} tujuan</div>
+                    <div className="bg-blue-100 text-[#4e73df] text-xs px-2.5 py-1 rounded-full font-bold border border-blue-200">{Object.keys(pembeliGroups).length} tujuan</div>
                   </h2>
                   {Object.values(pembeliGroups).map(group => (
-                    <div key={group.key} className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-sm mb-5 border-l-4 border-emerald-500">
+                    <div key={group.key} className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-sm mb-5 border-l-4 border-[#4e73df]">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm bg-gray-100">
                             {group.partnerAvatar ? <img src={group.partnerAvatar} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-500"><User size={20} /></div>}
                           </div>
-                          <div><p className="font-bold text-sm">{group.partnerName}</p><p className="text-[9px] opacity-60 uppercase tracking-wider block mb-0.5">{getShortAddress(group.warungAddress)}</p><span className="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">Rekomendasi</span></div>
+                          <div><p className="font-bold text-sm">{group.partnerName}</p><p className="text-[9px] opacity-60 uppercase tracking-wider block mb-0.5">{getShortAddress(group.warungAddress)}</p><span className="text-[9px] bg-blue-100 text-[#4e73df] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">Rekomendasi</span></div>
                         </div>
                         <button onClick={() => toggleSelectGroup(group.key, pembeliGroups)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90">
-                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-200' : 'border-gray-300'}`}>
+                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-[#4e73df] border-[#4e73df] shadow-md shadow-blue-200' : 'border-gray-300'}`}>
                             {group.items.every(it => selectedIds.has(it.id)) && (
                               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
                                 <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -404,7 +404,7 @@ export default function Cart() {
                           <div><p className="font-bold text-sm">{group.partnerName}</p><p className="text-[9px] opacity-60 uppercase tracking-wider block mb-0.5">{getShortAddress(group.warungAddress)}</p><span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">Customer</span></div>
                         </div>
                         <button onClick={() => toggleSelectGroup(group.key, milikGroups)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90">
-                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-200' : 'border-gray-300'}`}>
+                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-[#4e73df] border-[#4e73df] shadow-md shadow-blue-200' : 'border-gray-300'}`}>
                             {group.items.every(it => selectedIds.has(it.id)) && (
                               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
                                 <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -446,7 +446,7 @@ export default function Cart() {
               <div className="max-w-3xl mx-auto">
                 <div className="flex items-center justify-between mb-4 px-1">
                   <button onClick={toggleSelectAll} className="flex items-center gap-2.5 group active:scale-95 transition-all">
-                    <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${selectAll ? 'bg-emerald-500 border-emerald-500 shadow-lg shadow-emerald-200' : 'border-gray-300 group-hover:border-emerald-400'}`}>
+                    <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${selectAll ? 'bg-[#4e73df] border-[#4e73df] shadow-lg shadow-blue-200' : 'border-gray-300 group-hover:border-[#4e73df]'}`}>
                       {selectAll && (
                         <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -455,12 +455,12 @@ export default function Cart() {
                         </motion.div>
                       )}
                     </div>
-                    <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${selectAll ? 'text-emerald-600' : 'text-gray-400'}`}>Pilih Semua</span>
+                    <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${selectAll ? 'text-[#4e73df]' : 'text-gray-400'}`}>Pilih Semua</span>
                   </button>
                   {selectedIds.size > 0 && (
                     <div className="text-right">
                       <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tight leading-none">{selectedIds.size} Item Dipilih</p>
-                      <p className="text-xl font-black text-emerald-600">Rp {totalPrice.toLocaleString("id-ID")}</p>
+                      <p className="text-xl font-black text-[#4e73df]">Rp {totalPrice.toLocaleString("id-ID")}</p>
                     </div>
                   )}
                 </div>
@@ -474,7 +474,7 @@ export default function Cart() {
                   <button
                     onClick={() => handleDealSelected()}
                     disabled={selectedIds.size === 0 || multipleOwnersSelected || isProcessing}
-                    className={`flex-1 rounded-2xl h-12 font-black text-sm flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98] ${selectedIds.size === 0 || multipleOwnersSelected || isProcessing ? 'bg-gray-100 text-gray-400 shadow-none' : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-emerald-200'}`}
+                    className={`flex-1 rounded-2xl h-12 font-black text-sm flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98] ${selectedIds.size === 0 || multipleOwnersSelected || isProcessing ? 'bg-gray-100 text-gray-400 shadow-none' : 'bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] text-white shadow-blue-200'}`}
                   >
                     {isProcessing ? <span className="loading loading-spinner loading-sm"></span> : (
                       <>

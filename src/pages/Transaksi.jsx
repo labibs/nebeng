@@ -370,7 +370,7 @@ export default function TransaksiPage() {
                             {pickupLabel}
                           </span>
                           <svg
-                            className="w-3 h-3 text-emerald-500 shrink-0"
+                            className="w-3 h-3 text-[#4e73df] shrink-0"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -391,7 +391,7 @@ export default function TransaksiPage() {
 
                     {/* Right */}
                     <div className="text-right">
-                      <p className="font-bold text-emerald-600">
+                      <p className="font-bold text-[#4e73df]">
                         Rp{" "}
                         {Number(
                           trx.gross_amount ?? trx.deal?.agreed_fee ?? 0,
@@ -424,7 +424,7 @@ export default function TransaksiPage() {
                                 setPayingId(isPaying ? trx.id : null),
                             });
                           }}
-                          className={`btn btn-sm rounded-xl ${paymentExpired ? "btn-error" : "btn-success"}`}
+                          className={`btn btn-sm rounded-xl ${paymentExpired ? "btn-error" : "border-none bg-[#4e73df] text-white hover:bg-[#3b59bd]"}`}
                           disabled={payingId === trx.id}
                         >
                           {payingId === trx.id ? (
@@ -457,11 +457,11 @@ export default function TransaksiPage() {
                   {/* ================= EXTEND (RUNNING ONLY) ================= */}
                   {trx.deal?.delivery_status === "running" && (
                     <div
-                      className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3
+                      className="border-t border-base-300/40 bg-blue-50/50 px-4 py-3
                                 animate-in fade-in slide-in-from-top-2"
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-emerald-700">
+                        <div className="flex items-center gap-2 text-[#4e73df]">
                           <Truck className="w-5 h-5" />
                           <div>
                             <p className="text-sm font-semibold">
@@ -479,7 +479,7 @@ export default function TransaksiPage() {
                             setSelectedDeal(trx.deal);
                             openLiveTracking();
                           }}
-                          className="btn btn-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                          className="btn btn-xs border-none bg-[#4e73df] text-white hover:bg-[#3b59bd]"
                         >
                           <MapPin className="w-4 h-4" />
                           Posisi Kurir

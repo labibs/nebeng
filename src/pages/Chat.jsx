@@ -332,7 +332,7 @@ export default function ChatInbox() {
       {/* Navbar – transparan dengan blur */}
       <div className="sticky top-0 z-10 navbar bg-base-100/80 dark:bg-base-900/80 backdrop-blur-xl shadow-md border-b border-base-300/20">
         <div className="flex-1">
-          <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#81c784] to-[#a5d6a7]">
+          <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#4e73df] to-[#6c8ef8]">
             Chat
           </h3>
         </div>
@@ -342,7 +342,7 @@ export default function ChatInbox() {
           <div className="relative">
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="btn btn-ghost btn-circle text-green-600/70"
+              className="btn btn-ghost btn-circle text-[#4e73df]/70"
               aria-label="Search"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,7 +361,7 @@ export default function ChatInbox() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onBlur={() => setTimeout(() => setIsSearchOpen(false), 200)}
                 autoFocus
-                className="input input-bordered w-full bg-base-100 dark:bg-base-800 border-base-300/50 shadow-xl focus:outline-none focus:border-[#81c784] text-base-content placeholder-base-content/50"
+                className="input input-bordered w-full bg-base-100 dark:bg-base-800 border-base-300/50 shadow-xl focus:outline-none focus:border-[#4e73df] text-base-content placeholder-base-content/50"
               />
               {searchQuery && (
                 <button
@@ -380,7 +380,7 @@ export default function ChatInbox() {
           {/* Tombol + */}
           <button
             onClick={() => setShowUserPicker(true)}
-            className="btn btn-ghost btn-circle text-green-600/70"
+            className="btn btn-ghost btn-circle text-[#4e73df]/70"
           >
             <span className="text-3xl leading-none -translate-y-0.5">
               +

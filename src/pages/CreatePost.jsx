@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import CreateActionPicker from '../components/create/CreateActionPicker';
 import CreateNitipBawakan from '../components/create/CreateNitipBawakan';
 import CreateNitipBelikan from '../components/create/CreateNitipBelikan';
@@ -7,41 +8,48 @@ import CreatePerjalanan from '../components/create/CreatePerjalanan';
 import CreateWarung from '../components/create/CreateWarung';
 import CreateContent from '../components/create/CreateContent';
 import CreateJualanKeliling from '../components/create/CreateJualanKeliling';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CreatePost() {
-
   const [action, setAction] = useState(null);
+
   const slideLeft = {
     initial: { x: "100%" },
     animate: { x: 0 },
-    exit: { x: "100%" },   // balik lagi ke kanan saat close
+    exit: { x: "100%" },
   };
 
   return (
-    <div className="min-h-screen px-4 py-6 bg-gradient-to-br from-[#e8f5e9] to-[#d7efe3] dark:from-[#020617] dark:to-[#020617] overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-[#f0f7ff] px-4 py-6">
+      <div className="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-blue-200/45 blur-3xl" />
+      <div className="absolute -right-16 top-48 h-80 w-80 rounded-full bg-blue-100/50 blur-3xl" />
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white/20 to-transparent" />
 
-      {/* MENU AWAL */}
+      <div className="relative z-10">
       {!action && (
         <>
-          <h1 className="text-xl font-bold mb-4 text-center">
+          <h1 className="mb-4 text-center text-xl font-bold">
             Mau ngapain hari ini?
           </h1>
           <CreateActionPicker onSelect={setAction} />
         </>
       )}
+      </div>
 
-      {/* LAYER SLIDE */}
       <AnimatePresence>
         {action && (
           <motion.div
-            className="fixed inset-0 bg-white dark:bg-[#020617] z-50"
+            className="fixed inset-0 z-50 overflow-hidden bg-[#f0f7ff]"
             variants={slideLeft}
             initial="initial"
             animate="animate"
             exit="exit"
             transition={{ duration: 0.25, ease: "easeOut" }}
           >
+            <div className="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-blue-200/45 blur-3xl" />
+            <div className="absolute -right-16 top-48 h-80 w-80 rounded-full bg-blue-100/50 blur-3xl" />
+            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white/20 to-transparent" />
+
+            <div className="relative z-10 h-full">
             {action === "nitip_bawakan" && (
               <CreateNitipBawakan onBack={() => setAction(null)} />
             )}
@@ -69,10 +77,10 @@ export default function CreatePost() {
             {action === "keliling" && (
               <CreateJualanKeliling onBack={() => setAction(null)} />
             )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
-
     </div>
   );
 }

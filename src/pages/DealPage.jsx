@@ -38,7 +38,7 @@ function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
         onClick={toggle}
       >
         <div className="flex gap-3 items-start">
-          <Icon className="w-5 h-5 text-emerald-500 mt-0.5" />
+          <Icon className="w-5 h-5 text-[#4e73df] mt-0.5" />
           <div>
             <p className="text-sm font-medium">{title}</p>
             <p className="text-sm opacity-70 whitespace-pre-wrap">
@@ -48,7 +48,7 @@ function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
         </div>
 
         {/* Tombol + / - */}
-        <div className="text-emerald-500 mt-1">
+        <div className="text-[#4e73df] mt-1">
           {open ? <Minus size={18} /> : <Plus size={18} />}
         </div>
       </div>
@@ -80,7 +80,7 @@ function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
                 href={`https://www.google.com/maps?q=${extraData.lat},${extraData.lng}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-emerald-600 hover:underline mb-1"
+                className="text-sm text-[#4e73df] hover:underline mb-1"
               >
                 Lihat di Google Maps
               </a>
@@ -253,7 +253,7 @@ function PaymentOption({
       className={`
         flex items-center gap-3 p-3 rounded-xl border transition-all
         ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-base-200"}
-        ${checked && !disabled ? "border-emerald-500 " : "border-base-300"}
+        ${checked && !disabled ? "border-[#4e73df] " : "border-base-300"}
       `}
     >
       <input
@@ -893,7 +893,7 @@ export default function DealPage() {
               <div className="flex items-center gap-4 w-full">
                 {/* Avatar / Foto Barang */}
                 <div className="avatar flex-shrink-0">
-                  <div className="w-11 h-11 rounded-xl overflow-hidden ring-2 ring-emerald-500/20">
+                  <div className="w-11 h-11 rounded-xl overflow-hidden ring-2 ring-[#4e73df]/20">
                     <img
                       src={headerItemPhoto}
                       alt="Barang"
@@ -916,7 +916,7 @@ export default function DealPage() {
                     <span className="font-semibold">{pickupCity}</span>
 
                     <svg
-                      className="w-5 h-5 text-emerald-500"
+                      className="w-5 h-5 text-[#4e73df]"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -948,7 +948,7 @@ export default function DealPage() {
               {/* Kiri */}
               <div className="flex items-center gap-4 min-w-0">
                 <div className="avatar">
-                  <div className="w-16 rounded-full ring ring-emerald-500 ring-offset-base-100 ring-offset-2">
+                  <div className="w-16 rounded-full ring ring-[#4e73df] ring-offset-base-100 ring-offset-2">
                     <img
                       src={opponent?.avatar_url || "/avatar-placeholder.png"}
                       alt="User"
@@ -966,7 +966,7 @@ export default function DealPage() {
 
               {/* Kanan */}
               <button
-                className="btn btn-circle btn-ghost text-emerald-600 hover:bg-emerald-100"
+                className="btn btn-circle btn-ghost text-[#4e73df] hover:bg-blue-100"
                 title="Chat"
                 onClick={() => startChatWithDeal(deal, clerkId)}
               >
@@ -976,10 +976,10 @@ export default function DealPage() {
 
             {/* EXTEND CARD – MUNCUL SAAT RUNNING */}
             {deal?.delivery_status === "running" && !isCarrierLogin && (
-              <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3 animate-in fade-in slide-in-from-top-2">
+              <div className="border-t border-base-300/40 bg-blue-50/50 px-4 py-3 animate-in fade-in slide-in-from-top-2">
                 <div className="flex items-center justify-between gap-3">
                   {/* Status */}
-                  <div className="flex items-center gap-2 text-emerald-700">
+                  <div className="flex items-center gap-2 text-[#4e73df]">
                     <Truck className="w-5 h-5" />
                     <div>
                       <p className="text-sm font-semibold">Sedang Mengantar</p>
@@ -992,7 +992,7 @@ export default function DealPage() {
                   {/* Action */}
                   <button
                     onClick={() => openLiveTracking(deal.id)}
-                    className="btn btn-sm bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                    className="btn btn-sm bg-[#4e73df] hover:bg-[#3b59bd] text-white gap-1"
                   >
                     <MapPin className="w-4 h-4" />
                     Posisi Kurir
@@ -1003,10 +1003,10 @@ export default function DealPage() {
             {deal?.delivery_status === "draft" &&
               transaction?.payment_status === "paid" &&
               !isCarrierLogin && (
-                <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3 animate-in fade-in slide-in-from-top-2">
+                <div className="border-t border-base-300/40 bg-blue-50/50 px-4 py-3 animate-in fade-in slide-in-from-top-2">
                   <div className="flex items-center justify-between gap-3">
                     {/* Status */}
-                    <div className="flex items-center gap-2 text-emerald-700">
+                    <div className="flex items-center gap-2 text-[#4e73df]">
                       <CarFront className="w-5 h-5" />
                       <div>
                         <p className="text-sm font-semibold">Sedang Menunggu</p>
@@ -1019,7 +1019,7 @@ export default function DealPage() {
                     {/* Action */}
                     {/* <button
                   onClick={() => openLiveTracking(deal.id)}
-                  className="btn btn-sm bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                  className="btn btn-sm bg-[#4e73df] hover:bg-[#3b59bd] text-white gap-1"
                 >
                   <MapPin className="w-4 h-4" />
                   Posisi Kurir
@@ -1028,10 +1028,10 @@ export default function DealPage() {
                 </div>
               )}
             {deal?.delivery_status === "delivered" && !isCarrierLogin && (
-              <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3 animate-in fade-in slide-in-from-top-2">
+              <div className="border-t border-base-300/40 bg-blue-50/50 px-4 py-3 animate-in fade-in slide-in-from-top-2">
                 <div className="flex items-center justify-between gap-3">
                   {/* Status */}
-                  <div className="flex items-center gap-2 text-emerald-700">
+                  <div className="flex items-center gap-2 text-[#4e73df]">
                     <MapPinHouse className="w-5 h-5" />
                     <div>
                       <p className="text-sm font-semibold">Tiba Ditujuan</p>
@@ -1044,7 +1044,7 @@ export default function DealPage() {
                   {/* Action */}
                   {/* <button
                   onClick={() => openLiveTracking(deal.id)}
-                  className="btn btn-sm bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                  className="btn btn-sm bg-[#4e73df] hover:bg-[#3b59bd] text-white gap-1"
                 >
                   <MapPin className="w-4 h-4" />
                   Posisi Kurir
@@ -1057,7 +1057,7 @@ export default function DealPage() {
           {/* Ringkasan */}
           <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40">
             <h2 className="font-semibold text-lg flex items-center gap-2 mb-2">
-              <Info className="w-5 h-5 text-emerald-500" />
+              <Info className="w-5 h-5 text-[#4e73df]" />
               Ringkasan Transaksi
             </h2>
             <p className="text-sm opacity-100">
@@ -1115,7 +1115,7 @@ export default function DealPage() {
           {isCarrierLogin && (
             <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 space-y-3">
               <p className="text-sm opacity-70">Penghasilan dari Jastip</p>
-              <p className="text-3xl font-extrabold text-emerald-600">
+              <p className="text-3xl font-extrabold text-[#4e73df]">
                 {jastipFee
                   ? jastipFee.toLocaleString("id-ID", {
                       style: "currency",
@@ -1173,7 +1173,7 @@ export default function DealPage() {
           {!isCarrierLogin && (
             <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 space-y-3">
               <p className="text-sm opacity-70">Total Biaya Nebeng</p>
-              <p className="text-3xl font-extrabold text-emerald-600">
+              <p className="text-3xl font-extrabold text-[#4e73df]">
                 {totalTransactionAmount
                   ? totalTransactionAmount.toLocaleString("id-ID", {
                       style: "currency",
@@ -1297,8 +1297,8 @@ export default function DealPage() {
 
           {hasReviewed && !isCarrierLogin && (
             <div className="mt-6 px-4 pb-4">
-              <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 p-4 rounded-2xl flex items-center gap-3 border border-emerald-200 dark:border-emerald-800/30">
-                <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+              <div className="bg-blue-50 dark:bg-slate-900/20 text-[#4e73df] dark:text-blue-300 p-4 rounded-2xl flex items-center gap-3 border border-blue-200 dark:border-blue-900/30">
+                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
                   <svg
                     className="w-5 h-5 text-white"
                     fill="none"
@@ -1337,7 +1337,7 @@ export default function DealPage() {
                 Kembali
               </button>
               <button
-                className="btn btn-success flex-1 rounded-xl"
+                className="btn flex-1 rounded-xl border-none bg-[#4e73df] text-white hover:bg-[#3b59bd]"
                 onClick={() =>
                   handlePay({
                     transactionId: transaction?.id,
@@ -1380,7 +1380,7 @@ export default function DealPage() {
 
         {/* Pesanan Selesai */}
         {delivered && (
-          <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-center rounded-xl bg-emerald-500 shadow-lg p-3 text-white font-bold">
+          <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-center rounded-xl bg-[#4e73df] shadow-lg p-3 text-white font-bold">
             <PackageCheck className="w-5 h-5 mr-2" />
             Pesanan Selesai
           </div>

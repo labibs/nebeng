@@ -84,7 +84,7 @@ export default function CartIconButton({ className = "" }) {
           size={24}
           strokeWidth={2.5}
           className={`transition-all duration-300 group-hover:scale-110 ${
-            isAnimating ? "animate-bounce text-emerald-500" : ""
+            isAnimating ? "animate-bounce text-[#4e73df]" : ""
           }`}
         />
 

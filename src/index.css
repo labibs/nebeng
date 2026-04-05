@@ -18,8 +18,89 @@ html, body, #root {
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #f7f9ff;
+  background: #f0f7ff;
   color: #0f172a;
+}
+
+.min-h-screen[class*="bg-gradient-to-br"][class*="from-[#e8f5e9]"][class*="via-[#f0f8f1]"][class*="to-[#d9f0e0]"],
+.min-h-screen[class*="bg-gradient-to-br"][class*="from-green-100"][class*="to-emerald-200"],
+.min-h-screen[class*="bg-base-100"],
+.min-h-screen[class*="bg-base-200"] {
+  background-color: #f0f7ff !important;
+  background-image: none !important;
+}
+
+[class*="text-green-"],
+[class*="text-emerald-"] {
+  color: #4e73df !important;
+}
+
+[class*="stroke-green-"],
+[class*="stroke-emerald-"] {
+  stroke: #4e73df !important;
+}
+
+[class*="fill-emerald-"],
+[class*="fill-green-"] {
+  fill: #4e73df !important;
+}
+
+[class*="border-green-"],
+[class*="border-emerald-"] {
+  border-color: rgba(78, 115, 223, 0.24) !important;
+}
+
+[class*="ring-green-"],
+[class*="ring-emerald-"] {
+  --tw-ring-color: rgba(78, 115, 223, 0.24) !important;
+}
+
+[class*="focus:ring-green-"],
+[class*="focus:ring-emerald-"],
+[class*="focus-within:ring-green-"],
+[class*="focus-within:ring-emerald-"] {
+  --tw-ring-color: rgba(78, 115, 223, 0.28) !important;
+}
+
+[class*="bg-green-50"],
+[class*="bg-emerald-50"] {
+  background-color: #edf3ff !important;
+}
+
+[class*="bg-green-100"],
+[class*="bg-emerald-100"] {
+  background-color: #e4edff !important;
+}
+
+[class*="bg-green-500"],
+[class*="bg-green-600"],
+[class*="bg-emerald-500"],
+[class*="bg-emerald-600"] {
+  background-color: #4e73df !important;
+}
+
+[class*="hover:bg-green-50"]:hover,
+[class*="hover:bg-emerald-50"]:hover,
+[class*="hover:bg-green-100"]:hover,
+[class*="hover:bg-emerald-100"]:hover {
+  background-color: #edf3ff !important;
+}
+
+[class*="hover:bg-green-600"]:hover,
+[class*="hover:bg-emerald-600"]:hover,
+[class*="hover:bg-emerald-700"]:hover {
+  background-color: #3b59bd !important;
+}
+
+[class*="from-[#81c784]"][class*="to-[#66bb6a]"],
+[class*="from-[#81c784]"][class*="to-[#a5d6a7]"],
+[class*="from-emerald-500"][class*="to-teal-600"],
+[class*="from-emerald-700"][class*="to-teal-700"] {
+  background-image: linear-gradient(90deg, #4e73df, #6c8ef8) !important;
+}
+
+[class*="bg-gradient-to-br"][class*="from-green-100"][class*="to-emerald-200"] {
+  background-image: linear-gradient(135deg, #eef4ff, #dfe9ff) !important;
 }
 /* Leaflet CSS */
 /* Ubah warna teks search bar jadi hitam */

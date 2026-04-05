@@ -43,7 +43,7 @@ export default function Outlet() {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-green-100 to-emerald-200
+      className="min-h-screen bg-gradient-to-br from-[#eef4ff] to-[#dfe9ff]
         dark:from-slate-900 dark:to-slate-800
         transition-transform pb-24"
       initial={{ x: "-100%", opacity: 0 }}

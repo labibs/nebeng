@@ -28,7 +28,7 @@ export default function MarketHeader({
         </div>
 
         <div className="flex items-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-50 bg-white shadow-[0_12px_28px_rgba(82,109,181,0.2)] transition-transform active:scale-95">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-50 bg-white shadow-[0_12px_28px_rgba(82,109,181,0.15)] transition-transform active:scale-95">
             <CartIconButton className="!p-0 !text-[#4e73df] hover:!bg-transparent" />
           </div>
         </div>
@@ -36,7 +36,9 @@ export default function MarketHeader({
 
       <div
         className={`sticky z-50 transition-all duration-300 ${
-          isSticky ? "top-0 -mx-4 bg-[#f0f7ff]/95 px-4 py-2.5 shadow-sm backdrop-blur-xl" : "top-3"
+          isSticky
+            ? "top-0 -mx-4 bg-[#f0f7ff]/95 px-4 py-2.5 shadow-sm backdrop-blur-xl"
+            : "top-3"
         }`}
       >
         <div

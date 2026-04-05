@@ -265,17 +265,19 @@ export default function TransaksiPage() {
             [...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="border border-base-300/30 dark:border-base-700/30 rounded-2xl p-4 space-y-3 animate-pulse"
+                className="flex h-[148px] items-stretch overflow-hidden rounded-[28px] border border-slate-100 bg-white p-2.5 animate-pulse"
               >
-                <div className="flex justify-between">
-                  <div className="skeleton h-4 w-32 bg-base-300/40" />
-                  <div className="skeleton h-4 w-20 bg-base-300/40" />
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="skeleton w-12 h-12 rounded-full bg-base-300/40" />
-                  <div className="flex-1 space-y-2">
-                    <div className="skeleton h-4 w-40 bg-base-300/40" />
-                    <div className="skeleton h-3 w-24 bg-base-300/30" />
+                <div className="w-[110px] shrink-0 rounded-[20px] bg-slate-100" />
+                <div className="flex-1 p-4 space-y-3">
+                  <div className="flex justify-between">
+                    <div className="h-3 w-16 rounded-full bg-slate-100" />
+                    <div className="h-3 w-20 rounded-full bg-slate-100" />
+                  </div>
+                  <div className="h-4 w-3/4 rounded-full bg-slate-100" />
+                  <div className="h-3 w-1/2 rounded-full bg-slate-100" />
+                  <div className="mt-4 flex justify-between items-end">
+                    <div className="h-5 w-24 rounded-full bg-slate-100" />
+                    <div className="h-8 w-20 rounded-xl bg-slate-100" />
                   </div>
                 </div>
               </div>
@@ -313,105 +315,124 @@ export default function TransaksiPage() {
                     e.stopPropagation();
                     navigate(`/deal?deal=${trx.deal?.id}&trx=${trx.id}`);
                   }}
-                  className="cursor-pointer rounded-2xl bg-base-100 border border-base-300/30
-                        hover:bg-base-200/30 transition overflow-hidden"
+                  className="group relative flex h-[128px] cursor-pointer items-stretch overflow-hidden rounded-[24px] border border-slate-100 bg-white shadow-[0_8px_25px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)]"
                 >
-                  {/* ================= HEADER ================= */}
-                  <div className="px-4 pt-4 flex items-center justify-between">
-                    <span className="text-xs font-medium px-3 py-1 rounded-full bg-base-200 text-base-content/70">
-                      {new Date(trx.created_at).toLocaleDateString("id-ID")}
-                    </span>
+                  {/* Left: Image Section (Symmetric) */}
+                  <div className="relative h-[128px] w-[128px] shrink-0 p-2">
+                    <div className="relative h-full w-full overflow-hidden rounded-[18px] bg-slate-100">
+                      <img
+                        src={
+                          normalizeItemPhotos(trx.deal?.item_photos)[0] ||
+                          trx.deal?.post?.item_photo ||
+                          "/default-avatar.png"
+                        }
+                        alt={trx.deal?.item_description}
+                        className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+                      />
 
-                    <DealStatusBadge
-                      dealStatus={trx.deal?.status}
-                      transactionStatus={trx.transaction_status}
-                      paymentStatus={trx.payment_status}
-                      deliveryStatus={trx.deal?.delivery_status}
-                      size="sm"
-                    />
-                  </div>
-
-                  {/* ================= BODY ================= */}
-                  <div className="p-4 flex items-center justify-between gap-4">
-                    {/* Left */}
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="avatar">
-                        <div className="w-16 h-16 rounded-2xl overflow-hidden bg-base-200 shadow-sm border border-base-300/30">
-                          <img
-                            src={
-                              normalizeItemPhotos(trx.deal?.item_photos)[0] ||
-                              trx.deal?.post?.item_photo ||
-                              "/default-avatar.png"
-                            }
-                            alt=""
-                            className="object-cover w-full h-full"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          {trx.deal?.carrier_id === clerkId ? (
-                            <span className="badge badge-error badge-xs font-bold text-[10px] px-1.5 py-2 rounded-md">
-                              JASTIPER
-                            </span>
-                          ) : (
-                            <span className="badge badge-info badge-xs font-bold text-[10px] px-1.5 py-2 rounded-md">
-                              NITIPERS
-                            </span>
-                          )}
-                        </div>
-                        <p className="font-bold text-base leading-tight truncate">
-                          {trx.deal?.item_description ||
-                            "Detail barang tidak ada"}
-                        </p>
-                        <div className="flex items-center gap-1.5 text-xs opacity-60 mt-0.5 min-w-0">
-                          <span className="font-medium truncate flex-1 min-w-0">
-                            {pickupLabel}
+                      {/* Floating Role Badge */}
+                      <div className="absolute left-2 top-2">
+                        {trx.deal?.carrier_id === clerkId ? (
+                          <span className="rounded-full bg-rose-500/60 px-2 py-0.5 text-[7px] font-bold text-white backdrop-blur-md">
+                            JASTIPER
                           </span>
-                          <svg
-                            className="w-3 h-3 text-[#4e73df] shrink-0"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={3}
-                              d="M14 5l7 7m0 0l-7 7m7-7H3"
-                            />
-                          </svg>
-                          <span className="font-medium truncate flex-1 min-w-0 text-right">
-                            {deliveryLabel}
+                        ) : (
+                          <span className="rounded-full bg-blue-500/60 px-2 py-0.5 text-[7px] font-bold text-white backdrop-blur-md">
+                            NITIPERS
                           </span>
-                        </div>
+                        )}
                       </div>
                     </div>
+                  </div>
 
-                    {/* Right */}
-                    <div className="text-right">
-                      <p className="font-bold text-[#4e73df]">
+                  {/* Right: Content Section */}
+                  <div className="flex flex-1 flex-col justify-between overflow-hidden p-3.5 pl-0.5">
+                    {/* Header: Date & Status */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[9px] font-medium text-slate-400">
+                        {new Date(trx.created_at).toLocaleDateString("id-ID", {
+                          day: "numeric",
+                          month: "short",
+                        })}
+                      </span>
+                      <DealStatusBadge
+                        dealStatus={trx.deal?.status}
+                        transactionStatus={trx.transaction_status}
+                        paymentStatus={trx.payment_status}
+                        deliveryStatus={trx.deal?.delivery_status}
+                        size="xs"
+                      />
+                    </div>
+
+                    {/* Body: Title & Route */}
+                    <div className="space-y-0.5">
+                      <h3 className="line-clamp-1 text-[13px] font-bold leading-tight text-slate-900">
+                        {trx.deal?.item_description ||
+                          "Detail barang tidak ada"}
+                      </h3>
+
+                      <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-500">
+                        <span className="truncate">{pickupLabel}</span>
+                        <svg
+                          className="w-3 h-3 text-[#4e73df] shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M14 5l7 7m0 0l-7 7m7-7H3"
+                          />
+                        </svg>
+                        <span className="truncate">{deliveryLabel}</span>
+                      </div>
+
+                      <p className="text-[14px] font-extrabold text-[#4e73df] mt-1">
                         Rp{" "}
                         {Number(
                           trx.gross_amount ?? trx.deal?.agreed_fee ?? 0,
                         ).toLocaleString("id-ID")}
                       </p>
-                      <p className="text-xs text-base-content/50">
-                        {trx.payment_type?.toUpperCase()}
-                      </p>
                     </div>
-                  </div>
 
-                  {/* ================= FOOTER ================= */}
-                  <div className="px-4 pb-4 flex items-center justify-between border-t border-base-300/20">
-                    <span className="text-xs text-base-content/50">
-                      {trx.deal?.carrier_id === clerkId
-                        ? `Customer: ${trx.deal?.depositor?.name ?? "-"}`
-                        : `Kurir: ${trx.deal?.carrier?.name ?? "-"}`}
-                    </span>
+                    {/* Footer Row: Counterparty & Action */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 overflow-hidden">
+                        <div className="flex h-6.5 items-center gap-1 rounded-full border border-slate-100 bg-slate-50 px-1 pr-2 shadow-sm">
+                          <div className="h-4.5 w-4.5 shrink-0 overflow-hidden rounded-full ring-1 ring-slate-100">
+                            <img
+                              src={
+                                trx.deal?.carrier_id === clerkId
+                                  ? trx.deal?.depositor?.avatar_url ||
+                                    "/default-avatar.png"
+                                  : trx.deal?.carrier?.avatar_url ||
+                                    "/default-avatar.png"
+                              }
+                              className="h-full w-full object-cover"
+                              alt=""
+                            />
+                          </div>
+                          <span className="max-w-[48px] truncate text-[8px] font-medium text-slate-600">
+                            {trx.deal?.carrier_id === clerkId
+                              ? trx.deal?.depositor?.name?.split(" ")[0] ||
+                                "Customer"
+                              : trx.deal?.carrier?.name?.split(" ")[0] ||
+                                "Kurir"}
+                          </span>
+                        </div>
 
-                    <div className="flex items-center gap-3">
+                        {trx.deal?.delivery_status === "running" && (
+                          <div className="flex h-6.5 items-center rounded-full border border-blue-100/50 bg-blue-50 px-2 animate-pulse">
+                            <Truck size={10} className="text-[#4e73df] mr-1" />
+                            <span className="text-[8px] font-bold text-[#4e73df]">
+                              OTW
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
                       {canRetryPayment && (
                         <button
                           type="button"
@@ -424,69 +445,20 @@ export default function TransaksiPage() {
                                 setPayingId(isPaying ? trx.id : null),
                             });
                           }}
-                          className={`btn btn-sm rounded-xl ${paymentExpired ? "btn-error" : "border-none bg-[#4e73df] text-white hover:bg-[#3b59bd]"}`}
+                          className={`h-6.5 px-2.5 rounded-full text-[9px] font-bold text-white shadow-sm transition-all ${paymentExpired ? "bg-rose-500 hover:bg-rose-600" : "bg-[#4e73df] hover:bg-[#3b59bd]"}`}
                           disabled={payingId === trx.id}
                         >
                           {payingId === trx.id ? (
-                            <span className="loading loading-spinner loading-xs"></span>
+                            <span className="loading loading-spinner w-3 h-3"></span>
                           ) : paymentExpired ? (
                             "Ulangi Bayar"
                           ) : (
-                            "Bayar Sekarang"
+                            "Bayar"
                           )}
                         </button>
                       )}
-
-                      {/* Live tracking icon (ringkas) */}
-                      {/* {trx.deal?.delivery_status === "running" && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedDeal(trx.deal);
-                        openLiveTracking();
-                      }}
-                      className="text-blue-600 hover:text-blue-700"
-                      title="Live Tracking"
-                    >
-                      <BaggageClaim size={20} />
-                    </button>
-                  )} */}
                     </div>
                   </div>
-
-                  {/* ================= EXTEND (RUNNING ONLY) ================= */}
-                  {trx.deal?.delivery_status === "running" && (
-                    <div
-                      className="border-t border-base-300/40 bg-blue-50/50 px-4 py-3
-                                animate-in fade-in slide-in-from-top-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-[#4e73df]">
-                          <Truck className="w-5 h-5" />
-                          <div>
-                            <p className="text-sm font-semibold">
-                              Sedang Mengantar
-                            </p>
-                            <p className="text-xs opacity-70">
-                              Kurir dalam perjalanan
-                            </p>
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedDeal(trx.deal);
-                            openLiveTracking();
-                          }}
-                          className="btn btn-xs border-none bg-[#4e73df] text-white hover:bg-[#3b59bd]"
-                        >
-                          <MapPin className="w-4 h-4" />
-                          Posisi Kurir
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               );
             })

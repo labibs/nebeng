@@ -31,7 +31,7 @@ export default function OutletButton({
         onClick={() => navigate("/outlet")}
         className="group inline-flex items-center gap-2.5 rounded-full bg-transparent text-left"
       >
-        <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white shadow-[0_12px_26px_rgba(82,109,181,0.16)]">
+        <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-slate-50 bg-white shadow-[0_12px_28px_rgba(82,109,181,0.15)]">
           <AnimatePresence mode="wait">
             {showAvatar && owner_avatar ? (
               <motion.div

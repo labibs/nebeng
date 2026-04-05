@@ -1,73 +1,40 @@
-import { useRef, useState } from "react";
+import { Search } from "lucide-react";
+import { useState } from "react";
+import SearchModal from "../common/SearchModal";
 
 export default function TransaksiHeader({ searchQuery, setSearchQuery }) {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const inputRef = useRef(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <div className="sticky top-0 z-10 navbar border-b border-base-300/20 bg-base-100/80 shadow-md backdrop-blur-xl">
-      <div className="flex-1">
-        <h3 className="bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] bg-clip-text text-2xl font-extrabold text-transparent">
-          Transaksi
-        </h3>
-      </div>
+    <>
+      <div className="sticky top-0 z-30 px-4 pt-5 pb-3">
+        <div className="flex items-center justify-between">
+          <h3 className="bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] bg-clip-text text-[26px] font-extrabold text-transparent tracking-tight">
+            Transaksi
+          </h3>
 
-      <div className="flex-none flex items-center gap-3">
-        <div className="relative">
-          <button
-            onClick={() => {
-              setIsSearchOpen(!isSearchOpen);
-              setTimeout(() => inputRef.current?.focus(), 100);
-            }}
-            className="btn btn-ghost btn-circle text-[#4e73df]/70"
-            aria-label="Search"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-50 bg-white shadow-[0_12px_28px_rgba(82,109,181,0.15)] transition-transform active:scale-95"
+              aria-label="Search"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </button>
-
-          <div
-            className={`absolute right-14 top-0 w-64 transition-all duration-300 ease-in-out ${
-              isSearchOpen
-                ? "visible translate-y-0 opacity-100"
-                : "invisible -translate-y-2 opacity-0 pointer-events-none"
-            }`}
-          >
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Cari transaksi, deal, rute..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onBlur={() => setTimeout(() => setIsSearchOpen(false), 200)}
-              className="input input-bordered w-full border-base-300/50 bg-base-100 shadow-xl focus:border-[#4e73df] focus:outline-none dark:bg-base-800"
-            />
-
-            {searchQuery && (
-              <button
-                onClick={() => {
-                  setSearchQuery("");
-                  setIsSearchOpen(false);
-                }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/50 hover:text-base-content"
-              >
-                ✕
-              </button>
-            )}
+              <Search size={20} className="text-[#4e73df]" />
+              {searchQuery && (
+                <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-rose-500 border-2 border-white" />
+              )}
+            </button>
           </div>
         </div>
       </div>
-    </div>
+
+      <SearchModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        value={searchQuery}
+        onChange={setSearchQuery}
+        placeholder="Cari transaksi, rute, atau item..."
+      />
+    </>
   );
 }

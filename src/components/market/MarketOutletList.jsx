@@ -132,20 +132,20 @@ export default function MarketOutletList({
   if (!outlets.length) return null;
 
   return (
-    <div className="space-y-4">
-      <div className="mb-4 flex items-center justify-between gap-3 px-1">
-        <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
+    <div className="space-y-3">
+      <div className="mb-3 flex items-center justify-between gap-3 px-1">
+        <h2 className="text-[18px] font-bold tracking-tight text-slate-900">
           {title}
         </h2>
         <div className="flex items-center gap-1.5 rounded-2xl bg-white px-3 py-1.5 shadow-sm border border-slate-50">
           <span className="h-1.5 w-1.5 rounded-full bg-[#4e73df] animate-pulse"></span>
-          <span className="text-[12px] font-bold text-slate-500">
-            {total} Outlets
+          <span className="text-[11px] font-semibold text-slate-500">
+            {total} outlet
           </span>
         </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
         {outlets.map((outlet) => (
           <div key={outlet.id} className="w-[88%] shrink-0 sm:w-[44%]">
             <MarketOutletCard outlet={outlet} />
@@ -154,7 +154,7 @@ export default function MarketOutletList({
       </div>
 
       {totalPage > 1 ? (
-        <div className="mt-4 flex justify-center gap-2">
+        <div className="mt-3 flex justify-center gap-2">
           {Array.from({ length: totalPage }).map((_, index) => (
             <button
               key={index}

@@ -56,7 +56,7 @@ export default function MarketPage() {
       exit={{ x: "-100%", opacity: 0 }}
       transition={{ type: "tween", ease: "easeOut", duration: 0.35 }}
     >
-      <div className="relative min-h-screen overflow-hidden bg-[#f0f7ff] pb-28 text-slate-900">
+      <div className="relative min-h-screen overflow-hidden bg-[#f0f7ff] pb-24 text-slate-900">
         {/* Animated Background blobs for extra visual polish */}
         <div className="absolute -left-20 -top-20 h-80 w-80 rounded-full bg-blue-200/50 blur-3xl" />
         <div className="absolute -right-20 top-60 h-[400px] w-[400px] rounded-full bg-blue-100/50 blur-3xl" />
@@ -68,7 +68,7 @@ export default function MarketPage() {
           onSearchChange={setSearch}
         />
 
-        <div className="relative z-10 space-y-8 px-4 pb-10">
+        <div className="relative z-10 space-y-6 px-4 pb-8">
           <MarketCategories
             active={activeCategory}
             onChange={setActiveCategory}

@@ -26,12 +26,12 @@ export default function OutletButton({
   }, [owner_avatar]);
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2.5">
       <button
         onClick={() => navigate("/outlet")}
-        className="group inline-flex items-center gap-3 rounded-full bg-transparent text-left"
+        className="group inline-flex items-center gap-2.5 rounded-full bg-transparent text-left"
       >
-        <div className="relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-white shadow-[0_14px_30px_rgba(82,109,181,0.16)]">
+        <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white shadow-[0_12px_26px_rgba(82,109,181,0.16)]">
           <AnimatePresence mode="wait">
             {showAvatar && owner_avatar ? (
               <motion.div
@@ -57,14 +57,14 @@ export default function OutletButton({
                 transition={{ duration: 0.35, ease: "easeOut" }}
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <Store size={22} strokeWidth={2.5} className="text-[#4e73df]" />
+                <Store size={20} strokeWidth={2.5} className="text-[#4e73df]" />
               </motion.div>
             )}
           </AnimatePresence>
         </div>
         <div>
-          <p className="text-[11px] text-slate-400">Outlet Saya</p>
-          <p className="text-sm font-semibold text-[#20336b]">
+          <p className="text-[10px] text-slate-400">Outlet saya</p>
+          <p className="text-[13px] font-semibold text-[#20336b]">
             {owner_name || "Kelola outlet"}
           </p>
         </div>

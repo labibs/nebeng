@@ -145,9 +145,9 @@ export default function MarketOutletList({
         </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
         {outlets.map((outlet) => (
-          <div key={outlet.id} className="w-[88%] shrink-0 sm:w-[44%]">
+          <div key={outlet.id} className="w-[78%] shrink-0 sm:w-[40%]">
             <MarketOutletCard outlet={outlet} />
           </div>
         ))}

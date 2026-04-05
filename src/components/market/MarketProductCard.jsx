@@ -18,7 +18,7 @@ export default function MarketProductCard({ product }) {
   return (
     <div
       onClick={() => navigate(`/product/${product.id}`)}
-      className="group flex h-[128px] cursor-pointer items-stretch overflow-hidden rounded-[24px] border border-slate-100 bg-white shadow-[0_8px_25px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)]"
+      className="group relative flex h-[128px] cursor-pointer items-stretch overflow-hidden rounded-[24px] border border-slate-100 bg-white shadow-[0_8px_25px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)]"
     >
       <div className="relative h-[128px] w-[128px] shrink-0 p-2">
         <div className="relative h-full w-full overflow-hidden rounded-[18px] bg-slate-100">
@@ -32,14 +32,14 @@ export default function MarketProductCard({ product }) {
             {product.category_name?.slice(0, 10) || "Item"}
           </div>
 
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-lg bg-white/90 px-1.5 py-0.5 text-[8px] font-semibold text-slate-800 shadow-sm backdrop-blur-md">
-            <Star size={8} className="fill-amber-400 text-amber-400" />
-            {product.rating || "0.0"}
-          </div>
         </div>
       </div>
 
       <div className="flex flex-1 flex-col justify-between overflow-hidden p-3.5 pl-0.5">
+        <div className="absolute right-3 top-3 flex items-center gap-1 rounded-lg bg-white px-1.5 py-0.5 text-[8px] font-semibold text-slate-800 shadow-sm">
+          <Star size={8} className="fill-amber-400 text-amber-400" />
+          {product.rating || "0.0"}
+        </div>
         <div className="space-y-0.5">
           <p className="truncate text-[10px] font-medium text-[#4e73df] opacity-80">
             {product.warung_name || "Outlet Nebeng"}
@@ -53,8 +53,11 @@ export default function MarketProductCard({ product }) {
             <span className="text-[14px] font-bold text-slate-900">
               Rp{Number(product.estimated_price || 0).toLocaleString("id-ID")}
             </span>
+            <span className="rounded-full border border-amber-100 bg-amber-50 px-1.5 py-0.5 text-[8px] font-medium leading-none text-amber-700">
+              Diskon 10%
+            </span>
             <span className="shrink-0 text-[9px] font-medium text-slate-400">
-              / estimasi
+              estimasi
             </span>
           </div>
         </div>

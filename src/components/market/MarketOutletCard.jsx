@@ -1,4 +1,4 @@
-import { MapPinned, Heart, Route, User } from "lucide-react";
+import { MapPinned, Heart, Route, Star, User } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GoogleMapsPointViewer from "../GoogleMapsViewer";
@@ -18,6 +18,13 @@ export default function MarketOutletCard({ outlet }) {
     if (status === "pembeli" && category !== "Jasa") return "Nitip beliin";
     return "Outlet resmi";
   };
+
+  const promoLabel =
+    category === "Makanan"
+      ? "Promo ongkir"
+      : category === "Jasa"
+        ? "Diskon jasa"
+        : "Promo hari ini";
 
   return (
     <div className="overflow-hidden rounded-[26px] border border-slate-100 bg-white shadow-[0_14px_34px_rgba(0,0,0,0.06)] transition-all duration-300 hover:shadow-[0_18px_42px_rgba(0,0,0,0.1)]">
@@ -49,10 +56,27 @@ export default function MarketOutletCard({ outlet }) {
           </h3>
         </div>
 
-        <div className="mb-4 flex items-center gap-1.5 text-slate-500">
+        <div className="mb-2.5 flex items-center gap-1.5 text-slate-500">
           <MapPinned size={12} className="shrink-0 text-emerald-500" />
           <div className="line-clamp-1 text-[11px] font-medium">
             <AddressText address={address} onClick={() => setOpenMaps(true)} />
+          </div>
+        </div>
+
+        <div className="mb-4 flex items-center gap-1.5 overflow-hidden">
+          <div className="flex h-6 items-center rounded-full border border-amber-100 bg-amber-50 px-2">
+            <span className="text-[8px] font-medium leading-none text-amber-700">
+              {promoLabel}
+            </span>
+          </div>
+          <div className="flex h-6 items-center rounded-full border border-slate-100 bg-slate-50 px-2">
+            <span className="truncate text-[8px] font-medium leading-none text-slate-500">
+              Hemat 10%
+            </span>
+          </div>
+          <div className="ml-auto flex h-6 items-center gap-1 rounded-full border border-slate-100 bg-white px-2 text-[8px] font-semibold text-slate-700 shadow-sm">
+            <Star size={8} className="fill-amber-400 text-amber-400" />
+            {outlet.rating || "0.0"}
           </div>
         </div>
 

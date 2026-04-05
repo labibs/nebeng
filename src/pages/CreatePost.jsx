@@ -4,6 +4,7 @@ import CreateActionPicker from '../components/create/CreateActionPicker';
 import CreateNitipBawakan from '../components/create/CreateNitipBawakan';
 import CreateNitipBelikan from '../components/create/CreateNitipBelikan';
 import CreateCariBoncengan from '../components/create/CreateCariBoncengan';
+import CreateCariTukang from '../components/create/CreateCariTukang';
 import CreatePerjalanan from '../components/create/CreatePerjalanan';
 import CreateWarung from '../components/create/CreateWarung';
 import CreateContent from '../components/create/CreateContent';
@@ -60,6 +61,10 @@ export default function CreatePost() {
 
             {action === "cari_boncengan" && (
               <CreateCariBoncengan onBack={() => setAction(null)} />
+            )}
+
+            {action === "tukang" && (
+              <CreateCariTukang onBack={() => setAction(null)} />
             )}
 
             {action === "perjalanan" && (

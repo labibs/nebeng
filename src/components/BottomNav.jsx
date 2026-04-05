@@ -18,11 +18,11 @@ export default function BottomNav() {
   // ... (bagian useEffect unread & scroll sama seperti sebelumnya, tidak ada perubahan)
 
   return (
-    <div className={`fixed inset-x-0 bottom-1 z-50 flex justify-center pointer-events-none transition-all duration-300 ${hidden ? 'translate-y-32 opacity-0' : 'translate-y-0 opacity-100'}`}>
+    <div className={`fixed inset-x-0 bottom-1 z-50 flex justify-center pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${hidden ? 'translate-y-24 opacity-0 scale-[0.98]' : 'translate-y-0 opacity-100 scale-100'}`}>
       <div className="relative h-20 w-[95%] max-w-md pointer-events-auto">
         {/* Background dengan notch */}
         <div
-          className="absolute inset-x-0 top-4 flex h-14 items-center justify-between rounded-full border border-[#4e73df]/15 bg-white/30 px-6 shadow-2xl backdrop-blur-xl"
+          className="absolute inset-x-0 top-4 flex h-14 items-center justify-between rounded-full border border-[#4e73df]/15 bg-white/30 px-6 shadow-2xl backdrop-blur-xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
           style={{
             WebkitMaskImage: 'radial-gradient(circle 34px at 50% 0, transparent 32px, black 34px)',
             maskImage: 'radial-gradient(circle 34px at 50% 0, transparent 32px, black 34px)',
@@ -40,14 +40,14 @@ export default function BottomNav() {
           <div
             className={`
               flex h-14 w-14 items-center justify-center rounded-full bg-linear-to-r from-[#4e73df] to-[#6c8ef8]
-              shadow-2xl transition-all duration-300 active:scale-95
+              shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95
               ${isCreateActive
-                ? 'scale-95 ring-4 ring-white/80 shadow-[0_0_20px_rgba(78,115,223,0.45)]'
-                : 'hover:scale-110'
+                ? 'scale-[0.98] ring-4 ring-white/80 shadow-[0_0_24px_rgba(78,115,223,0.45)]'
+                : 'hover:-translate-y-0.5 hover:scale-[1.06]'
               }
             `}
           >
-            <Plus size={28} strokeWidth={3} className="text-white drop-shadow-lg" />
+            <Plus size={28} strokeWidth={3} className={`text-white drop-shadow-lg transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${isCreateActive ? 'rotate-90 scale-95' : 'rotate-0 scale-100'}`} />
           </div>
         </Link>
       </div>
@@ -61,13 +61,15 @@ function NavItem({ to, icon: Icon, currentPath, badge = 0 }) {
   return (
     <Link to={to} className="relative flex flex-1 items-center justify-center">
       <div className="relative p-3">
-        {isActive && (
-          <div className="absolute inset-0 -z-10 scale-125 rounded-full bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] opacity-70 blur-xl" />
-        )}
+        <div
+          className={`absolute inset-0 -z-10 rounded-full bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] blur-xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            isActive ? 'scale-125 opacity-70' : 'scale-75 opacity-0'
+          }`}
+        />
 
         <Icon
           size={26}
-          className={`transition-all duration-300 ${isActive ? 'text-white drop-shadow-lg' : 'text-[#4e73df]/70'}`}
+          className={`transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${isActive ? 'scale-110 text-white drop-shadow-lg -translate-y-0.5' : 'scale-100 text-[#4e73df]/70'}`}
         />
 
         {badge > 0 && (

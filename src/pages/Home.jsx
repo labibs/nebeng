@@ -335,22 +335,22 @@ export default function Home() {
 {/* Search Modal */}
 {/* Search Modal */}
 {searchOpen && (
-  <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex flex-col">
+  <div className="fixed inset-0 z-50 flex flex-col bg-gradient-to-b from-[#edf4ff]/96 via-[#f4f8ff]/94 to-[#e0ebff]/96 backdrop-blur-xl">
     {/* Header + Input + Tabs + Filter */}
-    <div className="px-4 pt-6 pb-4 overflow-y-auto">
-      <div className="max-w-2xl mx-auto w-full">
+    <div className="flex-1 overflow-hidden px-4 pt-3 pb-40">
+      <div className="mx-auto w-full max-w-xl">
         <div className="bg-gradient-to-br
-        from-[#eef4ff] via-[#f5f8ff] to-[#dfe9ff]
+        from-[#f7fbff] via-[#eef4ff] to-[#dce8ff]
         text-slate-800
         
         dark:from-[#020617] dark:via-[#020617] dark:to-[#020617]
-        dark:text-slate-100 backdrop-blur-xl rounded-3xl shadow-2xl border border-base-300 overflow-hidden">
+        dark:text-slate-100 flex h-full flex-col overflow-hidden rounded-[26px] border border-[#dbe7ff] shadow-[0_24px_70px_rgba(78,115,223,0.18)] backdrop-blur-xl">
           {/* Input Search */}
-          <div className="p-6 bg-white/10">
-            <div className="flex items-center gap-1 ">
+          <div className="border-b border-[#dbe7ff] bg-white/70 p-3 backdrop-blur-xl">
+            <div className="flex items-center gap-2.5">
               <div className="flex-1 relative">
                 <svg
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-base-content/70 pointer-events-none z-10"
+                  className="absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400 pointer-events-none"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0  "
@@ -363,11 +363,7 @@ export default function Home() {
                   type="text"
                   placeholder="Cari kota, barang & postingan..."
                   className="
-                    input input-md w-full pl-14 pr-2 
-                    bg-base-200/60 focus:bg-base-200/80 
-                    focus:outline-none border-0 
-                    transition-all duration-200
-                    placeholder:text-base-content/50
+                    input input-sm h-12 w-full rounded-[22px] border border-[#dbe7ff] bg-[#f5f7ff] pl-12 pr-3 text-slate-700 shadow-inner transition-all duration-200 placeholder:text-slate-400 focus:border-[#bfd2ff] focus:bg-white focus:outline-none
                   "
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -378,10 +374,10 @@ export default function Home() {
 
               <button
                 onClick={closeSearch}
-                className="btn btn-ghost btn-circle btn-lg"
+                className="btn btn-circle btn-sm border border-[#dbe7ff] bg-white text-slate-500 shadow-sm hover:bg-[#f5f7ff]"
                 aria-label="Tutup pencarian"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0  16">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0  16">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -389,19 +385,19 @@ export default function Home() {
           </div>
 
           {/* Tabs + Filter Fee - Sticky di dalam card */}
-          <div className="sticky top-0 z-10 bg-base-100/95 backdrop-blur-xl border-t border-base-300 px-3 py-4">
+          <div className="flex-1 overflow-y-auto bg-transparent px-3 py-3">
             {/* Tabs */}
-            <div className="flex justify-center mb-5">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-2 py-2 shadow-xl">
+            <div className="mb-4 flex justify-center">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-[#dbe7ff] bg-white p-1.5 shadow-[0_16px_32px_rgba(82,109,181,0.12)]">
                 {tabOptions.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`
-                      px-6 py-2.5 rounded-full text-xs font-semibold transition-all duration-300 capitalize
+                      rounded-full px-4 py-2 text-[11px] font-semibold transition-all duration-300 capitalize
                       ${activeTab === tab.id
-                        ? 'bg-white text-gray-900 shadow-md'
-                        : 'text-gray-300 hover:text-black hover:bg-white/10'
+                        ? 'bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] text-white shadow-[0_10px_20px_rgba(78,115,223,0.22)]'
+                        : 'text-slate-400 hover:text-[#4e73df] hover:bg-[#eef4ff]'
                       }
                     `}
                   >
@@ -412,20 +408,20 @@ export default function Home() {
             </div>
 
        {/* Filter Armada */}
-<div className="space-y-2 px-2 pb-0 pt-0">
+<div className="space-y-2 rounded-[24px] border border-[#dbe7ff] bg-white/92 p-3 shadow-[0_16px_34px_rgba(82,109,181,0.12)]">
   {/* <p className="text-sm font-medium text-base-content/80 text-center">
     Armada
   </p> */}
 
   {/* Pill dengan Icon - Horizontal Scrollable */}
-  <div className="flex justify-center mb-5">
+  <div className="mb-4 flex justify-center">
     <div className="
-      inline-flex items-center gap-2 
-      px-2 py-2 
-      bg-white/10 backdrop-blur-md 
-      border border-white/20 
+      inline-flex items-center gap-1.5 
+      px-1.5 py-1.5 
+      bg-[#f5f7ff] 
+      border border-[#dbe7ff] 
       rounded-full 
-      shadow-xl
+      shadow-inner
       overflow-x-auto scrollbar-hide
       min-w-full
     ">
@@ -442,15 +438,15 @@ export default function Home() {
             key={option.id}
             onClick={() => setArmadaFilter(option.id)}
             className={`
-              px-6 py-2.5 rounded-full text-xs font-semibold transition-all duration-300 
+              rounded-full px-4 py-2 text-[11px] font-semibold transition-all duration-300 
               whitespace-nowrap flex-shrink-0 flex items-center gap-2
               ${armadaFilter === option.id
-                ? 'bg-white text-gray-900 shadow-lg'
-                : 'text-gray-300 hover:text-white hover:bg-white/10'
+                ? 'bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] text-white shadow-[0_10px_20px_rgba(78,115,223,0.22)]'
+                : 'text-slate-400 hover:text-[#4e73df] hover:bg-white'
               }
             `}
           >
-            {Icon && <Icon className="w-4 h-4" />}
+            {Icon && <Icon className="h-3.5 w-3.5" />}
             {option.label}
           </button>
         )
@@ -460,22 +456,22 @@ export default function Home() {
 </div>
      
             {/* Filter Tanggal Keberangkatan */}
-<div className="space-y-2 px-2 pb-4 pt-0">
+<div className="mt-3 space-y-2 rounded-[24px] border border-[#dbe7ff] bg-white/92 p-3 shadow-[0_16px_34px_rgba(82,109,181,0.12)]">
   {/* <p className="text-sm font-medium text-base-content/80 text-center">
     Tanggal Keberangkatan
   </p> */}
 
   {/* Container pill - lebar mengikuti konten utama, bukan full screen */}
-  <div className="flex justify-center mb-5">
+  <div className="mb-4 flex justify-center">
     <div className="
-      inline-flex items-center gap-2
-      px-2 py-2 
-      bg-white/10 backdrop-blur-md 
-      border border-white/20 
+      inline-flex items-center gap-1.5
+      px-1.5 py-1.5 
+      bg-[#f5f7ff] 
+      border border-[#dbe7ff] 
       rounded-full 
-      shadow-xl
+      shadow-inner
       overflow-x-auto scrollbar-hide
-      min-w-full /* penting: agar tidak menyusut lebih kecil dari parent */
+      min-w-full
     ">
       {/* Pill Items - bisa scroll horizontal kalau tidak muat */}
       {[
@@ -505,11 +501,11 @@ export default function Home() {
             }
           }}
           className={`
-            px-6 py-2.5 rounded-full text-xs font-semibold transition-all duration-300 
+            rounded-full px-4 py-2 text-[11px] font-semibold transition-all duration-300 
             whitespace-nowrap flex-shrink-0
             ${(dateFilterMode === option.id || (option.id === 'custom' && dateFilterMode === 'custom'))
-              ? 'bg-white text-gray-900 shadow-lg'  /* aktif: putih penuh + shadow lebih tebal */
-              : 'text-gray-300 hover:text-white hover:bg-white/10'
+              ? 'bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] text-white shadow-[0_10px_20px_rgba(78,115,223,0.22)]'  /* aktif: putih penuh + shadow lebih tebal */
+              : 'text-slate-400 hover:text-[#4e73df] hover:bg-white'
             }
           `}
         >
@@ -520,14 +516,14 @@ export default function Home() {
   </div>
   
   {/* Custom Date Picker */}
-  <div className="flex items-center gap-3">
+  <div className="flex items-center gap-2.5">
     <button
       onClick={() => setDateFilterMode('custom')}
       className={`
-        flex-1 px-4 py-3 rounded-xl text-sm font-medium text-left transition-all
+        flex-1 rounded-[18px] border border-[#dbe7ff] px-3.5 py-2.5 text-sm font-medium text-left transition-all
         ${dateFilterMode === 'custom'
-          ? 'bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] text-white text-white shadow-md'
-          : 'bg-base-200/60 text-base-content/70 hover:bg-base-200'
+          ? 'bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] text-white shadow-md'
+          : 'bg-[#f5f7ff] text-slate-500 hover:bg-[#edf3ff]'
         }
       `}
     >{customDate ? 'Hari ' + new Date(customDate).toLocaleDateString('id-ID', { weekday: 'long' }) : 'Pilih Tanggal'}
@@ -539,21 +535,21 @@ export default function Home() {
         type="date"
         value={customDate}
         onChange={(e) => setCustomDate(e.target.value)}
-        className="input input-bordered input-md w-37 bg-base-200/60"
+        className="input input-bordered input-sm h-10 w-36 rounded-[16px] border-[#dbe7ff] bg-[#f5f7ff]"
       />
     )}
   </div>
 </div>
 
-<div className="space-y-3 px-4">
-  <div className="flex justify-between text-sm font-medium text-base-content/80">
+<div className="mt-3 space-y-2.5 rounded-[24px] border border-[#dbe7ff] bg-white/92 px-4 py-3 shadow-[0_16px_34px_rgba(82,109,181,0.12)]">
+  <div className="flex justify-between text-[13px] font-medium text-base-content/80">
     <span>Ongkos Fee</span>
     <span>
       Rp {feeRange[0].toLocaleString()} — Rp {feeRange[1].toLocaleString()}
     </span>
   </div>
 
-  <div className="py-4 px-2">
+  <div className="px-2 py-2.5">
     <Slider
       range
       min={MIN}
@@ -567,7 +563,7 @@ export default function Home() {
 
   </div>
 
-  <div className="flex justify-between text-xs text-base-content/60">
+  <div className="flex justify-between text-[11px] text-base-content/60">
     <span>Rp 0</span>
     <span>Rp 1.000.000+</span>
   </div>
@@ -580,11 +576,11 @@ export default function Home() {
     </div>
 
     {/* Tombol Terapkan Pencarian - Fixed di Bawah */}
-    <div className="px-4 pb-6">
-      <div className="max-w-2xl mx-auto w-full">
+    <div className="absolute inset-x-0 bottom-24 z-10 px-4 pt-3">
+      <div className="mx-auto w-full max-w-xl">
         <button
           onClick={() => setSearchOpen(false)} // Langsung terapkan & tutup
-          className="btn bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] text-white btn-lg w-full rounded-2xl shadow-lg"
+          className="btn h-11 w-full rounded-[18px] bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] text-sm text-white shadow-lg"
         >
           Terapkan Pencarian
         </button>

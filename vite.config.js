@@ -17,8 +17,8 @@ export default defineConfig({
         name: 'Nebeng.id',
         short_name: 'Nebeng',
         description: 'Titip barang aman via traveler & ekspedisi',
-        theme_color: '#81c784', // indigo primary DaisyUI from-[#81c784]
-        background_color: '#66bb6a', // base-200
+        theme_color: '#4e73df',
+        background_color: '#f0f7ff',
         display: 'standalone', // Tampilan full screen seperti native app
         icons: [
           {

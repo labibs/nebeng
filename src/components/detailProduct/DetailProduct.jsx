@@ -99,20 +99,22 @@ export default function DetailProduct() {
 
         try {
             // Cek apakah item ini sudah ada di cart (pending)
-            const { data: existing, error: fetchErr } = await supabase
+            const { data: existingRows, error: fetchErr } = await supabase
                 .from("warung_cart_items")
-                .select("*")
+                .select("id, quantity, requested_price, estimated_price, created_at")
                 .eq("user_id", user.id)
                 .eq("product_id", product.id)
                 .eq("status", "pending")
-                .maybeSingle();
+                .order("created_at", { ascending: false });
 
             if (fetchErr) throw fetchErr;
+
+            const existing = Array.isArray(existingRows) && existingRows.length > 0 ? existingRows[0] : null;
 
             if (existing) {
                 // Jika sudah ada, tambahkan quantity saja
                 const newQty = Number(existing.quantity || 0) + 1;
-                const { data: updated, error: updateErr } = await supabase
+                const { error: updateErr } = await supabase
                     .from("warung_cart_items")
                     .update({
                         quantity: newQty,
@@ -120,9 +122,7 @@ export default function DetailProduct() {
                         requested_price: product.estimated_price || existing.requested_price,
                         estimated_price: product.estimated_price || existing.estimated_price
                     })
-                    .eq("id", existing.id)
-                    .select()
-                    .single();
+                    .eq("id", existing.id);
 
                 if (updateErr) throw updateErr;
 

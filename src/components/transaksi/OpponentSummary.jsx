@@ -12,25 +12,27 @@ function OpponentSummary({ isCarrierLogin }) {
   const displayText = showFull ? opponentRingkasan : opponentRingkasan.slice(0, limit);
 
   return (
-    <p className="text-sm opacity-70">
+    <span className="text-sm opacity-70">
       {displayText}
       {isLong && !showFull && (
-        <span
+        <button
+          type="button"
           className="text-blue-600 cursor-pointer ml-1"
           onClick={() => setShowFull(true)}
         >
-          … selengkapnya
-        </span>
+          ... selengkapnya
+        </button>
       )}
       {isLong && showFull && (
-        <span
+        <button
+          type="button"
           className="text-blue-600 cursor-pointer ml-1"
           onClick={() => setShowFull(false)}
         >
-          {" "}tutup
-        </span>
+          {' '}tutup
+        </button>
       )}
-    </p>
+    </span>
   );
 }
 

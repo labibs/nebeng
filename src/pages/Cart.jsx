@@ -127,6 +127,19 @@ export default function Cart() {
     milikGroups
   } = groupItems();
 
+  const groupedIds = new Set([
+    ...Object.values(kurirGroups).flatMap((group) => group.items.map((item) => item.id)),
+    ...Object.values(pembeliGroups).flatMap((group) => group.items.map((item) => item.id)),
+    ...Object.values(milikGroups).flatMap((group) => group.items.map((item) => item.id)),
+  ]);
+
+  const ungroupedItems = items.filter((item) => !groupedIds.has(item.id));
+  const hasVisibleSections =
+    Object.keys(kurirGroups).length > 0 ||
+    Object.keys(pembeliGroups).length > 0 ||
+    Object.keys(milikGroups).length > 0 ||
+    ungroupedItems.length > 0;
+
   const toggleSelectGroup = (key, targetGroups) => {
     const group = targetGroups[key];
     if (!group) return;
@@ -278,7 +291,7 @@ export default function Cart() {
       <div className="min-h-screen bg-gradient-to-br from-green-100 to-emerald-200 dark:from-slate-900 dark:to-slate-800 p-4">
         {loading ? (
           <div className="flex justify-center py-20"><span className="loading loading-spinner loading-lg text-emerald-600"></span></div>
-        ) : items.length === 0 ? (
+        ) : items.length === 0 || !hasVisibleSections ? (
           <div className="flex flex-col items-center justify-center py-24 px-6 text-center animate-fade-in">
             <div className="w-32 h-32 bg-white/50 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-8 shadow-xl backdrop-blur-sm relative">
               <ShoppingCart size={64} className="text-emerald-500/40" />
@@ -407,6 +420,23 @@ export default function Cart() {
                       </div>
                     </div>
                   ))}
+                </section>
+              )}
+
+              {ungroupedItems.length > 0 && (
+                <section>
+                  <h2 className="text-xl font-black mb-4 px-2 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-500 to-slate-700 flex items-center justify-center text-white shadow-lg"><ShoppingCart size={20} /></div>
+                      <span className="bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">Item Lainnya</span>
+                    </div>
+                    <div className="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-full font-bold border border-slate-200">{ungroupedItems.length} item</div>
+                  </h2>
+                  <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-sm mb-5 border-l-4 border-slate-500">
+                    <div className="space-y-3">
+                      {ungroupedItems.map(item => <CartItemCard key={item.id} item={item} isSelected={selectedIds.has(item.id)} onToggleSelect={toggleSelect} onUpdateQuantity={updateQuantity} onDelete={deleteItem} />)}
+                    </div>
+                  </div>
                 </section>
               )}
             </div>

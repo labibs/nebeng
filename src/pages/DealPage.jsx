@@ -531,14 +531,14 @@ export default function DealPage() {
 
   // Watch for payment success to send system message
   useEffect(() => {
-    if (transaction?.transaction_status === "paid") {
+    if (transaction?.payment_status === "paid") {
       // Small delay to ensure DB is stable
       const timer = setTimeout(() => {
         sendSystemMessage("Pembayaran berhasil diverifikasi! 💳");
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [transaction?.transaction_status]);
+  }, [transaction?.payment_status]);
 
   const sendSystemMessage = async (content) => {
     if (!deal || !clerkId) return;
@@ -706,7 +706,7 @@ export default function DealPage() {
       if (transaction?.id) {
         await supabase
           .from("transactions")
-          .update({ transaction_status: "cancelled" })
+          .update({ transaction_status: "cancelled", payment_status: "cancelled" })
           .eq("id", transaction.id);
       }
 
@@ -745,7 +745,8 @@ export default function DealPage() {
       const payload = {
         deal_id: deal.id,
         gross_amount: totalTransactionAmount,
-        transaction_status: "draft",
+        transaction_status: "ready_to_ship",
+        payment_status: "pending",
       };
 
       const { data, error } = await supabase
@@ -790,11 +791,11 @@ export default function DealPage() {
         : "badge-warning";
 
   const canPay = ["draft", "pending", "expire", "expired"].includes(
-    transaction?.transaction_status,
+    transaction?.payment_status,
   );
-  const paid = ["paid"].includes(transaction?.transaction_status);
+  const paid = ["paid"].includes(transaction?.payment_status);
   const paymentExpired = ["expire", "expired"].includes(
-    transaction?.transaction_status,
+    transaction?.payment_status,
   );
   const running = ["running"].includes(deal?.delivery_status);
   const delivered = ["delivered"].includes(deal?.delivery_status);
@@ -906,6 +907,7 @@ export default function DealPage() {
                   <DealStatusBadge
                     dealStatus={deal.status}
                     transactionStatus={transaction?.transaction_status}
+                    paymentStatus={transaction?.payment_status}
                     deliveryStatus={deal.delivery_status}
                     size="sm"
                   />
@@ -999,7 +1001,7 @@ export default function DealPage() {
               </div>
             )}
             {deal?.delivery_status === "draft" &&
-              transaction?.transaction_status === "paid" &&
+              transaction?.payment_status === "paid" &&
               !isCarrierLogin && (
                 <div className="border-t border-base-300/40 bg-emerald-50/40 px-4 py-3 animate-in fade-in slide-in-from-top-2">
                   <div className="flex items-center justify-between gap-3">

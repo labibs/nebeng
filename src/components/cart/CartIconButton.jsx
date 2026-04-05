@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
+import { apiFetch } from "../../lib/apiClient";
 import { useUser } from "@clerk/clerk-react";
 
 export default function CartIconButton({ className = "" }) {
@@ -20,14 +21,8 @@ export default function CartIconButton({ className = "" }) {
         }
 
         try {
-            const { count: itemCount, error } = await supabase
-                .from("warung_cart_items")
-                .select("*", { count: "exact", head: true })
-                .eq("user_id", user.id)
-                .eq("status", "pending"); // hanya pending yang masih di "keranjang"
-
-            if (error) throw error;
-            setCount(itemCount || 0);
+            const items = await apiFetch("/api/cart");
+            setCount(Array.isArray(items) ? items.length : 0);
         } catch (err) {
             console.error("Gagal ambil jumlah cart:", err);
             setCount(0);
@@ -37,36 +32,35 @@ export default function CartIconButton({ className = "" }) {
     };
 
     useEffect(() => {
-        // Fetch count awal
         fetchCartCount();
 
-        // Listener untuk event 'cart:item-added' dari handleAddToCart
         const handleItemAdded = () => {
-            setCount((prev) => prev + 1);          // langsung tambah badge
-            setIsAnimating(true);                  // trigger animasi
-            setTimeout(() => setIsAnimating(false), 800); // reset setelah animasi selesai
+            setCount((prev) => prev + 1);
+            setIsAnimating(true);
+            setTimeout(() => setIsAnimating(false), 800);
         };
 
         window.addEventListener("cart:item-added", handleItemAdded);
 
-        // Cleanup listener saat komponen unmount
         return () => {
             window.removeEventListener("cart:item-added", handleItemAdded);
         };
-    }, [user]);   // dependensi user → kalau user login/logout, refresh listener
+    }, [user]);
 
-    // 2. Optional: Realtime Supabase (bisa tetap ada di useEffect terpisah)
     useEffect(() => {
         if (!user) return;
 
         const channel = supabase
             .channel(`cart:${user.id}`)
-            .on("postgres_changes", {
-                event: "*",
-                schema: "public",
-                table: "warung_cart_items",
-                filter: `user_id=eq.${user.id}`
-            }, fetchCartCount)
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "warung_cart_items",
+                },
+                fetchCartCount,
+            )
             .subscribe();
 
         return () => {
@@ -80,8 +74,6 @@ export default function CartIconButton({ className = "" }) {
     };
 
     return (
-        <>
-        
         <button
             onClick={handleClick}
             className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 
@@ -90,11 +82,11 @@ export default function CartIconButton({ className = "" }) {
             aria-label="Keranjang Nitip"
         >
             <ShoppingCart
-                    size={20}
-                    className={`transition-transform duration-300 ${
-                        isAnimating ? "animate-fly-to-cart" : ""
-                    }`}
-                />
+                size={20}
+                className={`transition-transform duration-300 ${
+                    isAnimating ? "animate-fly-to-cart" : ""
+                }`}
+            />
 
             {!loading && count > 0 && (
                 <span className={`absolute -top-1 -right-1 bg-red-500 text-white 
@@ -110,6 +102,5 @@ export default function CartIconButton({ className = "" }) {
                                text-[9px] font-bold w-4 h-4 rounded-full animate-pulse" />
             )}
         </button>
-        </>
     );
 }

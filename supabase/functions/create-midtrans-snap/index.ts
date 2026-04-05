@@ -27,15 +27,15 @@ serve(async (req) => {
     // Ambil transaksi dari DB
     const { data: trx, error: trxError } = await supabaseAdmin
       .from("transactions")
-      .select("id, deal_id, gross_amount, transaction_status, snap_token")
+      .select("id, deal_id, gross_amount, transaction_status, payment_status, snap_token")
       .eq("id", transaction_id)
       .single();
 
     if (trxError || !trx) throw new Error("Transaksi tidak ditemukan");
     if (
-      trx.transaction_status !== "draft" &&
-      trx.transaction_status !== "pending" &&
-      trx.transaction_status !== "expired"
+      trx.payment_status !== "draft" &&
+      trx.payment_status !== "pending" &&
+      trx.payment_status !== "expired"
     ) {
       throw new Error("Transaksi sudah dibayar atau dibatalkan");
     }
@@ -48,7 +48,7 @@ serve(async (req) => {
 
     // 1️⃣ Jika snap_token masih valid di DB → return langsung
     // Jangan pakai token lama kalau transaksi sudah expired.
-    if (trx.snap_token && trx.transaction_status !== "expired") {
+    if (trx.snap_token && trx.payment_status !== "expired") {
       console.log("Snap token sudah ada di DB, return token lama.");
       return new Response(JSON.stringify({ snap_token: trx.snap_token }), {
         status: 200,
@@ -144,7 +144,7 @@ serve(async (req) => {
       .update({
         snap_token: data.token,
         order_id: midtransOrderId,
-        transaction_status: "pending",
+        payment_status: "pending",
       })
       .eq("id", trx.id);
 

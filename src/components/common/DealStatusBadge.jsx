@@ -1,9 +1,12 @@
 export default function DealStatusBadge({
   dealStatus,
   transactionStatus,
+  paymentStatus,
   deliveryStatus,
   size = "md", // sm | md | lg
 }) {
+  const effectivePaymentStatus = paymentStatus ?? transactionStatus;
+
   let label = "Ulang Pembayaran";
   let color = "badge-outline badge-ghost opacity-60";
 
@@ -17,22 +20,22 @@ export default function DealStatusBadge({
   }
 
   // 2️⃣ TRANSACTION STATUS
-  else if (transactionStatus === "draft") {
+  else if (effectivePaymentStatus === "draft") {
     label = "Sudah Deal";
     color = "badge-primary badge-outline font-medium";
-  } else if (transactionStatus === "pending") {
+  } else if (effectivePaymentStatus === "pending") {
     label = "Menunggu Bayar";
     color = "badge-warning";
   } else if (
-    transactionStatus === "expire" ||
-    transactionStatus === "expired"
+    effectivePaymentStatus === "expire" ||
+    effectivePaymentStatus === "expired"
   ) {
     label = "Transaksi Ulang";
     color = "badge-error";
-  } else if (transactionStatus === "fail") {
+  } else if (effectivePaymentStatus === "fail" || effectivePaymentStatus === "failed") {
     label = "Bayar Gagal";
     color = "badge-error";
-  } else if (transactionStatus === "paid") {
+  } else if (effectivePaymentStatus === "paid") {
     label = "Sudah Dibayar";
     color = "badge-emerald-100 text-emerald-800 border-none font-semibold";
   }
@@ -41,7 +44,7 @@ export default function DealStatusBadge({
   else if (dealStatus === "completed") {
     label = "Nego Selesai";
     color = "badge-primary badge-outline font-medium";
-  } else if (dealStatus === "cancelled" || transactionStatus === "cancelled") {
+  } else if (dealStatus === "cancelled" || effectivePaymentStatus === "cancelled") {
     label = "Dibatalkan";
     color = "badge-error badge-outline opacity-70";
   }

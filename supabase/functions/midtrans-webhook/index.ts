@@ -16,7 +16,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-// Mapping status Midtrans → status bisnis di DB (kolom transaction_status)
+// Mapping status Midtrans -> status pembayaran di DB (kolom payment_status)
 const STATUS_MAP: Record<string, string> = {
   settlement: "paid",
   "capture-accept": "paid",           // credit card sukses
@@ -81,7 +81,7 @@ serve(async (req: Request): Promise<Response> => {
     // =====================================
     const { data: existing, error: fetchError } = await supabase
       .from("transactions")
-      .select("transaction_status")
+      .select("payment_status")
       .eq("order_id", order_id)
       .maybeSingle(); // single() akan error kalau >1 atau 0
 
@@ -96,7 +96,7 @@ serve(async (req: Request): Promise<Response> => {
       return successResponse(); // jangan error, mungkin race condition
     }
 
-    const currentStatus = existing.transaction_status;
+    const currentStatus = existing.payment_status;
 
     // Skip kalau sudah final / sudah sama
     if (["paid", "cancelled", "expired", "failed"].includes(currentStatus)) {
@@ -113,7 +113,7 @@ serve(async (req: Request): Promise<Response> => {
     // Update tabel sesuai struktur kamu
     // =====================================
     const updateData: any = {
-      transaction_status: newTransactionStatus,
+      payment_status: newTransactionStatus,
       fraud_status: fraud_status || null,
       payment_type: payment_type || null,
       updated_at: new Date().toISOString(),
@@ -133,7 +133,7 @@ serve(async (req: Request): Promise<Response> => {
       throw updateError;
     }
 
-    console.info(`Order ${order_id} berhasil diupdate ke transaction_status: ${newTransactionStatus}`);
+    console.info(`Order ${order_id} berhasil diupdate ke payment_status: ${newTransactionStatus}`);
 
     return successResponse();
   } catch (err) {

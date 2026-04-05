@@ -406,7 +406,8 @@ export default function DealMenu({
                         gross_amount:
                           Number(dealData?.agreed_fee || 0) +
                           Number(dealData?.item_fee || 0),
-                        transaction_status: "draft",
+                        transaction_status: "ready_to_ship",
+                        payment_status: "pending",
                       },
                       {
                         onConflict: "deal_id",

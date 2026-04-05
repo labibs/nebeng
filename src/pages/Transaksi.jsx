@@ -87,6 +87,7 @@ export default function TransaksiPage() {
   const [showTrackingModal, setShowTrackingModal] = useState(false);
   const [transaksi, setTransaksi] = useState([]);
   const [error, setError] = useState(null);
+  const [payingId, setPayingId] = useState(null);
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -295,6 +296,15 @@ export default function TransaksiPage() {
                 trx.deal?.delivery_location,
                 trx.deal?.post?.to_city,
               );
+              const paymentExpired = ["expire", "expired"].includes(
+                trx.payment_status,
+              );
+              const canRetryPayment =
+                trx.deal?.depositor_id === clerkId &&
+                trx.deal?.status !== "cancelled" &&
+                ["draft", "pending", "expire", "expired"].includes(
+                  trx.payment_status,
+                );
 
               return (
                 <div
@@ -315,6 +325,7 @@ export default function TransaksiPage() {
                     <DealStatusBadge
                       dealStatus={trx.deal?.status}
                       transactionStatus={trx.transaction_status}
+                      paymentStatus={trx.payment_status}
                       deliveryStatus={trx.deal?.delivery_status}
                       size="sm"
                     />
@@ -401,6 +412,31 @@ export default function TransaksiPage() {
                     </span>
 
                     <div className="flex items-center gap-3">
+                      {canRetryPayment && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePay({
+                              transactionId: trx.id,
+                              navigate,
+                              setPaying: (isPaying) =>
+                                setPayingId(isPaying ? trx.id : null),
+                            });
+                          }}
+                          className={`btn btn-sm rounded-xl ${paymentExpired ? "btn-error" : "btn-success"}`}
+                          disabled={payingId === trx.id}
+                        >
+                          {payingId === trx.id ? (
+                            <span className="loading loading-spinner loading-xs"></span>
+                          ) : paymentExpired ? (
+                            "Ulangi Bayar"
+                          ) : (
+                            "Bayar Sekarang"
+                          )}
+                        </button>
+                      )}
+
                       {/* Live tracking icon (ringkas) */}
                       {/* {trx.deal?.delivery_status === "running" && (
                     <button

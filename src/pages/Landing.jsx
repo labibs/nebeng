@@ -73,7 +73,7 @@ export default function Landing() {
           {/* Brand Name */}
           <div className="relative mb-2 flex flex-col items-center z-10">
             <img
-              src="./nebeng.png"
+              src="./nebengv2.png"
               alt="Nebeng"
               className="w-32 h-32 object-contain drop-shadow-sm"
             />

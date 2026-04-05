@@ -1,95 +1,89 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useUser } from '@clerk/clerk-react'
+import { useUser } from "@clerk/clerk-react";
 import { apiFetch } from "../lib/apiClient";
 import MarketHeader from "../components/market/MarketHeader";
 import MarketCategories from "../components/market/MarketCategories";
-import MarketQuickIcons from "../components/market/MarketQuickIcons";
-import MarketPromoBanner from "../components/market/MarketPromoBanner";
 import MarketSection from "../components/market/MarketSection";
 import MarketOutletList from "../components/market/MarketOutletList";
-
+import MarketHeroCard from "../components/market/MarketHeroCard";
 
 export default function MarketPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
-  const [activeQuick, setActiveQuick] = useState(null);
 
-  const { user, isLoaded } = useUser();
-  const owner_avatar = user?.imageUrl || null;
+  const { user } = useUser();
+  const ownerAvatar = user?.imageUrl || null;
+  const ownerName = user?.firstName || user?.fullName || "Outlet Saya";
 
   async function loadProducts(keyword = "") {
     setLoading(true);
 
     try {
       const params = new URLSearchParams();
-      if (keyword) params.set('search', keyword);
-      if (activeCategory) params.set('category', activeCategory);
-      if (activeQuick) params.set('category_id', activeQuick);
+      if (keyword) params.set("search", keyword);
+      if (activeCategory) params.set("category", activeCategory);
 
       const data = await apiFetch(`/api/market/products?${params.toString()}`);
       setProducts(data || []);
     } catch (err) {
-      console.error('Error loading products:', err.message);
+      console.error("Error loading products:", err.message);
       setProducts([]);
     } finally {
       setLoading(false);
     }
   }
 
-  // initial load
   useEffect(() => {
     loadProducts();
-  }, [activeCategory, activeQuick]);
+  }, [activeCategory]);
 
-  // search effect (debounced)
   useEffect(() => {
-    const t = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       loadProducts(search);
     }, 400);
 
-    return () => clearTimeout(t);
+    return () => clearTimeout(timeoutId);
   }, [search]);
-
 
   return (
     <motion.div
-      className="min-h-screen bg-base-100"
+      className="min-h-screen bg-[#f0f7ff]"
       initial={{ x: "100%", opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: "-100%", opacity: 0 }}
       transition={{ type: "tween", ease: "easeOut", duration: 0.35 }}
     >
-      <div className="min-h-screen bg-gradient-to-br from-green-100 to-emerald-200 dark:from-slate-900 dark:to-slate-800 pb-24">
+      <div className="relative min-h-screen overflow-hidden bg-[#f0f7ff] pb-28 text-slate-900">
+        {/* Animated Background blobs for extra visual polish */}
+        <div className="absolute -left-20 -top-20 h-80 w-80 rounded-full bg-blue-200/50 blur-3xl" />
+        <div className="absolute -right-20 top-60 h-[400px] w-[400px] rounded-full bg-blue-100/50 blur-3xl" />
+
         <MarketHeader
           search={search}
-          owner_avatar={owner_avatar}
+          owner_avatar={ownerAvatar}
+          owner_name={ownerName}
           onSearchChange={setSearch}
         />
 
-        <MarketCategories
-          active={activeCategory}
-          onChange={setActiveCategory}
-        />
+        <div className="relative z-10 space-y-8 px-4 pb-10">
+          <MarketCategories
+            active={activeCategory}
+            onChange={setActiveCategory}
+          />
 
-        <MarketQuickIcons
-          active={activeQuick}
-          onChange={setActiveQuick}
-          warungCategory={activeCategory}
-        />
+          <MarketOutletList
+            title="Outlet Pilihan"
+            search={search}
+            category={activeCategory}
+          />
 
-        <MarketPromoBanner />
-
-        <div className="px-4 space-y-3 pb-10">
-          <MarketOutletList title="Daftar Outlet" search={search} category={activeCategory} />
           <MarketSection
-            title="Daftar Produk"
+            title="Daftar Item"
             products={products}
             loading={loading}
-            category={activeCategory}
-            quick={activeQuick}
           />
         </div>
       </div>

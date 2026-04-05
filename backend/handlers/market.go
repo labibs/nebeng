@@ -79,6 +79,7 @@ func GetMarketProducts(c *gin.Context) {
 		if warung, ok := p["warung"].(map[string]interface{}); ok {
 			flat["warung_name"] = warung["name"]
 			flat["warung_status"] = warung["status"]
+			flat["warung_category"] = warung["category"]
 			flat["owner_id"] = warung["created_by_clerk_id"]
 			if owner, ok := warung["owner"].(map[string]interface{}); ok {
 				flat["owner_name"] = owner["name"]

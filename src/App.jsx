@@ -1,30 +1,30 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { SignedIn, SignedOut } from '@clerk/clerk-react'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import { AnimatePresence } from "framer-motion";
 
-import SyncUser from './components/SyncUser' // ✅ WAJIB
-import MainLayout from './layouts/MainLayout'
-import ChatLayout from './layouts/ChatLayout'
+import SyncUser from "./components/SyncUser"; // ✅ WAJIB
+import MainLayout from "./layouts/MainLayout";
+import ChatLayout from "./layouts/ChatLayout";
 
-import Landing from './pages/Landing'
-import Login from './pages/Login'
-import Home from './pages/Home'
-import CreatePost from './pages/CreatePost'
-import ChatInbox from './pages/Chat'
-import ChatRoom from './components/chat/ChatRoom'
+import Landing from "./pages/Landing";
+import Login from "./pages/Login";
+import Home from "./pages/Home";
+import CreatePost from "./pages/CreatePost";
+import ChatInbox from "./pages/Chat";
+import ChatRoom from "./components/chat/ChatRoom";
 
-import Profile from './pages/Profile'
-import Transaksi from './pages/Transaksi'
-import Market from './pages/Market'
-import Outlet from './pages/Outlet'
-import BottomNav from './components/BottomNav'
-import DealPage from './pages/DealPage'
-import DetailOutlet from './pages/DetailOutlet';
-import EditOutlet from './components/outlet/EditOutlet';
-import DetailProduct from './components/detailProduct/DetailProduct';
-import DetailImage from './components/detailProduct/DetailImage';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
+import Profile from "./pages/Profile";
+import Transaksi from "./pages/Transaksi";
+import Market from "./pages/Market";
+import Outlet from "./pages/Outlet";
+import BottomNav from "./components/BottomNav";
+import DealPage from "./pages/DealPage";
+import DetailOutlet from "./pages/DetailOutlet";
+import EditOutlet from "./components/outlet/EditOutlet";
+import DetailProduct from "./components/detailProduct/DetailProduct";
+import DetailImage from "./components/detailProduct/DetailImage";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
 
 function App() {
   return (
@@ -32,8 +32,7 @@ function App() {
       {/* 🔥 Sync user SETELAH login */}
       <SyncUser />
 
-      <div className="min-h-screen bg-base-200">
-
+      <div className="min-h-screen bg-white">
         {/* ===================== */}
         {/* USER SUDAH LOGIN */}
         {/* ===================== */}
@@ -77,10 +76,9 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </SignedOut>
-
       </div>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;

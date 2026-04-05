@@ -1,0 +1,24 @@
+services:
+  - name: nebeng-backend
+    type: web
+    runtime: go
+    plan: free
+    region: singapore
+    rootDir: backend
+    buildCommand: go build -o backend .
+    startCommand: ./backend
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: GO_VERSION
+        value: 1.21.13
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: CLERK_JWKS_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false

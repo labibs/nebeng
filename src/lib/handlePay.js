@@ -1,10 +1,6 @@
 import { apiFetch } from "./apiClient";
 
-export async function handlePay({
-  transactionId,
-  navigate,
-  setPaying,
-}) {
+export async function handlePay({ transactionId, navigate, setPaying }) {
   if (!transactionId) {
     alert("Transaction ID tidak valid");
     return;
@@ -13,8 +9,8 @@ export async function handlePay({
   if (setPaying) setPaying(true);
 
   try {
-    const data = await apiFetch('/api/transactions/pay', {
-      method: 'POST',
+    const data = await apiFetch("/api/transactions/pay", {
+      method: "POST",
       body: JSON.stringify({ transaction_id: transactionId }),
     });
 
@@ -40,7 +36,7 @@ export async function handlePay({
         alert("Pembayaran gagal");
       },
       onClose: () => {
-        console.log("Popup ditutup");
+        // Popup closed
       },
     });
   } catch (err) {

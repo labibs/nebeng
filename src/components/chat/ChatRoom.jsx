@@ -147,7 +147,7 @@ export default function ChatRoom() {
       // Call sendMessage
       sendMessage(textMessage).then((msgId) => {
         if (msgId) {
-          console.log("Auto deal offer sent:", msgId);
+          // Deal offer sent successfully
         }
       });
 
@@ -194,8 +194,6 @@ export default function ChatRoom() {
 
     loadIds();
   }, [conversationId, postInfo]);
-
-  console.log("cek dulu", carrierId, depositorId);
 
   const insertDeal = async (postId, agreedFee, msgId) => {
     if (!postInfo?.clerk_user_id || !supabaseUserId || !postId) return;
@@ -254,7 +252,6 @@ export default function ChatRoom() {
       }
 
       dealId = newDeal.id;
-      console.log("Created new deal:", dealId);
 
       alert("Deal baru berhasil dibuat!");
     } else {
@@ -278,7 +275,6 @@ export default function ChatRoom() {
         return;
       }
 
-      console.log("Updated existing deal:", dealId);
       alert("Deal sudah ada — fee diperbarui!");
     }
 
@@ -348,7 +344,6 @@ export default function ChatRoom() {
       }
 
       dealId = newDeal.id;
-      console.log("Created new deal with ID:", dealId);
     } else {
       dealId = existingDeals[0].id;
     }
@@ -433,7 +428,6 @@ export default function ChatRoom() {
       }
 
       dealId = newDeal.id;
-      console.log("Created new deal with ID:", dealId);
     } else {
       dealId = existingDeals[0].id;
     }
@@ -520,7 +514,6 @@ export default function ChatRoom() {
       }
 
       dealId = newDeal.id;
-      console.log("Created new deal with ID:", dealId);
     } else {
       dealId = existingDeals[0].id;
     }
@@ -607,7 +600,6 @@ export default function ChatRoom() {
       }
 
       dealId = newDeal.id;
-      console.log("Created new deal with ID:", dealId);
     } else {
       dealId = existingDeals[0].id;
     }
@@ -685,8 +677,6 @@ export default function ChatRoom() {
         .limit(1)
         .maybeSingle();
 
-      console.log("Message data for post_id:", messageData, "Error:", msgError);
-
       if (messageData?.post_id) {
         const { data: postData, error: postError } = await supabase
           .from("posts")
@@ -696,10 +686,8 @@ export default function ChatRoom() {
           .eq("id", messageData.post_id)
           .single();
 
-        console.log("Post data:", postData, "Error:", postError);
         setPostInfo(postData);
       } else {
-        console.log("No post_id found in messages");
         setPostInfo(null);
       }
     };
@@ -867,7 +855,7 @@ export default function ChatRoom() {
 
   return (
     <div className="flex h-screen flex-col bg-base-200">
-      <ChatHeader recipient={recipient} />
+      <ChatHeader recipient={recipient} isLoading={loading} />
 
       <ChatMessages
         messages={messages}

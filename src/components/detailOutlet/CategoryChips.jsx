@@ -20,8 +20,8 @@ export default function CategoryChips({
   if (loading) {
     return (
       <div className="flex gap-2">
-        <div className="h-9 w-24 bg-base-200 rounded-full animate-pulse" />
-        <div className="h-9 w-20 bg-base-200 rounded-full animate-pulse" />
+        <div className="h-9 w-24 bg-[#e4edff] rounded-full animate-pulse" />
+        <div className="h-9 w-20 bg-[#edf3ff] rounded-full animate-pulse" />
       </div>
     );
   }

@@ -137,9 +137,6 @@ export default function DealCard({
               ? "deal_barang_titipan"
               : null);
 
-  console.log("DealCard - Message content:", msg.content);
-  console.log("DealCard - Detected dealType:", dealType);
-
   // Ekstrak data berdasarkan jenis deal
   let extractedData = {};
   if (dealType === "deal_ongkos_jastip") {
@@ -224,8 +221,6 @@ export default function DealCard({
     extractedData.weight = weight;
     extractedData.photos = photos;
     extractedData.ongkos = ongkos;
-
-    console.log("Parsed deal barang titipan:", { itemDetail, weight, photos });
   }
 
   const handleQuickReply = (text) => {
@@ -600,9 +595,9 @@ export default function DealCard({
                       alt={`Barang ${index + 1}`}
                       className="w-full max-h-24 object-cover rounded-lg border border-base-300 cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={() => window.open(photoUrl, "_blank")}
-                      onError={(e) =>
-                        console.log("Image failed to load:", photoUrl)
-                      }
+                      onError={(e) => {
+                        // Image failed to load
+                      }}
                     />
                   ))}
                 </div>

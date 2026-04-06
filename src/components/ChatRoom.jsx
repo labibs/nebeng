@@ -1,10 +1,10 @@
 // src/components/ChatRoom.jsx
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { useUser } from '@clerk/clerk-react';
-import { useState, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import { apiFetch } from '../lib/apiClient';
-import NegoModal from './chat/NegoModal';
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
+import { useState, useEffect, useRef } from "react";
+import { supabase } from "../lib/supabaseClient";
+import { apiFetch } from "../lib/apiClient";
+import NegoModal from "./chat/NegoModal";
 
 export default function ChatRoom() {
   const { conversationId } = useParams();
@@ -12,17 +12,20 @@ export default function ChatRoom() {
 
   const { user } = useUser();
   const currentUserId = user?.id;
-  const currentUserAvatar = user?.imageUrl || '/default-avatar.png';
+  const currentUserAvatar = user?.imageUrl || "/default-avatar.png";
 
-  const [recipient, setRecipient] = useState({ name: 'Loading...', imageUrl: '/default-avatar.png' });
+  const [recipient, setRecipient] = useState({
+    name: "Loading...",
+    imageUrl: "/default-avatar.png",
+  });
   const [postInfo, setPostInfo] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [showDealMenu, setShowDealMenu] = useState(false);
   const [loading, setLoading] = useState(true);
   const [conversationPostId, setConversationPostId] = useState(null);
   const [showNegoModal, setShowNegoModal] = useState(false);
-  const [negoInitialPrice, setNegoInitialPrice] = useState('');
+  const [negoInitialPrice, setNegoInitialPrice] = useState("");
 
   const location = useLocation();
 
@@ -30,7 +33,7 @@ export default function ChatRoom() {
   const menuRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -43,22 +46,22 @@ export default function ChatRoom() {
 
     const fetchRecipient = async () => {
       const { data: participants } = await supabase
-        .from('conversation_participants')
-        .select('user_id')
-        .eq('conversation_id', conversationId)
-        .neq('user_id', currentUserId);
+        .from("conversation_participants")
+        .select("user_id")
+        .eq("conversation_id", conversationId)
+        .neq("user_id", currentUserId);
 
       if (participants?.length > 0) {
         const opponentId = participants[0].user_id;
         const { data: opponent } = await supabase
-          .from('users')
-          .select('name, avatar_url')
-          .eq('clerk_id', opponentId)
+          .from("users")
+          .select("name, avatar_url")
+          .eq("clerk_id", opponentId)
           .single();
 
         setRecipient({
-          name: opponent?.name || 'User',
-          imageUrl: opponent?.avatar_url || '/default-avatar.png',
+          name: opponent?.name || "User",
+          imageUrl: opponent?.avatar_url || "/default-avatar.png",
         });
       }
     };
@@ -72,16 +75,18 @@ export default function ChatRoom() {
 
     const fetchPostInfo = async () => {
       const { data: conv } = await supabase
-        .from('conversations')
-        .select('post_id')
-        .eq('id', conversationId)
+        .from("conversations")
+        .select("post_id")
+        .eq("id", conversationId)
         .single();
 
       if (conv?.post_id) {
         const { data: postData } = await supabase
-          .from('posts')
-          .select('item_description, item_photo, from_city, to_city, price, fee, type, travel_date')
-          .eq('id', conv.post_id)
+          .from("posts")
+          .select(
+            "item_description, item_photo, from_city, to_city, price, fee, type, travel_date",
+          )
+          .eq("id", conv.post_id)
           .single();
 
         setPostInfo(postData);
@@ -97,13 +102,15 @@ export default function ChatRoom() {
 
     const fetchMessages = async () => {
       const { data } = await supabase
-        .from('messages')
-        .select(`
+        .from("messages")
+        .select(
+          `
           id, content, created_at, sender_id, is_read, message_type,
           post:posts (*)
-        `)
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true });
+        `,
+        )
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
 
       setMessages(data || []);
       setLoading(false);
@@ -112,26 +119,36 @@ export default function ChatRoom() {
 
     fetchMessages();
 
-    const safeChannelName = `chat_${conversationId.replace(/-/g, '_')}`;
+    const safeChannelName = `chat_${conversationId.replace(/-/g, "_")}`;
 
     const channel = supabase
       .channel(safeChannelName)
       .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
         (payload) => {
           setMessages((prev) => [...prev, payload.new]);
           scrollToBottom();
-        }
+        },
       )
       .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
         (payload) => {
           setMessages((prev) =>
-            prev.map((msg) => (msg.id === payload.new.id ? payload.new : msg))
+            prev.map((msg) => (msg.id === payload.new.id ? payload.new : msg)),
           );
-        }
+        },
       )
       .subscribe();
 
@@ -146,11 +163,11 @@ export default function ChatRoom() {
 
     const markAsRead = async () => {
       await supabase
-        .from('messages')
+        .from("messages")
         .update({ is_read: true })
-        .eq('conversation_id', conversationId)
-        .neq('sender_id', currentUserId)
-        .eq('is_read', false);
+        .eq("conversation_id", conversationId)
+        .neq("sender_id", currentUserId)
+        .eq("is_read", false);
     };
 
     markAsRead();
@@ -161,16 +178,17 @@ export default function ChatRoom() {
       if (!conversationId) return;
 
       const { data, error } = await supabase
-        .from('messages')
-        .select('post_id')
-        .eq('conversation_id', conversationId)
-        .eq('message_type', 'post_card')  // Hanya ambil yang message_type post_card
-        .order('created_at', { ascending: false })  // Urutkan dari terbaru ke terlama
-        .limit(1)  // Ambil hanya 1 yang paling baru
-        .maybeSingle();  // Gunakan maybeSingle() agar tidak error jika tidak ada
+        .from("messages")
+        .select("post_id")
+        .eq("conversation_id", conversationId)
+        .eq("message_type", "post_card") // Hanya ambil yang message_type post_card
+        .order("created_at", { ascending: false }) // Urutkan dari terbaru ke terlama
+        .limit(1) // Ambil hanya 1 yang paling baru
+        .maybeSingle(); // Gunakan maybeSingle() agar tidak error jika tidak ada
 
-      if (error && error.code !== 'PGRST116') {  // PGRST116 = no rows returned
-        console.error('Error fetching post_id:', error);
+      if (error && error.code !== "PGRST116") {
+        // PGRST116 = no rows returned
+        console.error("Error fetching post_id:", error);
         setConversationPostId(null);
         return;
       }
@@ -193,9 +211,9 @@ export default function ChatRoom() {
     const messageContent = content || newMessage.trim();
     if (!messageContent || !currentUserId) return;
 
-    const message_type = extractMessageType(messageContent) || 'text';
+    const message_type = extractMessageType(messageContent) || "text";
 
-    if (!content) setNewMessage('');
+    if (!content) setNewMessage("");
 
     const insertData = {
       conversation_id: conversationId,
@@ -204,21 +222,20 @@ export default function ChatRoom() {
     };
 
     // Hanya jika ini pesan deal, isi post_id dan message_type
-    if (message_type && message_type.startsWith('deal_')) {
+    if (message_type && message_type.startsWith("deal_")) {
       insertData.message_type = message_type;
 
       if (conversationPostId) {
         insertData.post_id = conversationPostId;
-        console.log('Deal terkirim dengan post_id:', conversationPostId);
       } else {
-        console.warn('Conversation ini tidak punya post_id!');
+        console.warn("Conversation ini tidak punya post_id!");
       }
     }
 
-    const { error } = await supabase.from('messages').insert(insertData);
+    const { error } = await supabase.from("messages").insert(insertData);
 
     if (error) {
-      console.error('Error kirim pesan:', error);
+      console.error("Error kirim pesan:", error);
       setNewMessage(content);
     }
   };
@@ -227,11 +244,20 @@ export default function ChatRoom() {
   useEffect(() => {
     if (location.state?.pendingDealOffer && currentUserId && conversationId) {
       const {
-        item_ids, opponent_id, pickupLocStr, deliveryLocStr, notes, proposedFee, items
+        item_ids,
+        opponent_id,
+        pickupLocStr,
+        deliveryLocStr,
+        notes,
+        proposedFee,
+        items,
       } = location.state.pendingDealOffer;
 
       const itemCount = items ? items.length : item_ids.length;
-      const itemName = items && items.length > 0 ? items[0].product?.name || items[0].notes : 'Barang Jastip';
+      const itemName =
+        items && items.length > 0
+          ? items[0].product?.name || items[0].notes
+          : "Barang Jastip";
 
       const payload = {
         item_ids,
@@ -239,7 +265,7 @@ export default function ChatRoom() {
         pickup_location: pickupLocStr,
         delivery_location: deliveryLocStr,
         notes,
-        proposed_fee: proposedFee
+        proposed_fee: proposedFee,
       };
 
       const payloadStr = JSON.stringify(payload);
@@ -247,8 +273,8 @@ export default function ChatRoom() {
 📦 ${itemCount} Barang: ${itemName}
 📍 Dari: ${pickupLocStr}
 📍 Ke: ${deliveryLocStr}
-💰 Penawaran Ongkos: Rp${proposedFee.toLocaleString('id-ID')}
-📝 Catatan: ${notes || '-'}
+💰 Penawaran Ongkos: Rp${proposedFee.toLocaleString("id-ID")}
+📝 Catatan: ${notes || "-"}
 <!--PAYLOAD:${payloadStr}-->`;
 
       sendMessage(null, textMessage);
@@ -262,7 +288,7 @@ export default function ChatRoom() {
   const selectDealType = (tag, title, template) => {
     setNewMessage(`[${tag}] ${title} ✅\n\n${template}`);
     setShowDealMenu(false);
-    document.getElementById('message-input')?.focus();
+    document.getElementById("message-input")?.focus();
   };
 
   // Shortcut cepat
@@ -276,7 +302,7 @@ export default function ChatRoom() {
 
   const handleQuickReply = (text) => {
     setNewMessage(text);
-    document.getElementById('message-input')?.focus();
+    document.getElementById("message-input")?.focus();
   };
 
   const handleOpenNegoFromDeal = (initialPrice) => {
@@ -289,16 +315,33 @@ export default function ChatRoom() {
   };
 
   if (!conversationId) {
-    return <div className="flex h-screen items-center justify-center text-lg">Chat tidak ditemukan</div>;
+    return (
+      <div className="flex h-screen items-center justify-center text-lg">
+        Chat tidak ditemukan
+      </div>
+    );
   }
 
   return (
     <div className="flex h-screen flex-col bg-base-200">
       {/* Header */}
       <div className="navbar bg-base-100 shadow-lg">
-        <button onClick={() => navigate(-1)} className="btn btn-ghost btn-circle">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <button
+          onClick={() => navigate(-1)}
+          className="btn btn-ghost btn-circle"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </button>
 
@@ -320,7 +363,10 @@ export default function ChatRoom() {
         {loading ? (
           <div className="space-y-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className={`chat ${i % 2 === 0 ? 'chat-end' : 'chat-start'}`}>
+              <div
+                key={i}
+                className={`chat ${i % 2 === 0 ? "chat-end" : "chat-start"}`}
+              >
                 <div className="chat-bubble bg-base-300 animate-pulse w-64 h-20 rounded-2xl" />
               </div>
             ))}
@@ -328,11 +374,11 @@ export default function ChatRoom() {
         ) : (
           <div className="space-y-6">
             {messages.map((msg) => {
-              if (msg.message_type === 'system') {
+              if (msg.message_type === "system") {
                 return (
                   <div key={msg.id} className="flex justify-center my-4">
                     <div className="bg-base-300/50 text-base-content/60 px-4 py-1.5 rounded-full text-xs font-medium border border-base-300">
-                      {msg.content.replace(/^\[system\]\s*/, '').trim()}
+                      {msg.content.replace(/^\[system\]\s*/, "").trim()}
                     </div>
                   </div>
                 );
@@ -340,35 +386,57 @@ export default function ChatRoom() {
               return (
                 <div
                   key={msg.id}
-                  className={`chat ${msg.sender_id === currentUserId ? 'chat-end' : 'chat-start'}`}
+                  className={`chat ${msg.sender_id === currentUserId ? "chat-end" : "chat-start"}`}
                 >
                   <div className="chat-image avatar">
                     <div className="w-10 rounded-full">
-                      <img src={msg.sender_id === currentUserId ? currentUserAvatar : recipient.imageUrl} alt="avatar" />
+                      <img
+                        src={
+                          msg.sender_id === currentUserId
+                            ? currentUserAvatar
+                            : recipient.imageUrl
+                        }
+                        alt="avatar"
+                      />
                     </div>
                   </div>
 
                   <div className="chat-header">
                     <time className="text-xs opacity-70">
-                      {new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </time>
                   </div>
 
-                  {msg.message_type === 'deal_ongkos_jastip' ? (
+                  {msg.message_type === "deal_ongkos_jastip" ? (
                     // CARD DEAL ONGKOS JASTIP - REFACTORED
-                    <div className={`
+                    <div
+                      className={`
     relative max-w-md px-5 py-4 rounded-2xl shadow-lg overflow-hidden border
-    ${msg.sender_id === currentUserId
-                        ? 'bg-gradient-to-r from-[#81c784]/10 to-[#66bb6a]/10 border-emerald-300 rounded-br-none'
-                        : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 rounded-bl-none'
-                      }
-  `}>
+    ${
+      msg.sender_id === currentUserId
+        ? "bg-gradient-to-r from-[#81c784]/10 to-[#66bb6a]/10 border-emerald-300 rounded-br-none"
+        : "bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 rounded-bl-none"
+    }
+  `}
+                    >
                       {/* Header */}
                       <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <svg
+                            className="w-6 h-6 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
                           </svg>
                         </div>
                         <div>
@@ -376,22 +444,33 @@ export default function ChatRoom() {
                             Deal Ongkos Jastip
                           </div>
                           <div className="text-xs opacity-70">
-                            {msg.sender_id === currentUserId ? 'Menunggu konfirmasi dari lawan...' : 'Pilih aksi'}
+                            {msg.sender_id === currentUserId
+                              ? "Menunggu konfirmasi dari lawan..."
+                              : "Pilih aksi"}
                           </div>
                         </div>
                       </div>
 
                       {/* Isi Pesan (tanpa tag [deal_...]) */}
                       <div className="mb-5 whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed">
-                        💰 Ongkos awal jastip : Rp {msg.post ? (parseInt(msg.post.fee).toLocaleString('id-ID')) : ''} <br />
-                        {msg.content.replace(/^\[[^\]]+\]\s*/, '').trim()}
+                        💰 Ongkos awal jastip : Rp{" "}
+                        {msg.post
+                          ? parseInt(msg.post.fee).toLocaleString("id-ID")
+                          : ""}{" "}
+                        <br />
+                        {msg.content.replace(/^\[[^\]]+\]\s*/, "").trim()}
                       </div>
 
                       {/* Ekstrak ongkos yang diusulkan */}
                       {(() => {
-                        const ongkosMatch = msg.content.match(/💰[^0-9]*([0-9.,]+)/);
-                        const ongkosText = ongkosMatch ? ongkosMatch[1].replace(/\./g, '') : null;
-                        const ongkos = ongkosText ? parseInt(ongkosText.replace(/,/g, ''), 10) : null;
+                        const ongkosMatch =
+                          msg.content.match(/💰[^0-9]*([0-9.,]+)/);
+                        const ongkosText = ongkosMatch
+                          ? ongkosMatch[1].replace(/\./g, "")
+                          : null;
+                        const ongkos = ongkosText
+                          ? parseInt(ongkosText.replace(/,/g, ""), 10)
+                          : null;
 
                         // Hanya tampilkan tombol jika pesan dari LAWAN
                         if (msg.sender_id !== currentUserId) {
@@ -401,14 +480,24 @@ export default function ChatRoom() {
                               <button
                                 onClick={() => {
                                   const replyText = ongkos
-                                    ? `Deal! Ongkos jastip Rp${ongkos.toLocaleString('id-ID')} ✅\nTerima kasih kak, kapan mau ketemuan?`
+                                    ? `Deal! Ongkos jastip Rp${ongkos.toLocaleString("id-ID")} ✅\nTerima kasih kak, kapan mau ketemuan?`
                                     : `Deal! Ongkos jastip sesuai kesepakatan ✅\nKapan mau ketemuan ya kak?`;
                                   handleQuickReply(replyText);
                                 }}
                                 className="flex-1 btn btn-success btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"
                               >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                  />
                                 </svg>
                                 Deal
                               </button>
@@ -416,14 +505,26 @@ export default function ChatRoom() {
                               {/* Tombol Nego */}
                               <button
                                 onClick={() => {
-                                  const defaultPrice = ongkos ? Math.floor(ongkos * 0.9) : 30000;
+                                  const defaultPrice = ongkos
+                                    ? Math.floor(ongkos * 0.9)
+                                    : 30000;
                                   setNegoInitialPrice(defaultPrice.toString());
                                   setShowNegoModal(true);
                                 }}
                                 className="flex-1 btn btn-outline btn-warning btn-sm rounded-xl font-medium hover:bg-yellow-50 dark:hover:bg-yellow-900/30 transition-all"
                               >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
                                 </svg>
                                 Nego
                               </button>
@@ -436,34 +537,55 @@ export default function ChatRoom() {
                       })()}
 
                       {/* Custom Tail Lancip */}
-                      <div className={`
+                      <div
+                        className={`
       absolute w-3 h-5 top-6
-      ${msg.sender_id === currentUserId ? 'right-0 translate-x-full' : 'left-0 -translate-x-full'}
-    `}>
-                        <svg viewBox="0 0 8 16" className="w-full h-full drop-shadow-md">
+      ${msg.sender_id === currentUserId ? "right-0 translate-x-full" : "left-0 -translate-x-full"}
+    `}
+                      >
+                        <svg
+                          viewBox="0 0 8 16"
+                          className="w-full h-full drop-shadow-md"
+                        >
                           <path
                             d="M0,0 Q8,8 0,16 L0,0"
-                            fill={msg.sender_id === currentUserId ? '#66bb6a' : '#dcfce7'}
+                            fill={
+                              msg.sender_id === currentUserId
+                                ? "#66bb6a"
+                                : "#dcfce7"
+                            }
                             className="dark:fill-emerald-900/50"
                           />
                         </svg>
                       </div>
                     </div>
-                  ) : msg.message_type === 'deal_offer' ? (
+                  ) : msg.message_type === "deal_offer" ? (
                     // CARD DEAL OFFER (DARI CHECKOUT CART)
-                    <div className={`
+                    <div
+                      className={`
       relative max-w-md px-5 py-4 rounded-2xl shadow-lg overflow-hidden border
-      ${msg.sender_id === currentUserId
-                        ? 'bg-gradient-to-r from-[#81c784]/10 to-[#66bb6a]/10 border-emerald-300 rounded-br-none'
-                        : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 rounded-bl-none'
-                      }
-    `}>
+      ${
+        msg.sender_id === currentUserId
+          ? "bg-gradient-to-r from-[#81c784]/10 to-[#66bb6a]/10 border-emerald-300 rounded-br-none"
+          : "bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 rounded-bl-none"
+      }
+    `}
+                    >
                       {/* Header */}
                       <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                          <svg
+                            className="w-6 h-6 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                            />
                           </svg>
                         </div>
                         <div>
@@ -471,20 +593,28 @@ export default function ChatRoom() {
                             Penawaran Keranjang
                           </div>
                           <div className="text-xs opacity-70">
-                            {msg.sender_id === currentUserId ? 'Menunggu konfirmasi dari lawan...' : 'Pilih aksi'}
+                            {msg.sender_id === currentUserId
+                              ? "Menunggu konfirmasi dari lawan..."
+                              : "Pilih aksi"}
                           </div>
                         </div>
                       </div>
 
                       {/* Isi Pesan (hide payload) */}
                       <div className="mb-5 whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed">
-                        {msg.content.replace(/^\[deal_offer\]\s*/, '').split('<!--PAYLOAD:')[0].trim()}
+                        {msg.content
+                          .replace(/^\[deal_offer\]\s*/, "")
+                          .split("<!--PAYLOAD:")[0]
+                          .trim()}
                       </div>
 
                       {/* Aksi Konfirmasi */}
                       {(() => {
-                        const payloadMatch = msg.content.match(/<!--PAYLOAD:(.*?)-->/);
-                        const payload = payloadMatch ? JSON.parse(payloadMatch[1]) : null;
+                        const payloadMatch =
+                          msg.content.match(/<!--PAYLOAD:(.*?)-->/);
+                        const payload = payloadMatch
+                          ? JSON.parse(payloadMatch[1])
+                          : null;
 
                         // Tombol hanya untuk lawan
                         if (msg.sender_id !== currentUserId && payload) {
@@ -493,29 +623,48 @@ export default function ChatRoom() {
                               <button
                                 onClick={async (e) => {
                                   e.target.disabled = true;
-                                  e.target.innerText = 'Memproses...';
+                                  e.target.innerText = "Memproses...";
                                   try {
-                                    const result = await apiFetch('/api/cart/deal', {
-                                      method: 'POST',
-                                      body: JSON.stringify(payload),
-                                    });
+                                    const result = await apiFetch(
+                                      "/api/cart/deal",
+                                      {
+                                        method: "POST",
+                                        body: JSON.stringify(payload),
+                                      },
+                                    );
 
                                     // Kirim balasan deal
-                                    sendMessage(null, `Deal! Penawaran belanja keranjang dikonfirmasi ✅\nPesanan segera kubelikan ya.`);
+                                    sendMessage(
+                                      null,
+                                      `Deal! Penawaran belanja keranjang dikonfirmasi ✅\nPesanan segera kubelikan ya.`,
+                                    );
 
                                     // Arahkan ke DealPage
                                     navigate(`/deal?deal=${result.deal_id}`);
                                   } catch (err) {
                                     console.error("Deal confirm error:", err);
-                                    alert("Gagal mengonfirmasi deal: " + err.message);
+                                    alert(
+                                      "Gagal mengonfirmasi deal: " +
+                                        err.message,
+                                    );
                                     e.target.disabled = false;
-                                    e.target.innerText = 'Deal / Confirm';
+                                    e.target.innerText = "Deal / Confirm";
                                   }
                                 }}
                                 className="flex-1 btn btn-info btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"
                               >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                  />
                                 </svg>
                                 Terima
                               </button>
@@ -525,36 +674,48 @@ export default function ChatRoom() {
                         return null;
                       })()}
 
-                      <div className={`
+                      <div
+                        className={`
                           absolute w-3 h-5 top-6
-                          ${msg.sender_id === currentUserId ? 'right-0 translate-x-full' : 'left-0 -translate-x-full'}
-                        `}>
-                        <svg viewBox="0 0 8 16" className="w-full h-full drop-shadow-md">
+                          ${msg.sender_id === currentUserId ? "right-0 translate-x-full" : "left-0 -translate-x-full"}
+                        `}
+                      >
+                        <svg
+                          viewBox="0 0 8 16"
+                          className="w-full h-full drop-shadow-md"
+                        >
                           <path
                             d="M0,0 Q8,8 0,16 L0,0"
-                            fill={msg.sender_id === currentUserId ? '#66bb6a' : '#eff6ff'}
+                            fill={
+                              msg.sender_id === currentUserId
+                                ? "#66bb6a"
+                                : "#eff6ff"
+                            }
                             className="dark:fill-emerald-900/50"
                           />
                         </svg>
                       </div>
                     </div>
-                  ) : msg.message_type === 'post_card' ? (
+                  ) : msg.message_type === "post_card" ? (
                     // CARD POST (hanya dari sender yang memulai chat)
-                    <div className={`
+                    <div
+                      className={`
   relative max-w-md px-5 py-4 rounded-2xl shadow-lg overflow-hidden
   bg-base-100 border border-base-300
-  ${msg.sender_id === currentUserId
-                        ? 'rounded-br-none'   // tail di kanan (pesan sendiri)
-                        : 'rounded-bl-none'   // tail di kiri (pesan lawan)
-                      }
-`}>
+  ${
+    msg.sender_id === currentUserId
+      ? "rounded-br-none" // tail di kanan (pesan sendiri)
+      : "rounded-bl-none" // tail di kiri (pesan lawan)
+  }
+`}
+                    >
                       {/* Isi Post Card */}
                       <div className="flex gap-4 items-start">
                         {/* Gambar Barang */}
                         <div className="avatar flex-shrink-0">
                           <div className="w-24 h-24 rounded-xl overflow-hidden ring-2 ring-emerald-500/20">
                             <img
-                              src={msg.post?.item_photo || '/default-item.jpg'}
+                              src={msg.post?.item_photo || "/default-item.jpg"}
                               alt="Barang"
                               className="w-full h-full object-cover"
                             />
@@ -565,21 +726,37 @@ export default function ChatRoom() {
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-end mb-2">
                             <div className="badge badge-primary badge-sm font-medium">
-                              {msg.post?.type === 'titip' ? 'Mau Titip' : 'Bisa Bawa'}
+                              {msg.post?.type === "titip"
+                                ? "Mau Titip"
+                                : "Bisa Bawa"}
                             </div>
                           </div>
 
                           <div className="flex items-center gap-2 text-sm text-base-content/80 mt-3">
-                            <span className="font-semibold">{msg.post?.from_city}</span>
-                            <svg className="w-5 h-5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            <span className="font-semibold">
+                              {msg.post?.from_city}
+                            </span>
+                            <svg
+                              className="w-5 h-5 text-emerald-500 flex-shrink-0"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M14 5l7 7m0 0l-7 7m7-7H3"
+                              />
                             </svg>
-                            <span className="font-semibold">{msg.post?.to_city}</span>
+                            <span className="font-semibold">
+                              {msg.post?.to_city}
+                            </span>
                           </div>
 
                           <div className="mt-4">
                             <p className="text-emerald-600 font-bold text-lg">
-                              Fee: Rp{msg.post?.fee?.toLocaleString('id-ID')}
+                              Fee: Rp{msg.post?.fee?.toLocaleString("id-ID")}
                             </p>
                           </div>
                         </div>
@@ -588,22 +765,28 @@ export default function ChatRoom() {
                       <hr className="my-4 border-base-300" />
 
                       <p className="text-xs text-center text-base-content/60 -mb-1">
-                        {msg.content || 'saya tertarik dengan penawaran ini.'}
+                        {msg.content || "saya tertarik dengan penawaran ini."}
                       </p>
 
                       {/* Custom Tail Lancip - Warna sesuai bg-base-100 */}
-                      <div className={`
+                      <div
+                        className={`
     absolute w-3 h-5 top-6
-    ${msg.sender_id === currentUserId
-                          ? 'right-0 translate-x-full'
-                          : 'left-0 -translate-x-full'
-                        }
-  `}>
-                        <svg viewBox="0 0 8 16" className="w-full h-full drop-shadow-md">
+    ${
+      msg.sender_id === currentUserId
+        ? "right-0 translate-x-full"
+        : "left-0 -translate-x-full"
+    }
+  `}
+                      >
+                        <svg
+                          viewBox="0 0 8 16"
+                          className="w-full h-full drop-shadow-md"
+                        >
                           <path
                             d="M0,0 Q8,8 0,16 L0,0"
-                            fill="#f5f5f5"  // bg-base-100 di light mode (daisyUI default)
-                            className="dark:fill-base-100"  // otomatis ikut dark mode
+                            fill="#f5f5f5" // bg-base-100 di light mode (daisyUI default)
+                            className="dark:fill-base-100" // otomatis ikut dark mode
                           />
                         </svg>
                       </div>
@@ -612,36 +795,41 @@ export default function ChatRoom() {
                     <div
                       className={`
                       relative max-w-xs lg:max-w-md px-4 py-3 rounded-2xl text-white shadow-md
-                      ${msg.sender_id === currentUserId
-                          ? 'bg-gradient-to-r from-[#81c784] to-[#66bb6a] rounded-br-none'
-                          : 'bg-emerald-600 rounded-bl-none'
-                        }
+                      ${
+                        msg.sender_id === currentUserId
+                          ? "bg-gradient-to-r from-[#81c784] to-[#66bb6a] rounded-br-none"
+                          : "bg-emerald-600 rounded-bl-none"
+                      }
                     `}
                     >
                       {/* Isi pesan */}
-                      <div className="whitespace-pre-wrap text-sm">{msg.content}</div>
+                      <div className="whitespace-pre-wrap text-sm">
+                        {msg.content}
+                      </div>
 
                       {/* Custom Tail / Panah Lancip - Mengarah ke Avatar */}
                       <div
                         className={`
                         absolute bottom-0 w-0 h-0 border-[12px] border-transparent
-                        ${msg.sender_id === currentUserId
-                            ? '-right-3 border-l-[#66bb6a]'  // tail kanan (pesan sendiri)
-                            : '-left-3 border-r-emerald-600' // tail kiri (pesan lawan)
-                          }
+                        ${
+                          msg.sender_id === currentUserId
+                            ? "-right-3 border-l-[#66bb6a]" // tail kanan (pesan sendiri)
+                            : "-left-3 border-r-emerald-600" // tail kiri (pesan lawan)
+                        }
                       `}
                         style={{
                           // Untuk gradient (hanya pesan sendiri), pakai clip-path atau background matching
                           // Tapi karena border tidak support gradient langsung, kita pakai pseudo + background
                           ...(msg.sender_id === currentUserId && {
-                            background: 'linear-gradient(to right, #81c784, #66bb6a)',
-                            WebkitBackgroundClip: 'border-box',
-                            clipPath: 'polygon(0 0, 100% 50%, 0 100%)',
-                            width: '12px',
-                            height: '20px',
-                            right: '-12px',
-                            backgroundClip: 'padding-box',
-                          })
+                            background:
+                              "linear-gradient(to right, #81c784, #66bb6a)",
+                            WebkitBackgroundClip: "border-box",
+                            clipPath: "polygon(0 0, 100% 50%, 0 100%)",
+                            width: "12px",
+                            height: "20px",
+                            right: "-12px",
+                            backgroundClip: "padding-box",
+                          }),
                         }}
                       />
                     </div>
@@ -649,8 +837,10 @@ export default function ChatRoom() {
 
                   {/* Status terbaca (hanya pesan sendiri) */}
                   {msg.sender_id === currentUserId && (
-                    <div className={`chat-footer text-xs mt-1 ${msg.is_read ? 'text-blue-500' : 'opacity-70'}`}>
-                      {msg.is_read ? 'Terbaca ✓✓' : 'Terkirim ✓'}
+                    <div
+                      className={`chat-footer text-xs mt-1 ${msg.is_read ? "text-blue-500" : "opacity-70"}`}
+                    >
+                      {msg.is_read ? "Terbaca ✓✓" : "Terkirim ✓"}
                     </div>
                   )}
                 </div>
@@ -679,9 +869,11 @@ export default function ChatRoom() {
         </div>
 
         {/* Form */}
-        <form onSubmit={sendMessage} className="px-4 pb-4 pt-2 flex items-center gap-2">
+        <form
+          onSubmit={sendMessage}
+          className="px-4 pb-4 pt-2 flex items-center gap-2"
+        >
           <div className="flex-1 flex items-center gap-2 bg-base-200 border border-base-300 rounded-2xl px-3 focus-within:ring-2 focus-within:ring-emerald-400/60">
-
             <input
               id="message-input"
               type="text"
@@ -698,8 +890,18 @@ export default function ChatRoom() {
               className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-300 transition-colors"
               aria-label="Pilih template deal"
             >
-              <svg className="w-6 h-6 text-emerald-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              <svg
+                className="w-6 h-6 text-emerald-400/60"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                />
               </svg>
             </button>
           </div>
@@ -718,30 +920,44 @@ export default function ChatRoom() {
           <>
             <div className="absolute bottom-20 left-4 right-4 bg-base-100 border border-base-300 rounded-2xl shadow-2xl overflow-hidden z-50">
               <div className="p-4 border-b border-base-300 bg-base-200/50">
-                <h3 className="font-bold text-lg text-center">Pilih Jenis Deal</h3>
-                <p className="text-xs text-center opacity-70 mt-1">Tag otomatis ditambahkan saat kirim</p>
+                <h3 className="font-bold text-lg text-center">
+                  Pilih Jenis Deal
+                </h3>
+                <p className="text-xs text-center opacity-70 mt-1">
+                  Tag otomatis ditambahkan saat kirim
+                </p>
               </div>
 
               <div className="max-h-96 overflow-y-auto">
                 {/* 1. Ongkos Jastip */}
                 <button
                   onClick={() => {
-                    setNegoInitialPrice(''); // reset input
+                    setNegoInitialPrice(""); // reset input
                     setShowNegoModal(true); // buka modal
                     setShowDealMenu(false); // tutup menu
                   }}
                   className="w-full text-left px-5 py-4 hover:bg-base-200 transition-colors flex items-center gap-4"
                 >
-
                   <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg
+                      className="w-7 h-7 text-emerald-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
                   </div>
                   <div>
                     <div className="font-semibold text-base">Ongkos Jastip</div>
-                    <div className="text-xs opacity-70">Sepakati biaya jasa titip / belanja</div>
+                    <div className="text-xs opacity-70">
+                      Sepakati biaya jasa titip / belanja
+                    </div>
                   </div>
                 </button>
 
@@ -749,24 +965,41 @@ export default function ChatRoom() {
                 <button
                   onClick={() =>
                     selectDealType(
-                      'deal_lokasi_ketemuan',
-                      'Deal Lokasi Ketemuan',
-                      '📍 Lokasi ketemuan: \n🕐 Jam ketemuan: \n💰 Ongkos tetap: \n📝 Catatan lokasi: '
+                      "deal_lokasi_ketemuan",
+                      "Deal Lokasi Ketemuan",
+                      "📍 Lokasi ketemuan: \n🕐 Jam ketemuan: \n💰 Ongkos tetap: \n📝 Catatan lokasi: ",
                     )
                   }
                   className="w-full text-left px-5 py-4 hover:bg-base-200 transition-colors flex items-center gap-4 border-t border-base-300/50"
                 >
                   <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <svg
+                      className="w-7 h-7 text-blue-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
                     </svg>
                   </div>
                   <div>
-                    <div className="font-semibold text-base">Lokasi Ketemuan</div>
-                    <div className="text-xs opacity-70">Tentukan tempat serah terima</div>
+                    <div className="font-semibold text-base">
+                      Lokasi Ketemuan
+                    </div>
+                    <div className="text-xs opacity-70">
+                      Tentukan tempat serah terima
+                    </div>
                   </div>
                 </button>
 
@@ -774,22 +1007,35 @@ export default function ChatRoom() {
                 <button
                   onClick={() =>
                     selectDealType(
-                      'deal_waktu_ketemuan',
-                      'Deal Waktu Ketemuan',
-                      '🕐 Jam ketemuan: \n📍 Lokasi: \n💰 Ongkos final: \n📝 Konfirmasi jadwal: '
+                      "deal_waktu_ketemuan",
+                      "Deal Waktu Ketemuan",
+                      "🕐 Jam ketemuan: \n📍 Lokasi: \n💰 Ongkos final: \n📝 Konfirmasi jadwal: ",
                     )
                   }
                   className="w-full text-left px-5 py-4 hover:bg-base-200 transition-colors flex items-center gap-4"
                 >
                   <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg
+                      className="w-7 h-7 text-purple-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
                   </div>
                   <div>
-                    <div className="font-semibold text-base">Waktu Ketemuan</div>
-                    <div className="text-xs opacity-70">Sepakati jam & hari bertemu</div>
+                    <div className="font-semibold text-base">
+                      Waktu Ketemuan
+                    </div>
+                    <div className="text-xs opacity-70">
+                      Sepakati jam & hari bertemu
+                    </div>
                   </div>
                 </button>
 
@@ -797,22 +1043,35 @@ export default function ChatRoom() {
                 <button
                   onClick={() =>
                     selectDealType(
-                      'deal_barang_titipan',
-                      'Deal Barang Titipan',
-                      '📦 Detail barang: \n⚖️ Ukuran & berat: \n💰 Ongkos final: \n📝 Lampirkan foto/detail jika ada'
+                      "deal_barang_titipan",
+                      "Deal Barang Titipan",
+                      "📦 Detail barang: \n⚖️ Ukuran & berat: \n💰 Ongkos final: \n📝 Lampirkan foto/detail jika ada",
                     )
                   }
                   className="w-full text-left px-5 py-4 hover:bg-base-200 transition-colors flex items-center gap-4 border-t border-base-300/50"
                 >
                   <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    <svg
+                      className="w-7 h-7 text-orange-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                      />
                     </svg>
                   </div>
                   <div>
-                    <div className="font-semibold text-base">Barang Titipan</div>
-                    <div className="text-xs opacity-70">Konfirmasi detail barang yang dititipkan</div>
+                    <div className="font-semibold text-base">
+                      Barang Titipan
+                    </div>
+                    <div className="text-xs opacity-70">
+                      Konfirmasi detail barang yang dititipkan
+                    </div>
                   </div>
                 </button>
               </div>
@@ -829,7 +1088,10 @@ export default function ChatRoom() {
             </div>
 
             {/* Overlay */}
-            <div className="fixed inset-0 z-40" onClick={() => setShowDealMenu(false)} />
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setShowDealMenu(false)}
+            />
           </>
         )}
         {/* Modal Nego Harga - Bottom Sheet */}

@@ -43,7 +43,6 @@ export default function Cart() {
         "postgres_changes",
         { event: "*", schema: "public", table: "warung_cart_items" },
         () => {
-          console.log("🔄 Real-time Cart update, refetching...");
           fetchCart();
         },
       )

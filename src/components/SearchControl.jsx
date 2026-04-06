@@ -1,7 +1,7 @@
 import { useMap } from "react-leaflet";
 import { OpenStreetMapProvider, GeoSearchControl } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
-import { useEffect } from 'react'
+import { useEffect } from "react";
 import L from "leaflet";
 
 export default function SearchControl({ onSelect }) {
@@ -28,7 +28,6 @@ export default function SearchControl({ onSelect }) {
     map.addControl(searchControl);
 
     map.on("geosearch/showlocation", (result) => {
-      console.log("Geosearch result:", result);
       const { x: lng, y: lat, label } = result.location;
 
       const locationData = {
@@ -37,8 +36,7 @@ export default function SearchControl({ onSelect }) {
         name: label.split(",")[0].trim() || label,
         address: label,
       };
-      
-      console.log("Calling onSelect with:", locationData);
+
       onSelect(locationData);
     });
 

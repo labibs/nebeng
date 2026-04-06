@@ -306,7 +306,6 @@ export default function DealPage() {
   useEffect(() => {
     // Cek apakah script sudah ada (hindari double load)
     if (document.querySelector('script[src*="snap.js"]')) {
-      console.log("Midtrans script sudah ada");
       return;
     }
 
@@ -318,8 +317,10 @@ export default function DealPage() {
     ); // ganti dengan client key sandbox kamu
     script.async = true;
 
-    script.onload = () => console.log("✅ Midtrans Snap script loaded");
-    script.onerror = () => console.error("❌ Gagal load Midtrans Snap script");
+    script.onload = () => {
+      // Script loaded successfully
+    };
+    script.onerror = () => console.error("Gagal load Midtrans Snap script");
 
     document.body.appendChild(script);
 
@@ -497,7 +498,6 @@ export default function DealPage() {
           filter: `id=eq.${dealId}`,
         },
         (payload) => {
-          console.log("🔄 Real-time Deal update:", payload.new);
           // Merging with existing deal data to preserve joined fields (carrier, depositor, post)
           setDeal((prev) => (prev ? { ...prev, ...payload.new } : payload.new));
         },
@@ -518,7 +518,6 @@ export default function DealPage() {
             filter: `id=eq.${trxId}`,
           },
           (payload) => {
-            console.log("🔄 Real-time Transaction update:", payload.new);
             setTransaction(payload.new);
           },
         )

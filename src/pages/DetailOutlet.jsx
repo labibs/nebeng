@@ -214,7 +214,7 @@ export default function DetailOutlet() {
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-48 rounded-2xl bg-base-200 animate-pulse"
+                className="h-48 rounded-2xl bg-[#e4edff] animate-pulse"
               />
             ))}
           </div>

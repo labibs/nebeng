@@ -1,16 +1,16 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
-import { useRegisterSW } from 'virtual:pwa-register/react';
-import './index.css';
-import { ClerkProvider } from '@clerk/clerk-react';
+import React from "react";
+import { useState, useEffect } from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+import { useRegisterSW } from "virtual:pwa-register/react";
+import "./index.css";
+import { ClerkProvider } from "@clerk/clerk-react";
 import "leaflet/dist/leaflet.css";
-import { UserProvider } from './lib/UserContext.jsx';
-import ApiClientInit from './components/ApiClientInit.jsx';
+import { UserProvider } from "./lib/UserContext.jsx";
+import ApiClientInit from "./components/ApiClientInit.jsx";
 
 // Komponen Toast Minimalis
-const Toast = ({ message, type = 'success', onClose }) => {
+const Toast = ({ message, type = "success", onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -19,16 +19,29 @@ const Toast = ({ message, type = 'success', onClose }) => {
     return () => clearTimeout(timer);
   }, [onClose]);
 
-  const bgColor = type === 'success' ? 'bg-green-600' : 'bg-blue-600';
+  const bgColor = type === "success" ? "bg-green-600" : "bg-blue-600";
 
   return (
     <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 animate-slide-up">
-      <div className={`text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-3 ${bgColor}`}>
-        <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d={type === 'success'
-              ? "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              : "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"} />
+      <div
+        className={`text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-3 ${bgColor}`}
+      >
+        <svg
+          className="w-6 h-6 flex-shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d={
+              type === "success"
+                ? "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                : "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            }
+          />
         </svg>
         <span className="text-sm font-medium">{message}</span>
       </div>
@@ -45,17 +58,17 @@ function SWUpdatePrompt() {
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(r) {
-      console.log('SW Registered: ', r);
+      // SW Registered
     },
     onRegisterError(error) {
-      console.log('SW registration error', error);
+      console.error("SW registration error", error);
     },
   });
 
   // Gunakan useEffect agar aman dari infinite render
   useEffect(() => {
     if (offlineReady) {
-      setShowToast({ message: 'App siap digunakan offline!', type: 'success' });
+      setShowToast({ message: "App siap digunakan offline!", type: "success" });
       setOfflineReady(false);
     }
   }, [offlineReady, setOfflineReady]);
@@ -63,8 +76,8 @@ function SWUpdatePrompt() {
   useEffect(() => {
     if (needRefresh) {
       setShowToast({
-        message: 'Versi baru tersedia!',
-        type: 'info',
+        message: "Versi baru tersedia!",
+        type: "info",
         action: () => {
           updateServiceWorker(true); // Reload + update
           setShowToast(null);
@@ -101,7 +114,7 @@ function SWUpdatePrompt() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
       <ApiClientInit /> {/* 🔥 Init API client with Clerk token */}
@@ -110,5 +123,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       </UserProvider>
       <SWUpdatePrompt /> {/* Toast akan muncul di sini */}
     </ClerkProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

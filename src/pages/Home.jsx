@@ -30,7 +30,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [isSyncingUser, setIsSyncingUser] = useState(false);
-  const [feeRange, setFeeRange] = useState([0, 500000]); // default: 0 - 500rb
+  const [feeRange, setFeeRange] = useState([0, 1000000]); // default: 0 - 1.000.000
   const [isTopHeaderVisible, setIsTopHeaderVisible] = useState(true);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
   const prevScrollY = useRef(0);
@@ -178,6 +178,24 @@ export default function Home() {
     return () => supabase.removeChannel(channel);
   }, [fetchPosts]);
 
+  const MIN = 0;
+  const MAX = 1000000;
+  const STEP = 10000;
+
+  const formatFee = (val) => {
+    if (val === MIN && feeRange[1] === MAX) return "Semua";
+    if (val === MIN) return `Rp ${val.toLocaleString()}`;
+    return `Rp ${val.toLocaleString()}`;
+  };
+
+  const formatRange = () => {
+    const [min, max] = feeRange;
+    if (min === MIN && max === MAX) return "Semua";
+    if (min === MIN) return `Maks Rp ${max.toLocaleString()}`;
+    if (max === MAX) return `Min Rp ${min.toLocaleString()}`;
+    return `Rp ${min.toLocaleString()} - Rp ${max.toLocaleString()}`;
+  };
+
   const filteredPosts = posts.filter((post) => {
     // Tab filter
     if (activeTab !== "semua") {
@@ -240,12 +258,6 @@ export default function Home() {
     }
   });
 
-  const MIN = 0;
-  const MAX = 1000000;
-  const STEP = 10000;
-
-  const clamp = (v) => Math.min(MAX, Math.max(MIN, v));
-
   // Tab options
 
   const tabOptions = [
@@ -261,7 +273,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e8f5e9] via-[#f0f8f1] to-[#d9f0e0] dark:from-[#1e293b] dark:via-[#0f172a] dark:to-[#1e293b] text-base-content flex flex-col flex items-center">
+    <div className="h-[100dvh] bg-gradient-to-br from-[#e8f5e9] via-[#f0f8f1] to-[#d9f0e0] dark:from-[#1e293b] dark:via-[#0f172a] dark:to-[#1e293b] text-base-content flex flex-col flex items-center">
       {/* Fixed Top Header - Logo + Search + Profile */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-500 ease-out ${
@@ -437,9 +449,7 @@ export default function Home() {
           <div className="space-y-2.5 rounded-[24px] border border-slate-100 bg-slate-50/50 px-4 py-3">
             <div className="flex justify-between text-[11px] font-bold text-slate-600">
               <span>Ongkos Fee</span>
-              <span className="text-[#4e73df]">
-                Rp {feeRange[1].toLocaleString()}
-              </span>
+              <span className="text-[#4e73df]">{formatRange()}</span>
             </div>
             <div className="px-1 py-1">
               <Slider
@@ -452,6 +462,10 @@ export default function Home() {
                 allowCross={false}
               />
             </div>
+            <div className="flex justify-between text-[9px] text-slate-400">
+              <span>Rp 0</span>
+              <span>Rp 1.000.000</span>
+            </div>
           </div>
 
           <button
@@ -463,7 +477,7 @@ export default function Home() {
         </div>
       </SearchModal>
 
-      <main className="h-screen w-full overflow-hidden bg-black">
+      <main className="h-[100dvh] w-full overflow-hidden bg-black">
         {/* Content */}
         {loading ? (
           <div className="flex h-full items-center justify-center">

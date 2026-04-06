@@ -46,7 +46,7 @@ export default function SearchModal({
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="w-full min-w-0 bg-transparent text-[16px] font-medium text-slate-700 outline-none placeholder:text-slate-400"
+                className="w-full min-w-0 bg-transparent text-[14px] font-medium text-slate-700 outline-none placeholder:text-slate-400"
               />
               {value ? (
                 <button

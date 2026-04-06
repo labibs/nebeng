@@ -34,7 +34,7 @@ export default function MarketSection({
           {Array.from({ length: 3 }).map((_, index) => (
             <div
               key={index}
-              className="h-44 animate-pulse rounded-[32px] border border-slate-50 bg-slate-100/50"
+              className="h-[128px] animate-pulse rounded-[24px] border border-[#e4edff] bg-gradient-to-br from-[#e4edff] to-[#edf3ff]"
             />
           ))}
         </div>
@@ -49,7 +49,9 @@ export default function MarketSection({
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-50">
             <span className="text-xl">🔍</span>
           </div>
-          <p className="text-[15px] font-semibold text-slate-700">Tidak ada produk</p>
+          <p className="text-[15px] font-semibold text-slate-700">
+            Tidak ada produk
+          </p>
           <p className="mx-auto mt-2 max-w-[200px] text-[13px] text-slate-400">
             Coba ganti pencarian atau pilih kategori lain.
           </p>

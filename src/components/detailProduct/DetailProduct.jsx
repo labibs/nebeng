@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 import DetailProductHeader from "./DetailProductHeader";
 import LoadingLogo from "../LoadingLogo";
+import { motion } from "framer-motion";
 import {
   ArrowRightLeft,
   MessageCircle,

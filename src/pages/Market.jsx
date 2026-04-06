@@ -82,7 +82,7 @@ export default function MarketPage() {
 
           <MarketSection
             title="Daftar Item"
-            products={products}
+            products={(products || []).filter((p) => p.owner_id !== user?.id)}
             loading={loading}
           />
         </div>

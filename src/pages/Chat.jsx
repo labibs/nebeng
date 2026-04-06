@@ -133,8 +133,6 @@ export default function ChatInbox() {
     let postMap = {};
 
     if (postIds.length > 0) {
-      console.log("🔗 Mengambil post dengan ID:", postIds);
-
       const { data: posts, error } = await supabase
         .from("posts")
         .select(
@@ -143,14 +141,7 @@ export default function ChatInbox() {
         .in("id", postIds);
 
       if (error) {
-        console.error("❌ Error fetch posts:", error);
-      } else {
-        console.log("✅ Berhasil ambil", posts?.length, "post");
-        posts?.forEach((post) => {
-          console.log(
-            `   Post ${post.id}: ${post.from_city || "?"} → ${post.to_city || "?"}, "${post.item_description || post.description || "tanpa deskripsi"}"`,
-          );
-        });
+        console.error("Error fetching posts:", error);
       }
 
       posts?.forEach((post) => {
@@ -214,13 +205,10 @@ export default function ChatInbox() {
 
     convList.sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime));
 
-    console.log("📊 Total conversations sebelum filter:", convList.length);
-
     let filteredConvList = convList;
 
     if (searchQuery.trim()) {
       const lowerQuery = searchQuery.toLowerCase().trim();
-      console.log("🔍 Mulai filtering dengan query:", lowerQuery);
 
       filteredConvList = convList.filter((conv) => {
         let found = false;
@@ -230,7 +218,6 @@ export default function ChatInbox() {
           conv.opponent.name &&
           conv.opponent.name.toLowerCase().includes(lowerQuery)
         ) {
-          console.log("✅ Match NAMA:", conv.opponent.name);
           found = true;
         }
 
@@ -239,14 +226,12 @@ export default function ChatInbox() {
           conv.lastMessage &&
           conv.lastMessage.toLowerCase().includes(lowerQuery)
         ) {
-          console.log("✅ Match PESAN:", conv.lastMessage.substring(0, 50));
           found = true;
         }
 
-        // 3. Data POST — ini yang kita debug intensif
+        // 3. Data POST
         if (conv.relatedPost) {
           const post = conv.relatedPost;
-          console.log("📌 Conversation ini punya relatedPost ID:", post.id);
 
           // Gabungkan semua field yang ingin dicari
           const searchableFields = [
@@ -264,10 +249,7 @@ export default function ChatInbox() {
             .join(" ")
             .toLowerCase();
 
-          console.log("🔖 Searchable text dari post:", searchableFields);
-
           if (searchableFields.includes(lowerQuery)) {
-            console.log("✅ MATCH POST TEXT!");
             found = true;
           }
 
@@ -281,32 +263,17 @@ export default function ChatInbox() {
             });
             const dateShort = date.toLocaleDateString("id-ID"); // 26/12/2025
 
-            console.log("📅 Tanggal post:", dateStr, "|", dateShort);
-
             if (
               dateStr.toLowerCase().includes(lowerQuery) ||
               dateShort.includes(lowerQuery)
             ) {
-              console.log("✅ MATCH TANGGAL!");
               found = true;
             }
-          }
-        } else {
-          // Kalau tidak ada relatedPost, log juga biar tahu
-          if (conv.lastMsgMap && conv.lastMsgMap.post_id) {
-            console.log(
-              "⚠️ Ada post_id di message tapi tidak ada di postMap:",
-              conv.lastMsgMap.post_id,
-            );
           }
         }
 
         return found;
       });
-
-      console.log(
-        `🎯 Hasil filter: ${filteredConvList.length} dari ${convList.length} conversations`,
-      );
     }
 
     setConversations(filteredConvList);
@@ -477,10 +444,10 @@ export default function ChatInbox() {
                       key={i}
                       className="flex items-center gap-4 animate-pulse"
                     >
-                      <div className="w-12 h-12 rounded-full bg-slate-100" />
+                      <div className="w-12 h-12 rounded-full bg-[#e4edff]" />
                       <div className="flex-1 space-y-2">
-                        <div className="h-4 w-32 bg-slate-100 rounded" />
-                        <div className="h-3 w-20 bg-slate-100 rounded" />
+                        <div className="h-4 w-32 bg-[#edf3ff] rounded" />
+                        <div className="h-3 w-20 bg-[#e4edff] rounded" />
                       </div>
                     </div>
                   ))}
@@ -541,13 +508,13 @@ export default function ChatInbox() {
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i}>
                 <div className="flex items-center gap-4 px-2">
-                  <div className="skeleton w-14 h-14 rounded-full bg-base-300/40 dark:bg-base-700/40" />
+                  <div className="skeleton w-14 h-14 rounded-full bg-[#e4edff]" />
                   <div className="flex-1 space-y-3">
-                    <div className="skeleton h-5 w-40 bg-base-300/30 dark:bg-base-700/30" />
-                    <div className="skeleton h-4 w-64 bg-base-300/20 dark:bg-base-700/20" />
+                    <div className="skeleton h-5 w-40 bg-[#edf3ff]" />
+                    <div className="skeleton h-4 w-64 bg-[#e4edff]" />
                   </div>
                 </div>
-                <div className="h-px mt-6 bg-base-300/20 dark:bg-base-700/20 mx-4" />
+                <div className="h-px mt-6 bg-[#e4edff]/30 mx-4" />
               </div>
             ))}
           </div>

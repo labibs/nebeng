@@ -396,8 +396,6 @@ export default function DealMenu({
             <SlideToUnlock
               onComplete={async () => {
                 try {
-                  console.log("🚀 lanjut transaksi", dealData);
-
                   const { data: trx, error } = await supabase
                     .from("transactions")
                     .upsert(

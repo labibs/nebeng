@@ -114,14 +114,14 @@ export default function MarketOutletList({
     return (
       <div className="space-y-4">
         <div className="mb-4 flex items-center justify-between gap-3 px-1">
-          <div className="h-8 w-40 animate-pulse rounded-lg bg-slate-100" />
-          <div className="h-8 w-20 animate-pulse rounded-full bg-slate-50" />
+          <div className="h-8 w-40 animate-pulse rounded-lg bg-[#e4edff]" />
+          <div className="h-8 w-20 animate-pulse rounded-full bg-[#edf3ff]" />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {Array.from({ length: 2 }).map((_, index) => (
             <div
               key={index}
-              className="h-72 w-[88%] shrink-0 animate-pulse rounded-[38px] bg-slate-100/50 sm:w-[44%]"
+              className="h-72 w-[78%] shrink-0 animate-pulse rounded-[26px] bg-gradient-to-br from-[#e4edff] to-[#edf3ff] sm:w-[40%]"
             />
           ))}
         </div>
@@ -145,7 +145,7 @@ export default function MarketOutletList({
         </div>
       </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
+      <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
         {outlets.map((outlet) => (
           <div key={outlet.id} className="w-[78%] shrink-0 sm:w-[40%]">
             <MarketOutletCard outlet={outlet} />

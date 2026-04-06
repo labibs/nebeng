@@ -81,8 +81,8 @@ export default function CartIconButton({ className = "" }) {
     >
       <div className="relative">
         <ShoppingCart
-          size={24}
-          strokeWidth={2.5}
+          size={18}
+          strokeWidth={2}
           className={`transition-all duration-300 group-hover:scale-110 ${
             isAnimating ? "animate-bounce text-[#4e73df]" : ""
           }`}
@@ -90,7 +90,7 @@ export default function CartIconButton({ className = "" }) {
 
         {!loading && count > 0 && (
           <span
-            className={`absolute -top-1.5 -right-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white shadow-[0_4px_10px_rgba(239,68,68,0.4)] ring-2 ring-white transition-all duration-300 ${isAnimating ? "scale-125 rotate-12" : "scale-100"}`}
+            className={`absolute -top-3 -right-3 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white shadow-[0_4px_10px_rgba(239,68,68,0.4)] ring-2 ring-white transition-all duration-300 ${isAnimating ? "scale-125 rotate-12" : "scale-100"}`}
           >
             {count > 99 ? "99+" : count}
           </span>

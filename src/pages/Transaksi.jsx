@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import LiveTrackingModal from "../components/transaksi/LiveTrackingModal";
 import TransaksiHeader from "../components/transaksi/TransaksiHeader";
 import DealStatusBadge from "../components/common/DealStatusBadge";
-import LoadingLogo from "../components/LoadingLogo";
 
 // ⬆️ sesuaikan path supabase client kamu
 
@@ -158,8 +157,29 @@ export default function TransaksiPage() {
 
   if (!isLoaded || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f0f7ff]">
-        <LoadingLogo size="w-20 h-20" />
+      <div className="min-h-screen bg-[#f0f7ff] p-4">
+        <div className="space-y-3 pt-4">
+          {[...Array(4)].map((_, i) => (
+            <div
+              key={i}
+              className="flex h-[120px] items-stretch overflow-hidden rounded-[24px] border border-[#e4edff] bg-white p-2 animate-pulse"
+            >
+              <div className="w-[90px] shrink-0 rounded-[16px] bg-[#e4edff]" />
+              <div className="flex-1 p-3 space-y-2.5">
+                <div className="flex justify-between">
+                  <div className="h-2.5 w-14 rounded-full bg-[#edf3ff]" />
+                  <div className="h-2.5 w-16 rounded-full bg-[#e4edff]" />
+                </div>
+                <div className="h-3.5 w-3/4 rounded-full bg-[#edf3ff]" />
+                <div className="h-2.5 w-2/5 rounded-full bg-[#e4edff]" />
+                <div className="mt-3 flex justify-between items-end">
+                  <div className="h-4 w-20 rounded-full bg-[#edf3ff]" />
+                  <div className="h-7 w-16 rounded-lg bg-[#e4edff]" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -238,19 +258,19 @@ export default function TransaksiPage() {
             [...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="flex h-[148px] items-stretch overflow-hidden rounded-[28px] border border-slate-100 bg-white p-2.5 animate-pulse"
+                className="flex h-[120px] items-stretch overflow-hidden rounded-[24px] border border-[#e4edff] bg-white p-2 animate-pulse"
               >
-                <div className="w-[110px] shrink-0 rounded-[20px] bg-slate-100" />
-                <div className="flex-1 p-4 space-y-3">
+                <div className="w-[90px] shrink-0 rounded-[16px] bg-[#e4edff]" />
+                <div className="flex-1 p-3 space-y-2.5">
                   <div className="flex justify-between">
-                    <div className="h-3 w-16 rounded-full bg-slate-100" />
-                    <div className="h-3 w-20 rounded-full bg-slate-100" />
+                    <div className="h-2.5 w-14 rounded-full bg-[#edf3ff]" />
+                    <div className="h-2.5 w-16 rounded-full bg-[#e4edff]" />
                   </div>
-                  <div className="h-4 w-3/4 rounded-full bg-slate-100" />
-                  <div className="h-3 w-1/2 rounded-full bg-slate-100" />
-                  <div className="mt-4 flex justify-between items-end">
-                    <div className="h-5 w-24 rounded-full bg-slate-100" />
-                    <div className="h-8 w-20 rounded-xl bg-slate-100" />
+                  <div className="h-3.5 w-3/4 rounded-full bg-[#edf3ff]" />
+                  <div className="h-2.5 w-2/5 rounded-full bg-[#e4edff]" />
+                  <div className="mt-3 flex justify-between items-end">
+                    <div className="h-4 w-20 rounded-full bg-[#edf3ff]" />
+                    <div className="h-7 w-16 rounded-lg bg-[#e4edff]" />
                   </div>
                 </div>
               </div>

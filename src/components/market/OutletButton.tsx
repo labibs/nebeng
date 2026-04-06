@@ -57,7 +57,7 @@ export default function OutletButton({
                 transition={{ duration: 0.35, ease: "easeOut" }}
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <Store size={20} strokeWidth={2.5} className="text-[#4e73df]" />
+                <Store size={18} strokeWidth={2} className="text-[#4e73df]" />
               </motion.div>
             )}
           </AnimatePresence>

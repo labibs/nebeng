@@ -1,4 +1,4 @@
-import { PackageCheckIcon } from "lucide-react";
+import { StoreIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function AddProductButton({ outlet }) {
@@ -18,8 +18,8 @@ export default function AddProductButton({ outlet }) {
       "
       onClick={() => navigate(`/outlet/${outlet.id}`)}
     >
-      <PackageCheckIcon size={16} />
-      Kelola {outlet.name}
+      <StoreIcon size={16} />
+      Detail {outlet.name}
     </button>
   );
 }

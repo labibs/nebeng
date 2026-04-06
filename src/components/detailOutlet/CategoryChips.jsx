@@ -50,14 +50,13 @@ export default function CategoryChips({
                   onSelect?.(cat.id);
                 }}
                 className={`px-4 py-2 rounded-full text-sm border flex items-center gap-2 whitespace-nowrap transition-all
-                  ${activeId === cat.id
-                    ? "bg-black text-white border-black"
-                    : "bg-base-100 hover:bg-base-200"
+                  ${
+                    activeId === cat.id
+                      ? "bg-black text-white border-black"
+                      : "bg-base-100 hover:bg-base-200"
                   }`}
               >
-                {cat.icon && (
-                  <span className="text-md">{cat.icon}</span>
-                )}
+                {cat.icon && <span className="text-md">{cat.icon}</span>}
                 {cat.name}
               </button>
             </div>
@@ -77,14 +76,14 @@ export default function CategoryChips({
         </div>
 
         {isOwner && (
-          <div className="pl-2 border-l border-base-200 bg-base-100 sticky right-0 z-10 py-1">
-            <button
-              onClick={() => setOpenManage(true)}
-              className="btn btn-circle btn-sm btn-ghost bg-base-200 hover:bg-base-300 border border-base-300"
-            >
-              <Settings size={16} />
-            </button>
-          </div>
+          <button
+            onClick={() => setOpenManage(true)}
+            className="flex items-center justify-center h-9 w-9 rounded-full
+                       bg-white text-slate-600 hover:bg-slate-50 border border-slate-200
+                       transition-colors shadow-sm"
+          >
+            <Settings size={14} />
+          </button>
         )}
       </div>
 

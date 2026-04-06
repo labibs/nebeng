@@ -108,50 +108,7 @@ export default function TransaksiPage() {
 
   async function fetchTransactions() {
     try {
-      console.log("\n");
-      console.log(
-        "╔════════════════════════════════════════════════════════════╗",
-      );
-      console.log(
-        "║ 🚀 === Transaksi Page: fetchTransactions START ===       ║",
-      );
-      console.log(
-        "╚════════════════════════════════════════════════════════════╝",
-      );
-      console.log("📌 User loaded:", isLoaded);
-      console.log("👤 User object exists:", !!user);
-      console.log("🔑 User Clerk ID:", user?.id);
-      console.log("📋 clerkId from state:", clerkId);
-      console.log("\n🌐 API Request Details:");
-      console.log("   Method: GET");
-      console.log("   Endpoint: /api/transactions");
-      console.log(
-        "   API URL:",
-        import.meta.env.VITE_API_URL || "http://localhost:8080",
-      );
-      console.log("\n⏳ Calling API...");
-
       const data = await apiFetch("/api/transactions");
-
-      console.log(
-        "\n╔════════════════════════════════════════════════════════════╗",
-      );
-      console.log(
-        "║ ✅ API Response Received                                ║",
-      );
-      console.log(
-        "╚════════════════════════════════════════════════════════════╝",
-      );
-      console.log("📊 Response Type:", typeof data);
-      console.log("📊 Is Array:", Array.isArray(data));
-      console.log("📊 Item Count:", Array.isArray(data) ? data.length : "N/A");
-      console.log("📄 Response Data:", JSON.stringify(data, null, 2));
-
-      console.log(
-        "\n✅ Setting state with",
-        Array.isArray(data) ? data.length : 0,
-        "items",
-      );
 
       const sortedData = [...(data || [])].sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at),
@@ -161,18 +118,6 @@ export default function TransaksiPage() {
       setTransaksi(sortedData);
       return sortedData;
     } catch (err) {
-      console.log(
-        "\n╔════════════════════════════════════════════════════════════╗",
-      );
-      console.log(
-        "║ ❌ API Request Failed                                   ║",
-      );
-      console.log(
-        "╚════════════════════════════════════════════════════════════╝",
-      );
-      console.error("❌ Error fetching transactions:", err);
-      console.error("   Error message:", err.message);
-      console.error("   Full error:", err);
       setError(err.message || "Failed to fetch transactions");
       throw err;
     }
@@ -189,7 +134,6 @@ export default function TransaksiPage() {
         "postgres_changes",
         { event: "*", schema: "public", table: "transactions" },
         () => {
-          console.log("🔄 Real-time Transaction update in list, refetching...");
           fetchTransactions();
         },
       )
@@ -197,7 +141,6 @@ export default function TransaksiPage() {
         "postgres_changes",
         { event: "*", schema: "public", table: "deals" },
         () => {
-          console.log("🔄 Real-time Deal update in list, refetching...");
           fetchTransactions();
         },
       )
@@ -210,7 +153,7 @@ export default function TransaksiPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [rows.length]);
+  }, [searchQuery, rows.length]);
 
   if (!isLoaded || loading) {
     return (
@@ -238,8 +181,37 @@ export default function TransaksiPage() {
     setSelectedDealId(null);
   };
 
-  const totalPages = Math.max(1, Math.ceil(rows.length / ITEMS_PER_PAGE));
-  const paginatedRows = rows.slice(
+  const filteredRows = rows.filter((trx) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    const itemDesc = trx.deal?.item_description?.toLowerCase() || "";
+    const pickup = getRouteLabel(
+      trx.deal?.pickup_location,
+      trx.deal?.post?.from_city,
+    ).toLowerCase();
+    const delivery = getRouteLabel(
+      trx.deal?.delivery_location,
+      trx.deal?.post?.to_city,
+    ).toLowerCase();
+    const opponentName =
+      (trx.deal?.carrier_id === clerkId
+        ? trx.deal?.depositor?.name
+        : trx.deal?.carrier?.name
+      )?.toLowerCase() || "";
+
+    return (
+      itemDesc.includes(q) ||
+      pickup.includes(q) ||
+      delivery.includes(q) ||
+      opponentName.includes(q)
+    );
+  });
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredRows.length / ITEMS_PER_PAGE),
+  );
+  const paginatedRows = filteredRows.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
@@ -282,10 +254,12 @@ export default function TransaksiPage() {
                 </div>
               </div>
             ))
-          ) : rows.length === 0 ? (
+          ) : filteredRows.length === 0 ? (
             <div className="p-12 text-center">
               <p className="text-xl font-medium text-base-content/60">
-                Belum ada transaksi
+                {searchQuery
+                  ? "Tidak ada transaksi yang cocok"
+                  : "Belum ada transaksi"}
               </p>
             </div>
           ) : (
@@ -298,15 +272,6 @@ export default function TransaksiPage() {
                 trx.deal?.delivery_location,
                 trx.deal?.post?.to_city,
               );
-              const paymentExpired = ["expire", "expired"].includes(
-                trx.payment_status,
-              );
-              const canRetryPayment =
-                trx.deal?.depositor_id === clerkId &&
-                trx.deal?.status !== "cancelled" &&
-                ["draft", "pending", "expire", "expired"].includes(
-                  trx.payment_status,
-                );
 
               return (
                 <div
@@ -315,10 +280,10 @@ export default function TransaksiPage() {
                     e.stopPropagation();
                     navigate(`/deal?deal=${trx.deal?.id}&trx=${trx.id}`);
                   }}
-                  className="group relative flex h-[128px] cursor-pointer items-stretch overflow-hidden rounded-[24px] border border-slate-100 bg-white shadow-[0_8px_25px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)]"
+                  className="group relative flex h-[115px] cursor-pointer items-stretch overflow-hidden rounded-[24px] border border-slate-100 bg-white shadow-[0_8px_25px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)]"
                 >
-                  {/* Left: Image Section (Symmetric) */}
-                  <div className="relative h-[128px] w-[128px] shrink-0 p-2">
+                  {/* Left: Image Section */}
+                  <div className="relative h-[115px] w-[115px] shrink-0 p-2.5">
                     <div className="relative h-full w-full overflow-hidden rounded-[18px] bg-slate-100">
                       <img
                         src={
@@ -331,14 +296,14 @@ export default function TransaksiPage() {
                       />
 
                       {/* Floating Role Badge */}
-                      <div className="absolute left-2 top-2">
+                      <div className="absolute left-1.5 top-1.5">
                         {trx.deal?.carrier_id === clerkId ? (
-                          <span className="rounded-full bg-rose-500/60 px-2 py-0.5 text-[7px] font-bold text-white backdrop-blur-md">
-                            JASTIPER
+                          <span className="rounded-full bg-rose-500/80 px-2 py-0.5 text-[7px] font-extrabold text-white backdrop-blur-md tracking-wider uppercase">
+                            Carrier
                           </span>
                         ) : (
-                          <span className="rounded-full bg-blue-500/60 px-2 py-0.5 text-[7px] font-bold text-white backdrop-blur-md">
-                            NITIPERS
+                          <span className="rounded-full bg-blue-500/80 px-2 py-0.5 text-[7px] font-extrabold text-white backdrop-blur-md tracking-wider uppercase">
+                            Owner
                           </span>
                         )}
                       </div>
@@ -346,10 +311,10 @@ export default function TransaksiPage() {
                   </div>
 
                   {/* Right: Content Section */}
-                  <div className="flex flex-1 flex-col justify-between overflow-hidden p-3.5 pl-0.5">
+                  <div className="flex flex-1 flex-col justify-between overflow-hidden p-3 pl-0">
                     {/* Header: Date & Status */}
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[9px] font-medium text-slate-400">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-semibold text-slate-400">
                         {new Date(trx.created_at).toLocaleDateString("id-ID", {
                           day: "numeric",
                           month: "short",
@@ -360,48 +325,40 @@ export default function TransaksiPage() {
                         transactionStatus={trx.transaction_status}
                         paymentStatus={trx.payment_status}
                         deliveryStatus={trx.deal?.delivery_status}
-                        size="xs"
+                        size="sm"
                       />
                     </div>
 
                     {/* Body: Title & Route */}
-                    <div className="space-y-0.5">
-                      <h3 className="line-clamp-1 text-[13px] font-bold leading-tight text-slate-900">
-                        {trx.deal?.item_description ||
-                          "Detail barang tidak ada"}
+                    <div className="space-y-0.5 mt-1">
+                      <h3 className="line-clamp-1 text-[13px] font-bold tracking-tight text-slate-800">
+                        {trx.deal?.item_description || "Item"}
                       </h3>
 
                       <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-500">
-                        <span className="truncate">{pickupLabel}</span>
-                        <svg
-                          className="w-3 h-3 text-[#4e73df] shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={3}
-                            d="M14 5l7 7m0 0l-7 7m7-7H3"
-                          />
-                        </svg>
-                        <span className="truncate">{deliveryLabel}</span>
+                        <span className="truncate max-w-[80px]">
+                          {pickupLabel}
+                        </span>
+                        <div className="h-[2px] w-2 bg-slate-200" />
+                        <span className="truncate max-w-[80px]">
+                          {deliveryLabel}
+                        </span>
                       </div>
+                    </div>
 
-                      <p className="text-[14px] font-extrabold text-[#4e73df] mt-1">
+                    {/* Footer Row: Price & Action (Now Profile) */}
+                    <div className="flex items-center justify-between gap-2 mt-auto">
+                      <p className="text-[14px] font-extrabold text-[#4e73df] tracking-tight">
                         Rp{" "}
                         {Number(
                           trx.gross_amount ?? trx.deal?.agreed_fee ?? 0,
                         ).toLocaleString("id-ID")}
                       </p>
-                    </div>
 
-                    {/* Footer Row: Counterparty & Action */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5 overflow-hidden">
-                        <div className="flex h-6.5 items-center gap-1 rounded-full border border-slate-100 bg-slate-50 px-1 pr-2 shadow-sm">
-                          <div className="h-4.5 w-4.5 shrink-0 overflow-hidden rounded-full ring-1 ring-slate-100">
+                      <div className="flex items-center gap-2">
+                        {/* Profile Badge - Permanent at bottom right */}
+                        <div className="flex h-7 items-center gap-1.5 rounded-full border border-slate-100 bg-white px-1 pr-2.5 shadow-sm">
+                          <div className="h-5 w-5 shrink-0 overflow-hidden rounded-full ring-1 ring-slate-100">
                             <img
                               src={
                                 trx.deal?.carrier_id === clerkId
@@ -414,49 +371,15 @@ export default function TransaksiPage() {
                               alt=""
                             />
                           </div>
-                          <span className="max-w-[48px] truncate text-[8px] font-medium text-slate-600">
+                          <span className="max-w-[64px] truncate text-[10px] font-bold text-slate-600 tracking-tight">
                             {trx.deal?.carrier_id === clerkId
                               ? trx.deal?.depositor?.name?.split(" ")[0] ||
-                                "Customer"
+                                "Owner"
                               : trx.deal?.carrier?.name?.split(" ")[0] ||
-                                "Kurir"}
+                                "Carrier"}
                           </span>
                         </div>
-
-                        {trx.deal?.delivery_status === "running" && (
-                          <div className="flex h-6.5 items-center rounded-full border border-blue-100/50 bg-blue-50 px-2 animate-pulse">
-                            <Truck size={10} className="text-[#4e73df] mr-1" />
-                            <span className="text-[8px] font-bold text-[#4e73df]">
-                              OTW
-                            </span>
-                          </div>
-                        )}
                       </div>
-
-                      {canRetryPayment && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePay({
-                              transactionId: trx.id,
-                              navigate,
-                              setPaying: (isPaying) =>
-                                setPayingId(isPaying ? trx.id : null),
-                            });
-                          }}
-                          className={`h-6.5 px-2.5 rounded-full text-[9px] font-bold text-white shadow-sm transition-all ${paymentExpired ? "bg-rose-500 hover:bg-rose-600" : "bg-[#4e73df] hover:bg-[#3b59bd]"}`}
-                          disabled={payingId === trx.id}
-                        >
-                          {payingId === trx.id ? (
-                            <span className="loading loading-spinner w-3 h-3"></span>
-                          ) : paymentExpired ? (
-                            "Ulangi Bayar"
-                          ) : (
-                            "Bayar"
-                          )}
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -464,7 +387,7 @@ export default function TransaksiPage() {
             })
           )}
 
-          {!loading && rows.length > ITEMS_PER_PAGE && (
+          {!loading && filteredRows.length > ITEMS_PER_PAGE && (
             <div className="flex items-center justify-between gap-3 pt-2">
               <button
                 type="button"

@@ -32,7 +32,10 @@ export default function DealStatusBadge({
   ) {
     label = "Transaksi Ulang";
     color = "badge-error";
-  } else if (effectivePaymentStatus === "fail" || effectivePaymentStatus === "failed") {
+  } else if (
+    effectivePaymentStatus === "fail" ||
+    effectivePaymentStatus === "failed"
+  ) {
     label = "Bayar Gagal";
     color = "badge-error";
   } else if (effectivePaymentStatus === "paid") {
@@ -44,7 +47,10 @@ export default function DealStatusBadge({
   else if (dealStatus === "completed") {
     label = "Nego Selesai";
     color = "badge-primary badge-outline font-medium";
-  } else if (dealStatus === "cancelled" || effectivePaymentStatus === "cancelled") {
+  } else if (
+    dealStatus === "cancelled" ||
+    effectivePaymentStatus === "cancelled"
+  ) {
     label = "Dibatalkan";
     color = "badge-error badge-outline opacity-70";
   }

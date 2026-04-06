@@ -32,16 +32,16 @@ function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
   const toggle = () => setOpen(!open);
 
   return (
-    <div className="border-b border-base-300/40 py-2">
+    <div className="border-b border-slate-100 py-2">
       <div
         className="flex justify-between items-start gap-3 cursor-pointer"
         onClick={toggle}
       >
         <div className="flex gap-3 items-start">
-          <Icon className="w-5 h-5 text-[#4e73df] mt-0.5" />
+          <Icon className="w-4 h-4 text-[#4e73df] mt-0.5" />
           <div>
-            <p className="text-sm font-medium">{title}</p>
-            <p className="text-sm opacity-70 whitespace-pre-wrap">
+            <p className="text-xs font-medium text-slate-700">{title}</p>
+            <p className="text-xs text-slate-400 whitespace-pre-wrap">
               {value || "-"}
             </p>
           </div>
@@ -49,13 +49,13 @@ function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
 
         {/* Tombol + / - */}
         <div className="text-[#4e73df] mt-1">
-          {open ? <Minus size={18} /> : <Plus size={18} />}
+          {open ? <Minus size={16} /> : <Plus size={16} />}
         </div>
       </div>
 
       {/* Collapse Content */}
       {open && (
-        <div className="mt-2 pl-8 space-y-2">
+        <div className="mt-2 pl-7 space-y-2">
           {type === "photos" && extraData?.length > 0 && (
             <div className="flex gap-2">
               {extraData.slice(0, 3).map((url, i) => (
@@ -63,14 +63,14 @@ function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
                   key={i}
                   src={url}
                   alt={`Item ${i + 1}`}
-                  className="w-24 h-24 object-cover rounded-lg border border-base-300"
+                  className="w-20 h-20 object-cover rounded-lg border border-slate-100"
                 />
               ))}
             </div>
           )}
 
           {type === "text" && extraData && (
-            <p className="text-sm opacity-70">{extraData}</p>
+            <p className="text-xs text-slate-400">{extraData}</p>
           )}
 
           {type === "location" && extraData && (
@@ -80,7 +80,7 @@ function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
                 href={`https://www.google.com/maps?q=${extraData.lat},${extraData.lng}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-[#4e73df] hover:underline mb-1"
+                className="text-xs text-[#4e73df] hover:underline mb-1"
               >
                 Lihat di Google Maps
               </a>
@@ -252,8 +252,8 @@ function PaymentOption({
     <label
       className={`
         flex items-center gap-3 p-3 rounded-xl border transition-all
-        ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-base-200"}
-        ${checked && !disabled ? "border-[#4e73df] " : "border-base-300"}
+        ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-slate-50"}
+        ${checked && !disabled ? "border-[#4e73df]" : "border-slate-200"}
       `}
     >
       <input
@@ -266,11 +266,13 @@ function PaymentOption({
         disabled={disabled}
       />
       <div className="flex-1">
-        <p className="font-medium">{title}</p>
-        <p className="text-sm opacity-70">{desc}</p>
+        <p className="text-sm font-medium text-slate-700">{title}</p>
+        <p className="text-xs text-slate-400">{desc}</p>
       </div>
       {badge && (
-        <span className="badge badge-outline badge-success">{badge}</span>
+        <span className="badge badge-outline badge-success badge-sm">
+          {badge}
+        </span>
       )}
     </label>
   );
@@ -706,7 +708,10 @@ export default function DealPage() {
       if (transaction?.id) {
         await supabase
           .from("transactions")
-          .update({ transaction_status: "cancelled", payment_status: "cancelled" })
+          .update({
+            transaction_status: "cancelled",
+            payment_status: "cancelled",
+          })
           .eq("id", transaction.id);
       }
 
@@ -867,9 +872,9 @@ export default function DealPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-base-200 flex flex-col pb-24">
+      <div className="min-h-screen bg-[#f0f7ff] flex flex-col pb-24 text-slate-900">
         {/* Header */}
-        <div className="sticky top-0 z-10 navbar bg-base-100/90 backdrop-blur-xl border-b border-base-300/40">
+        <div className="sticky top-0 z-10 navbar bg-white/90 backdrop-blur-xl border-b border-slate-100">
           <button
             onClick={() => navigate(-1)}
             className="btn btn-ghost btn-circle"
@@ -912,11 +917,13 @@ export default function DealPage() {
                     size="sm"
                   />
 
-                  <div className="flex items-center gap-2 text-sm text-base-content/80">
-                    <span className="font-semibold">{pickupCity}</span>
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <span className="font-medium text-slate-700">
+                      {pickupCity}
+                    </span>
 
                     <svg
-                      className="w-5 h-5 text-[#4e73df]"
+                      className="w-4 h-4 text-[#4e73df]"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -929,12 +936,14 @@ export default function DealPage() {
                       />
                     </svg>
 
-                    <span className="font-semibold">{deliveryCity}</span>
+                    <span className="font-medium text-slate-700">
+                      {deliveryCity}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
-            <span className="badge badge-primary badge-sm font-medium">
+            <span className="badge badge-primary badge-xs font-medium text-[10px] bg-[#4e73df] border-none">
               {opponentType}
             </span>
           </div>
@@ -942,13 +951,13 @@ export default function DealPage() {
 
         <div className="p-4 flex flex-col gap-4">
           {/* Carrier Card */}
-          <div className="rounded-2xl bg-base-100 shadow-lg border border-base-300/40 overflow-hidden">
+          <div className="rounded-2xl bg-white shadow-sm border border-slate-100 overflow-hidden">
             {/* CARD UTAMA */}
             <div className="p-4 flex items-center justify-between">
               {/* Kiri */}
               <div className="flex items-center gap-4 min-w-0">
                 <div className="avatar">
-                  <div className="w-16 rounded-full ring ring-[#4e73df] ring-offset-base-100 ring-offset-2">
+                  <div className="w-14 h-14 rounded-full ring-2 ring-[#4e73df]/20">
                     <img
                       src={opponent?.avatar_url || "/avatar-placeholder.png"}
                       alt="User"
@@ -957,33 +966,33 @@ export default function DealPage() {
                 </div>
 
                 <div className="min-w-0">
-                  <p className="font-semibold text-lg truncate">
+                  <p className="font-semibold text-base truncate">
                     {opponent?.name || "-"}
                   </p>
-                  <p className="text-sm opacity-70">{opponentRole}</p>
+                  <p className="text-xs text-slate-400">{opponentRole}</p>
                 </div>
               </div>
 
               {/* Kanan */}
               <button
-                className="btn btn-circle btn-ghost text-[#4e73df] hover:bg-blue-100"
+                className="btn btn-circle btn-ghost text-[#4e73df] hover:bg-slate-50"
                 title="Chat"
                 onClick={() => startChatWithDeal(deal, clerkId)}
               >
-                <MessageCircle size={22} />
+                <MessageCircle size={18} />
               </button>
             </div>
 
             {/* EXTEND CARD – MUNCUL SAAT RUNNING */}
             {deal?.delivery_status === "running" && !isCarrierLogin && (
-              <div className="border-t border-base-300/40 bg-blue-50/50 px-4 py-3 animate-in fade-in slide-in-from-top-2">
+              <div className="border-t border-slate-100 bg-blue-50 px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
                   {/* Status */}
                   <div className="flex items-center gap-2 text-[#4e73df]">
-                    <Truck className="w-5 h-5" />
+                    <Truck className="w-4 h-4" />
                     <div>
-                      <p className="text-sm font-semibold">Sedang Mengantar</p>
-                      <p className="text-xs opacity-70">
+                      <p className="text-xs font-semibold">Sedang Mengantar</p>
+                      <p className="text-[10px] text-slate-400">
                         Kurir dalam perjalanan
                       </p>
                     </div>
@@ -992,9 +1001,9 @@ export default function DealPage() {
                   {/* Action */}
                   <button
                     onClick={() => openLiveTracking(deal.id)}
-                    className="btn btn-sm bg-[#4e73df] hover:bg-[#3b59bd] text-white gap-1"
+                    className="btn btn-xs bg-[#4e73df] hover:bg-[#3b59bd] text-white gap-1 rounded-full"
                   >
-                    <MapPin className="w-4 h-4" />
+                    <MapPin className="w-3 h-3" />
                     Posisi Kurir
                   </button>
                 </div>
@@ -1003,70 +1012,52 @@ export default function DealPage() {
             {deal?.delivery_status === "draft" &&
               transaction?.payment_status === "paid" &&
               !isCarrierLogin && (
-                <div className="border-t border-base-300/40 bg-blue-50/50 px-4 py-3 animate-in fade-in slide-in-from-top-2">
+                <div className="border-t border-slate-100 bg-blue-50 px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                     {/* Status */}
                     <div className="flex items-center gap-2 text-[#4e73df]">
-                      <CarFront className="w-5 h-5" />
+                      <CarFront className="w-4 h-4" />
                       <div>
-                        <p className="text-sm font-semibold">Sedang Menunggu</p>
-                        <p className="text-xs opacity-70">
+                        <p className="text-xs font-semibold">Sedang Menunggu</p>
+                        <p className="text-[10px] text-slate-400">
                           Persiapan keberangkatan
                         </p>
                       </div>
                     </div>
-
-                    {/* Action */}
-                    {/* <button
-                  onClick={() => openLiveTracking(deal.id)}
-                  className="btn btn-sm bg-[#4e73df] hover:bg-[#3b59bd] text-white gap-1"
-                >
-                  <MapPin className="w-4 h-4" />
-                  Posisi Kurir
-                </button> */}
                   </div>
                 </div>
               )}
             {deal?.delivery_status === "delivered" && !isCarrierLogin && (
-              <div className="border-t border-base-300/40 bg-blue-50/50 px-4 py-3 animate-in fade-in slide-in-from-top-2">
+              <div className="border-t border-slate-100 bg-blue-50 px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
                   {/* Status */}
                   <div className="flex items-center gap-2 text-[#4e73df]">
-                    <MapPinHouse className="w-5 h-5" />
+                    <MapPinHouse className="w-4 h-4" />
                     <div>
-                      <p className="text-sm font-semibold">Tiba Ditujuan</p>
-                      <p className="text-xs opacity-70">
+                      <p className="text-xs font-semibold">Tiba Ditujuan</p>
+                      <p className="text-[10px] text-slate-400">
                         Barang sudah diterima
                       </p>
                     </div>
                   </div>
-
-                  {/* Action */}
-                  {/* <button
-                  onClick={() => openLiveTracking(deal.id)}
-                  className="btn btn-sm bg-[#4e73df] hover:bg-[#3b59bd] text-white gap-1"
-                >
-                  <MapPin className="w-4 h-4" />
-                  Posisi Kurir
-                </button> */}
                 </div>
               </div>
             )}
           </div>
 
           {/* Ringkasan */}
-          <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40">
-            <h2 className="font-semibold text-lg flex items-center gap-2 mb-2">
-              <Info className="w-5 h-5 text-[#4e73df]" />
+          <div className="rounded-2xl bg-white shadow-sm p-4 border border-slate-100">
+            <h2 className="text-sm font-semibold flex items-center gap-2 mb-2">
+              <Info className="w-4 h-4 text-[#4e73df]" />
               Ringkasan Transaksi
             </h2>
-            <p className="text-sm opacity-100">
+            <p className="text-xs text-slate-500">
               <OpponentSummary isCarrierLogin={isCarrierLogin} />
             </p>
           </div>
 
           {/* Detail Item */}
-          <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 space-y-4">
+          <div className="rounded-2xl bg-white shadow-sm p-4 border border-slate-100 space-y-4">
             <InfoRowCollapse
               icon={ClipboardList}
               title="Deskripsi Barang"
@@ -1113,9 +1104,9 @@ export default function DealPage() {
 
           {/* Biaya */}
           {isCarrierLogin && (
-            <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 space-y-3">
-              <p className="text-sm opacity-70">Penghasilan dari Jastip</p>
-              <p className="text-3xl font-extrabold text-[#4e73df]">
+            <div className="rounded-2xl bg-white shadow-sm p-4 border border-slate-100 space-y-3">
+              <p className="text-xs text-slate-400">Penghasilan dari Jastip</p>
+              <p className="text-2xl font-bold text-[#4e73df]">
                 {jastipFee
                   ? jastipFee.toLocaleString("id-ID", {
                       style: "currency",
@@ -1123,12 +1114,12 @@ export default function DealPage() {
                     })
                   : "-"}
               </p>
-              <p className="text-sm text-base-content/60">
+              <p className="text-xs text-slate-400">
                 Ongkos jastip yang menjadi penghasilan Anda
               </p>
 
               {/* Perincian biaya */}
-              <div className="text-sm text-gray-600 space-y-1">
+              <div className="text-xs text-slate-500 space-y-1">
                 <div className="flex justify-between">
                   <span>Harga Barang</span>
                   <span>
@@ -1151,7 +1142,7 @@ export default function DealPage() {
                       : "-"}
                   </span>
                 </div>
-                <div className="flex justify-between font-semibold">
+                <div className="flex justify-between font-semibold text-slate-700">
                   <span>Total Nominal Transaksi</span>
                   <span>
                     {totalTransactionAmount
@@ -1163,17 +1154,13 @@ export default function DealPage() {
                   </span>
                 </div>
               </div>
-
-              {/* <p className="text-xs text-gray-400 mt-1">
-            Pembayaran dari customer akan diterima setelah barang diterima.
-          </p> */}
             </div>
           )}
 
           {!isCarrierLogin && (
-            <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40 space-y-3">
-              <p className="text-sm opacity-70">Total Biaya Nebeng</p>
-              <p className="text-3xl font-extrabold text-[#4e73df]">
+            <div className="rounded-2xl bg-white shadow-sm p-4 border border-slate-100 space-y-3">
+              <p className="text-xs text-slate-400">Total Biaya Nebeng</p>
+              <p className="text-2xl font-bold text-[#4e73df]">
                 {totalTransactionAmount
                   ? totalTransactionAmount.toLocaleString("id-ID", {
                       style: "currency",
@@ -1183,7 +1170,7 @@ export default function DealPage() {
               </p>
 
               {/* Perincian biaya */}
-              <div className="text-sm text-gray-600 space-y-1">
+              <div className="text-xs text-slate-500 space-y-1">
                 <div className="flex justify-between">
                   <span>Biaya Barang</span>
                   <span>
@@ -1199,7 +1186,7 @@ export default function DealPage() {
                   <span>Biaya Penanganan</span>
                   <span>Rp 0</span>
                 </div>
-                <div className="flex justify-between font-semibold">
+                <div className="flex justify-between font-semibold text-slate-700">
                   <span>Biaya Nitip</span>
                   <span>
                     {jastipFee
@@ -1211,18 +1198,16 @@ export default function DealPage() {
                   </span>
                 </div>
               </div>
-
-              {/* <p className="text-xs text-gray-400 mt-1">
-              Dana akan diteruskan ke kurir setelah barang diterima.
-            </p> */}
             </div>
           )}
           {/* Metode Pembayaran - muncul jika masih bisa bayar / bayar ulang */}
           {canPay && !isCarrierLogin && (
-            <div className="rounded-2xl bg-base-100 shadow-lg p-4 border border-base-300/40">
-              <h2 className="font-semibold text-lg mb-3">Metode Pembayaran</h2>
+            <div className="rounded-2xl bg-white shadow-sm p-4 border border-slate-100">
+              <h2 className="text-sm font-semibold mb-3 text-slate-700">
+                Metode Pembayaran
+              </h2>
               {paymentExpired && (
-                <div className="mb-3 rounded-xl border border-error/20 bg-error/5 px-3 py-2 text-sm text-error">
+                <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
                   Pembayaran sebelumnya sudah kedaluwarsa. Silakan buat sesi
                   pembayaran baru.
                 </div>
@@ -1250,7 +1235,7 @@ export default function DealPage() {
             <div className="mt-4 px-4">
               <button
                 onClick={handleCancelDeal}
-                className="btn btn-ghost btn-sm text-error hover:bg-error/10 w-full rounded-xl gap-2 font-medium"
+                className="btn btn-ghost btn-sm text-red-500 hover:bg-red-50 w-full rounded-xl gap-2 text-xs font-medium"
               >
                 <svg
                   className="w-4 h-4"
@@ -1275,10 +1260,10 @@ export default function DealPage() {
             <div className="mt-6 px-4 pb-4">
               <button
                 onClick={() => setShowReviewModal(true)}
-                className="btn btn-primary w-full rounded-2xl gap-2 font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="btn btn-primary w-full rounded-2xl gap-2 text-sm font-semibold shadow-sm bg-[#4e73df] border-none text-white hover:bg-[#3d64c7]"
               >
                 <svg
-                  className="w-5 h-5"
+                  className="w-4 h-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -1297,10 +1282,10 @@ export default function DealPage() {
 
           {hasReviewed && !isCarrierLogin && (
             <div className="mt-6 px-4 pb-4">
-              <div className="bg-blue-50 dark:bg-slate-900/20 text-[#4e73df] dark:text-blue-300 p-4 rounded-2xl flex items-center gap-3 border border-blue-200 dark:border-blue-900/30">
-                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+              <div className="bg-blue-50 text-[#4e73df] p-4 rounded-2xl flex items-center gap-3 border border-blue-100">
+                <div className="w-7 h-7 rounded-full bg-[#4e73df] flex items-center justify-center flex-shrink-0">
                   <svg
-                    className="w-5 h-5 text-white"
+                    className="w-4 h-4 text-white"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -1313,7 +1298,7 @@ export default function DealPage() {
                     />
                   </svg>
                 </div>
-                <div className="text-sm font-semibold">
+                <div className="text-xs font-semibold">
                   Ulasan sudah terkirim. Terima kasih!
                 </div>
               </div>
@@ -1322,22 +1307,22 @@ export default function DealPage() {
         </div>
         {needsTransaction && !isCarrierLogin && (
           <div className="fixed bottom-4 left-4 right-4 z-20">
-            <div className="bg-base-100/95 backdrop-blur-xl border border-base-300/40 shadow-xl rounded-2xl p-4">
+            <div className="bg-white/95 backdrop-blur-xl border border-slate-200 shadow-sm rounded-2xl p-4">
               <SlideToUnlock onComplete={handleProceedToPayment} />
             </div>
           </div>
         )}
         {canPay && !isCarrierLogin && !needsTransaction && (
           <div className="fixed bottom-4 left-4 right-4 z-20">
-            <div className="bg-base-100/95 backdrop-blur-xl border border-base-300/40 shadow-xl rounded-2xl p-4 flex gap-3">
+            <div className="bg-white/95 backdrop-blur-xl border border-slate-200 shadow-sm rounded-2xl p-4 flex gap-3">
               <button
-                className="btn btn-outline flex-1 rounded-xl"
+                className="btn btn-outline flex-1 rounded-xl text-xs border-slate-200 text-slate-600 hover:bg-slate-50"
                 onClick={() => navigate(-1)}
               >
                 Kembali
               </button>
               <button
-                className="btn flex-1 rounded-xl border-none bg-[#4e73df] text-white hover:bg-[#3b59bd]"
+                className="btn flex-1 rounded-xl border-none bg-[#4e73df] text-white hover:bg-[#3d64c7] text-xs"
                 onClick={() =>
                   handlePay({
                     transactionId: transaction?.id,
@@ -1360,7 +1345,7 @@ export default function DealPage() {
         )}
         {/* Kurir Mulai Jalan (Paid & Draft) */}
         {isCarrierLogin && paid && deal.delivery_status === "draft" && (
-          <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl bg-base-100 shadow-sm p-3 border border-base-300">
+          <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl bg-white shadow-sm p-3 border border-slate-100">
             <SlideToRunning
               status={deal.delivery_status}
               onComplete={handleStartDelivery}
@@ -1370,7 +1355,7 @@ export default function DealPage() {
 
         {/* Kustomer/Kurir Selesaikan Pesanan (Running) */}
         {running && (
-          <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl bg-base-100 shadow-sm p-3 border border-base-300">
+          <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-xl bg-white shadow-sm p-3 border border-slate-100">
             <SlideToDelivered
               status={deal.delivery_status}
               onComplete={handleDelivered}
@@ -1380,8 +1365,8 @@ export default function DealPage() {
 
         {/* Pesanan Selesai */}
         {delivered && (
-          <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-center rounded-xl bg-[#4e73df] shadow-lg p-3 text-white font-bold">
-            <PackageCheck className="w-5 h-5 mr-2" />
+          <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-center rounded-xl bg-[#4e73df] shadow-sm p-3 text-white text-sm font-semibold">
+            <PackageCheck className="w-4 h-4 mr-2" />
             Pesanan Selesai
           </div>
         )}

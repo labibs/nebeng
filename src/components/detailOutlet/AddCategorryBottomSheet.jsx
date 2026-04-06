@@ -1,9 +1,28 @@
 import { useState, useEffect } from "react";
+import { Plus, X, Tags } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 
 const EMOJI_ICONS = [
-  "🍩", "🍦", "🍉", "☕", "🍔", "🍟", "🥤", "🍜", "🍕", "🥐",
-  "🧃", "🧋", "🍰", "🍪", "🥪", "🍗", "🥗", "🍙", "🍣", "🔥",
+  "🍩",
+  "🍦",
+  "🍉",
+  "☕",
+  "🍔",
+  "🍟",
+  "🥤",
+  "🍜",
+  "🍕",
+  "🥐",
+  "🧃",
+  "🧋",
+  "🍰",
+  "🍪",
+  "🥪",
+  "🍗",
+  "🥗",
+  "🍙",
+  "🍣",
+  "🔥",
 ];
 
 export default function AddCategoryBottomSheet({
@@ -46,9 +65,9 @@ export default function AddCategoryBottomSheet({
       mode === "edit"
         ? supabase.from("categories").update(payload).eq("id", initialData.id)
         : supabase.from("categories").insert({
-          ...payload,
-          warung_id: outletId,
-        });
+            ...payload,
+            warung_id: outletId,
+          });
 
     const { data, error } = await query.select().single();
     setLoading(false);
@@ -62,9 +81,7 @@ export default function AddCategoryBottomSheet({
     onClose();
   };
 
-  const filteredIcons = EMOJI_ICONS.filter((e) =>
-    e.includes(search)
-  );
+  const filteredIcons = EMOJI_ICONS.filter((e) => e.includes(search));
 
   return (
     <>
@@ -72,19 +89,28 @@ export default function AddCategoryBottomSheet({
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
 
       {/* Bottom Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-base-100 rounded-t-3xl max-h-[85vh] overflow-y-auto">
-        <div className="py-3 flex justify-center">
-          <div className="w-12 h-1.5 rounded-full bg-base-300" />
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl max-h-[85vh] flex flex-col">
+        <div className="py-3 flex justify-center flex-shrink-0">
+          <div className="w-12 h-1.5 rounded-full bg-slate-300" />
         </div>
 
-        <div className="px-6 pb-6">
-          <h3 className="text-lg font-bold text-center mb-4">
+        <div className="px-6 pb-2 flex items-center justify-between flex-shrink-0">
+          <h3 className="text-lg font-bold flex items-center gap-2">
+            <Tags size={20} />
             {mode === "edit" ? "Edit Etalase" : "Tambah Etalase"}
           </h3>
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center h-9 w-9 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
 
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           {/* ICON PREVIEW */}
-          <div className="flex justify-center mb-4">
-            <div className="w-20 h-20 rounded-2xl bg-base-200 flex items-center justify-center text-4xl">
+          <div className="flex justify-center">
+            <div className="w-20 h-20 rounded-2xl bg-slate-50 flex items-center justify-center text-4xl border border-slate-200">
               {icon || "📦"}
             </div>
           </div>
@@ -95,8 +121,7 @@ export default function AddCategoryBottomSheet({
             value={categoryName}
             onChange={(e) => setCategoryName(e.target.value)}
             placeholder="Contoh: Minuman"
-            className="input input-lg w-full text-xl font-semibold text-center
-                       bg-base-200 focus:ring-4 focus:ring-emerald-400/30"
+            className="input input-lg w-full text-xl font-semibold text-center bg-slate-50 rounded-2xl focus:ring-4 focus:ring-[#4e73df]/30"
             autoFocus
           />
 
@@ -106,19 +131,20 @@ export default function AddCategoryBottomSheet({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari icon (🍔 ☕ 🔥)"
-            className="input input-md w-full mt-4 bg-base-200"
+            className="input input-md w-full bg-slate-50 rounded-2xl"
           />
 
           {/* ICON GRID */}
-          <div className="grid grid-cols-6 gap-3 mt-4 max-h-40 overflow-y-auto">
+          <div className="grid grid-cols-6 gap-3 max-h-40 overflow-y-auto">
             {filteredIcons.map((emoji) => (
               <button
                 key={emoji}
                 onClick={() => setIcon(emoji)}
                 className={`text-2xl p-2 rounded-xl transition
-                  ${icon === emoji
-                    ? "bg-emerald-500 text-white"
-                    : "bg-base-200 hover:bg-base-300"
+                  ${
+                    icon === emoji
+                      ? "bg-[#4e73df] text-white"
+                      : "bg-slate-50 hover:bg-slate-100"
                   }`}
               >
                 {emoji}
@@ -128,9 +154,8 @@ export default function AddCategoryBottomSheet({
 
           {/* INFO */}
           {categoryName && (
-            <div className="mt-4 p-4 bg-emerald-50 dark:bg-emerald-900/30
-                            rounded-2xl border border-emerald-200 dark:border-emerald-800">
-              <p className="text-sm text-center">
+            <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+              <p className="text-sm text-center text-emerald-700">
                 {icon || "📦"} Etalase <b>{categoryName}</b>{" "}
                 {mode === "edit" ? "akan diperbarui" : "akan ditambahkan"}
               </p>
@@ -139,16 +164,14 @@ export default function AddCategoryBottomSheet({
         </div>
 
         {/* ACTION */}
-        <div className="flex gap-3 px-6 pb-8">
-          <button onClick={onClose} className="flex-1 btn btn-ghost btn-lg rounded-2xl">
-            Batal
-          </button>
+        <div className="p-4 border-t border-slate-200 flex-shrink-0 bg-white pb-8">
           <button
             onClick={handleSave}
             disabled={!categoryName || loading}
-            className="flex-1 btn btn-success btn-lg rounded-2xl text-white font-bold"
+            className="w-full flex items-center justify-center gap-2 rounded-2xl bg-[#4e73df] text-white py-3 text-[13px] font-semibold hover:bg-[#3d64c7] transition-colors shadow-sm disabled:opacity-50"
           >
-            {loading ? "Menyimpan..." : "Simpan"}
+            <Plus size={16} />
+            {loading ? "Menyimpan..." : "Simpan Etalase"}
           </button>
         </div>
       </div>

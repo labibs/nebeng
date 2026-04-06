@@ -33,17 +33,19 @@ export default function OutletList({
 
     // data
     const { data, error } = await supabase
-    .from("warungs")
-    .select(`
+      .from("warungs")
+      .select(
+        `
       *,
       owner:users!warungs_created_by_clerk_id_fkey (
         avatar_url,
         name
       )
-    `)
-    .eq("created_by_clerk_id", clerkId)
-    .order("created_at", { ascending: false })
-    .range(from, to);
+    `,
+      )
+      .eq("created_by_clerk_id", clerkId)
+      .order("created_at", { ascending: false })
+      .range(from, to);
 
     if (error) {
       console.error(error);
@@ -58,8 +60,6 @@ export default function OutletList({
 
     setLoading(false);
   }
-
-  console.log("Outlet di OutletList:", outlets);
 
   useEffect(() => {
     if (clerkId) loadOutlets(page);
@@ -113,7 +113,7 @@ export default function OutletList({
               className={`
                 snap-start w-[85%] sm:w-[45%] flex-shrink-0
                 cursor-pointer transition
-                ${isActive ? "ring-2 ring-primary rounded-2xl" : ""}
+                ${isActive ? "ring-2 ring-primary rounded-[26px]" : ""}
               `}
             >
               <MarketOutletCard outlet={outlet} />

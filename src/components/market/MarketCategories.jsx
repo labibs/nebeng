@@ -32,8 +32,8 @@ export default function MarketCategories({ active, onChange }) {
               onClick={() => onChange(item === "Semua" ? null : item)}
               className={
                 isActive
-                  ? "whitespace-nowrap rounded-2xl border border-blue-100 bg-blue-50 px-5 py-2.5 text-[12px] font-semibold text-[#4e73df] shadow-sm shadow-blue-50 transition-all transform active:scale-95"
-                  : "whitespace-nowrap rounded-2xl border border-slate-50 bg-white px-5 py-2.5 text-[12px] font-medium text-slate-500 shadow-[0_8px_25px_rgba(0,0,0,0.04)] transition-all hover:bg-slate-50 active:scale-95"
+                  ? "whitespace-nowrap rounded-[26px] border border-blue-100 bg-blue-50 px-5 py-2.5 text-[12px] font-semibold text-[#4e73df] shadow-sm shadow-blue-50 transition-all transform active:scale-95"
+                  : "whitespace-nowrap rounded-[26px] border border-slate-50 bg-white px-5 py-2.5 text-[12px] font-medium text-slate-500 shadow-[0_8px_25px_rgba(0,0,0,0.04)] transition-all hover:bg-slate-50 active:scale-95"
               }
             >
               {item}

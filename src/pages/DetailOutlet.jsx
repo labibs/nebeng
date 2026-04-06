@@ -62,13 +62,15 @@ export default function DetailOutlet() {
 
     const { data, error } = await supabase
       .from("warungs")
-      .select(`
+      .select(
+        `
             *,
             owner:users!warungs_created_by_clerk_id_fkey (
             avatar_url,
             name
             )
-        `)
+        `,
+      )
       .eq("id", outletId)
       .single();
 
@@ -89,7 +91,8 @@ export default function DetailOutlet() {
 
     let query = supabase
       .from("warung_products")
-      .select(`
+      .select(
+        `
         id,
         name,
         estimated_price,
@@ -98,12 +101,19 @@ export default function DetailOutlet() {
         is_estimated,
         created_by_clerk_id,
         created_at,
+        category_id,
+        categories:category_id ( name ),
         warung:warungs (
           name,
           category,
-          status
+          status,
+          owner:users!warungs_created_by_clerk_id_fkey (
+            avatar_url,
+            name
+          )
         )
-      `)
+      `,
+      )
       .eq("warung_id", outletId)
       .order("created_at", { ascending: false });
 
@@ -117,11 +127,15 @@ export default function DetailOutlet() {
       console.error("loadProducts error:", error);
       setProducts([]);
     } else {
-      // flatten lokasi biar enak dipakai di card
+      // flatten data to match MarketProductCard expected format
       const mapped = (data || []).map((p) => ({
         ...p,
-        city: p.warung?.city,
-        district: p.warung?.district,
+        warung_name: p.warung?.name,
+        warung_status: p.warung?.status,
+        warung_category: p.warung?.category,
+        owner_avatar: p.warung?.owner?.avatar_url,
+        owner_name: p.warung?.owner?.name,
+        category_name: p.categories?.name,
       }));
 
       setProducts(mapped);
@@ -148,9 +162,7 @@ export default function DetailOutlet() {
   }, [id]);
 
   function handleUpdateProduct(updated) {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === updated.id ? updated : p))
-    );
+    setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
   }
 
   function handleDeleteProduct(id) {
@@ -159,7 +171,7 @@ export default function DetailOutlet() {
 
   if (loading) return <div className="p-4">Loading...</div>;
   if (!outlet) return <div className="p-4">Outlet tidak ditemukan</div>;
-  
+
   return (
     <motion.div
       className="min-h-screen bg-base-100 pb-24"
@@ -168,7 +180,7 @@ export default function DetailOutlet() {
       exit={{ x: "-100%", opacity: 0 }}
       transition={{ type: "tween", ease: "easeOut", duration: 0.35 }}
     >
-      <OutletHeader outlet={outlet} isOwner={isOwner}/>
+      <OutletHeader outlet={outlet} isOwner={isOwner} />
 
       <div className="px-4 space-y-4">
         <OutletInfoCard outlet={outlet} isOwner={isOwner} user={user} />
@@ -187,10 +199,9 @@ export default function DetailOutlet() {
           }}
           onUpdated={(cat) => {
             setCategories((prev) =>
-              prev.map((c) => (c.id === cat.id ? cat : c))
+              prev.map((c) => (c.id === cat.id ? cat : c)),
             );
           }}
-
           onDeleted={(catId) => {
             setCategories((prev) => prev.filter((c) => c.id !== catId));
             setActiveCategoryId(null);
@@ -208,14 +219,14 @@ export default function DetailOutlet() {
             ))}
           </div>
         ) : (
-          <ProductGrid 
-            products={products} 
-            outletId={outlet.id}
-            isOwner={isOwner} 
+          <ProductGrid
+            products={products}
+            outlet={outlet}
+            isOwner={isOwner}
             categories={categories}
-            onAddProduct={() => setOpenAddProduct(true)} 
-            onUpdate={handleUpdateProduct}
-            onDelete={handleDeleteProduct}
+            onAddProduct={() => setOpenAddProduct(true)}
+            onUpdateProduct={handleUpdateProduct}
+            onDeleteProduct={handleDeleteProduct}
           />
         )}
         <AddProductBottomSheet
@@ -228,7 +239,6 @@ export default function DetailOutlet() {
             setProducts((prev) => [product, ...prev]);
           }}
         />
-
       </div>
     </motion.div>
   );

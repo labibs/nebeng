@@ -1,6 +1,6 @@
 // pages/Cart.jsx
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabaseClient";
+import LoadingLogo from "../components/LoadingLogo";
 import { apiFetch } from "../lib/apiClient";
 import { ShoppingCart, CheckSquare, Trash2, User, Plus } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
@@ -23,7 +23,7 @@ export default function Cart() {
     if (!user) return;
     setLoading(true);
     try {
-      const data = await apiFetch('/api/cart');
+      const data = await apiFetch("/api/cart");
       setItems(data || []);
     } catch (error) {
       console.error("Error fetch cart:", error.message);
@@ -38,14 +38,14 @@ export default function Cart() {
 
     // Realtime tetap dari Supabase langsung
     const channel = supabase
-      .channel('cart-changes')
+      .channel("cart-changes")
       .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'warung_cart_items' },
+        "postgres_changes",
+        { event: "*", schema: "public", table: "warung_cart_items" },
         () => {
-          console.log('🔄 Real-time Cart update, refetching...');
+          console.log("🔄 Real-time Cart update, refetching...");
           fetchCart();
-        }
+        },
       )
       .subscribe();
 
@@ -57,9 +57,9 @@ export default function Cart() {
   // Helper untuk mengambil alamat pendek (misal: "Jl. Merdeka, Menteng")
   const getShortAddress = (address) => {
     if (!address) return "";
-    const parts = address.split(',').map(p => p.trim());
+    const parts = address.split(",").map((p) => p.trim());
     // Ambil maksimal 2 bagian pertama agar ringkas
-    return parts.slice(0, 2).join(', ');
+    return parts.slice(0, 2).join(", ");
   };
 
   const groupItems = () => {
@@ -82,15 +82,27 @@ export default function Cart() {
       if (status === "kurir") {
         target = kurirGroups;
         groupType = "kurir";
-        key = isMyRequest ? `kurir-${item.warung.id}` : `kurir-to-me-${item.user_id}`;
-        partnerName = isMyRequest ? item.warung.name : (item.buyer?.name || "Pembeli");
-        partnerAvatar = isMyRequest ? item.warung.owner?.avatar_url : (item.buyer?.avatar_url);
+        key = isMyRequest
+          ? `kurir-${item.warung.id}`
+          : `kurir-to-me-${item.user_id}`;
+        partnerName = isMyRequest
+          ? item.warung.name
+          : item.buyer?.name || "Pembeli";
+        partnerAvatar = isMyRequest
+          ? item.warung.owner?.avatar_url
+          : item.buyer?.avatar_url;
       } else if (status === "pembeli") {
         target = pembeliGroups;
         groupType = "pembeli";
-        key = isMyRequest ? `pembeli-${item.warung.id}` : `pembeli-to-me-${item.user_id}`;
-        partnerName = isMyRequest ? item.warung.name : (item.buyer?.name || "Pembeli");
-        partnerAvatar = isMyRequest ? item.warung.owner?.avatar_url : (item.buyer?.avatar_url);
+        key = isMyRequest
+          ? `pembeli-${item.warung.id}`
+          : `pembeli-to-me-${item.user_id}`;
+        partnerName = isMyRequest
+          ? item.warung.name
+          : item.buyer?.name || "Pembeli";
+        partnerAvatar = isMyRequest
+          ? item.warung.owner?.avatar_url
+          : item.buyer?.avatar_url;
       } else if (status === "milik") {
         target = milikGroups;
         groupType = "milik";
@@ -108,7 +120,9 @@ export default function Cart() {
           warungName: item.warung?.name,
           warungAddress: item.warung?.address,
           warungStatus: status,
-          partnerId: isMyRequest ? item.warung?.created_by_clerk_id : item.user_id,
+          partnerId: isMyRequest
+            ? item.warung?.created_by_clerk_id
+            : item.user_id,
           partnerName,
           partnerAvatar,
           groupType,
@@ -121,16 +135,18 @@ export default function Cart() {
     return { kurirGroups, pembeliGroups, milikGroups };
   };
 
-  const {
-    kurirGroups,
-    pembeliGroups,
-    milikGroups
-  } = groupItems();
+  const { kurirGroups, pembeliGroups, milikGroups } = groupItems();
 
   const groupedIds = new Set([
-    ...Object.values(kurirGroups).flatMap((group) => group.items.map((item) => item.id)),
-    ...Object.values(pembeliGroups).flatMap((group) => group.items.map((item) => item.id)),
-    ...Object.values(milikGroups).flatMap((group) => group.items.map((item) => item.id)),
+    ...Object.values(kurirGroups).flatMap((group) =>
+      group.items.map((item) => item.id),
+    ),
+    ...Object.values(pembeliGroups).flatMap((group) =>
+      group.items.map((item) => item.id),
+    ),
+    ...Object.values(milikGroups).flatMap((group) =>
+      group.items.map((item) => item.id),
+    ),
   ]);
 
   const ungroupedItems = items.filter((item) => !groupedIds.has(item.id));
@@ -146,13 +162,13 @@ export default function Cart() {
 
     setSelectedIds((prev) => {
       const newSet = new Set(prev);
-      const groupItemIds = group.items.map(it => it.id);
-      const allSelected = groupItemIds.every(id => newSet.has(id));
+      const groupItemIds = group.items.map((it) => it.id);
+      const allSelected = groupItemIds.every((id) => newSet.has(id));
 
       if (allSelected) {
-        groupItemIds.forEach(id => newSet.delete(id));
+        groupItemIds.forEach((id) => newSet.delete(id));
       } else {
-        groupItemIds.forEach(id => newSet.add(id));
+        groupItemIds.forEach((id) => newSet.add(id));
       }
 
       setSelectAll(items.length > 0 && newSet.size === items.length);
@@ -160,8 +176,8 @@ export default function Cart() {
     });
   };
 
-  const toggleSelect = id => {
-    setSelectedIds(prev => {
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
         newSet.delete(id);
@@ -179,7 +195,7 @@ export default function Cart() {
       setSelectedIds(new Set());
       setSelectAll(false);
     } else {
-      const allIds = new Set(items.map(i => i.id));
+      const allIds = new Set(items.map((i) => i.id));
       setSelectedIds(allIds);
       setSelectAll(true);
     }
@@ -189,12 +205,12 @@ export default function Cart() {
     if (newQty < 1) return;
     setItems((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, quantity: newQty } : item
-      )
+        item.id === id ? { ...item, quantity: newQty } : item,
+      ),
     );
     try {
       await apiFetch(`/api/cart/${id}/quantity`, {
-        method: 'PATCH',
+        method: "PATCH",
         body: JSON.stringify({ quantity: newQty }),
       });
     } catch (err) {
@@ -212,7 +228,7 @@ export default function Cart() {
       return newSet;
     });
     try {
-      await apiFetch(`/api/cart/${id}`, { method: 'DELETE' });
+      await apiFetch(`/api/cart/${id}`, { method: "DELETE" });
     } catch (err) {
       console.error("Gagal hapus:", err.message);
     }
@@ -226,8 +242,8 @@ export default function Cart() {
     setSelectedIds(new Set());
     setSelectAll(false);
     try {
-      await apiFetch('/api/cart', {
-        method: 'DELETE',
+      await apiFetch("/api/cart", {
+        method: "DELETE",
         body: JSON.stringify({ ids }),
       });
     } catch (err) {
@@ -238,21 +254,30 @@ export default function Cart() {
   const selectedItems = items.filter((item) => selectedIds.has(item.id));
   const totalQuantity = selectedItems.reduce((sum, i) => sum + i.quantity, 0);
   const totalPrice = selectedItems.reduce(
-    (sum, i) => sum + (Number(i.estimated_price || 0) * i.quantity),
-    0
+    (sum, i) => sum + Number(i.estimated_price || 0) * i.quantity,
+    0,
   );
 
-  const selectedPairs = new Set(selectedItems.map((i) => `${i.warung?.id}-${i.user_id}`));
+  const selectedPairs = new Set(
+    selectedItems.map((i) => `${i.warung?.id}-${i.user_id}`),
+  );
   const multipleOwnersSelected = selectedPairs.size > 1;
 
   const handleDealSelected = async () => {
-    if (selectedItems.length === 0 || multipleOwnersSelected || isProcessing) return;
+    if (selectedItems.length === 0 || multipleOwnersSelected || isProcessing)
+      return;
     setIsProcessing(true);
     const firstItem = selectedItems[0];
     const isBuyer = firstItem.user_id === user?.id;
-    const opponentId = isBuyer ? firstItem.warung?.created_by_clerk_id : firstItem.user_id;
-    const opponentName = isBuyer ? (firstItem.warung?.owner?.name || "Owner") : (firstItem.buyer?.name || "Pembeli");
-    const opponentAvatar = isBuyer ? firstItem.warung?.owner?.avatar_url : firstItem.buyer?.avatar_url;
+    const opponentId = isBuyer
+      ? firstItem.warung?.created_by_clerk_id
+      : firstItem.user_id;
+    const opponentName = isBuyer
+      ? firstItem.warung?.owner?.name || "Owner"
+      : firstItem.buyer?.name || "Pembeli";
+    const opponentAvatar = isBuyer
+      ? firstItem.warung?.owner?.avatar_url
+      : firstItem.buyer?.avatar_url;
 
     if (!opponentId) {
       alert("Gagal mengidentifikasi partner");
@@ -261,12 +286,16 @@ export default function Cart() {
     }
 
     try {
-      navigate('/checkout', {
+      navigate("/checkout", {
         state: {
           selectedIds: Array.from(selectedIds),
           items: selectedItems,
-          opponent: { id: opponentId, name: opponentName, imageUrl: opponentAvatar }
-        }
+          opponent: {
+            id: opponentId,
+            name: opponentName,
+            imageUrl: opponentAvatar,
+          },
+        },
       });
     } catch (err) {
       console.error("Deal error:", err);
@@ -290,7 +319,9 @@ export default function Cart() {
 
       <div className="min-h-screen bg-gradient-to-br from-[#eef4ff] to-[#dfe9ff] p-4 dark:from-slate-900 dark:to-slate-800">
         {loading ? (
-          <div className="flex justify-center py-20"><span className="loading loading-spinner loading-lg text-[#4e73df]"></span></div>
+          <div className="flex justify-center py-20">
+            <LoadingLogo size="w-16 h-16" />
+          </div>
         ) : items.length === 0 || !hasVisibleSections ? (
           <div className="flex flex-col items-center justify-center py-24 px-6 text-center animate-fade-in">
             <div className="w-32 h-32 bg-white/50 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-8 shadow-xl backdrop-blur-sm relative">
@@ -299,9 +330,19 @@ export default function Cart() {
                 <Plus size={24} />
               </div>
             </div>
-            <h3 className="text-2xl font-black mb-3 text-slate-800 dark:text-white">Wah, Keranjang Kosong!</h3>
-            <p className="text-base opacity-60 text-slate-600 dark:text-slate-300 max-w-xs mx-auto mb-10">Mulai titip kebutuhanmu ke teman perjalanan atau tetangga di Market.</p>
-            <button onClick={() => navigate("/market")} className="btn btn-primary btn-lg rounded-2xl px-12 font-bold shadow-xl bg-[#4e73df] border-none text-white hover:bg-[#3b59bd]">Cari Jastiper</button>
+            <h3 className="text-2xl font-black mb-3 text-slate-800 dark:text-white">
+              Wah, Keranjang Kosong!
+            </h3>
+            <p className="text-base opacity-60 text-slate-600 dark:text-slate-300 max-w-xs mx-auto mb-10">
+              Mulai titip kebutuhanmu ke teman perjalanan atau tetangga di
+              Market.
+            </p>
+            <button
+              onClick={() => navigate("/market")}
+              className="btn btn-primary btn-lg rounded-2xl px-12 font-bold shadow-xl bg-[#4e73df] border-none text-white hover:bg-[#3b59bd]"
+            >
+              Cari Jastiper
+            </button>
           </div>
         ) : (
           <>
@@ -311,26 +352,73 @@ export default function Cart() {
                 <section>
                   <h2 className="text-xl font-black mb-4 px-2 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg"><ShoppingCart size={20} /></div>
-                      <span className="bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">Nitip ke Kurir</span>
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+                        <ShoppingCart size={20} />
+                      </div>
+                      <span className="bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
+                        Nitip ke Kurir
+                      </span>
                     </div>
-                    <div className="bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold border border-blue-200">{Object.keys(kurirGroups).length} tujuan</div>
+                    <div className="bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold border border-blue-200">
+                      {Object.keys(kurirGroups).length} tujuan
+                    </div>
                   </h2>
-                  {Object.values(kurirGroups).map(group => (
-                    <div key={group.key} className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-sm mb-5 border-l-4 border-blue-500">
+                  {Object.values(kurirGroups).map((group) => (
+                    <div
+                      key={group.key}
+                      className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-sm mb-5 border-l-4 border-blue-500"
+                    >
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm bg-gray-100">
-                            {group.partnerAvatar ? <img src={group.partnerAvatar} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-500"><User size={20} /></div>}
+                            {group.partnerAvatar ? (
+                              <img
+                                src={group.partnerAvatar}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-500">
+                                <User size={20} />
+                              </div>
+                            )}
                           </div>
-                          <div><p className="font-bold text-sm">{group.partnerName}</p><p className="text-[10px] opacity-60 tracking-wider">{getShortAddress(group.warungAddress)}</p></div>
+                          <div>
+                            <p className="font-bold text-sm">
+                              {group.partnerName}
+                            </p>
+                            <p className="text-[10px] opacity-60 tracking-wider">
+                              {getShortAddress(group.warungAddress)}
+                            </p>
+                          </div>
                         </div>
-                        <button onClick={() => toggleSelectGroup(group.key, kurirGroups)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90">
-                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-[#4e73df] border-[#4e73df] shadow-md shadow-blue-200' : 'border-gray-300'}`}>
-                            {group.items.every(it => selectedIds.has(it.id)) && (
-                              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
+                        <button
+                          onClick={() =>
+                            toggleSelectGroup(group.key, kurirGroups)
+                          }
+                          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90"
+                        >
+                          <div
+                            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every((it) => selectedIds.has(it.id)) ? "bg-[#4e73df] border-[#4e73df] shadow-md shadow-blue-200" : "border-gray-300"}`}
+                          >
+                            {group.items.every((it) =>
+                              selectedIds.has(it.id),
+                            ) && (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                              >
+                                <svg
+                                  className="w-3 h-3 text-white"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={4}
+                                    d="M5 13l4 4L19 7"
+                                  />
                                 </svg>
                               </motion.div>
                             )}
@@ -338,7 +426,16 @@ export default function Cart() {
                         </button>
                       </div>
                       <div className="space-y-3">
-                        {group.items.map(item => <CartItemCard key={item.id} item={item} isSelected={selectedIds.has(item.id)} onToggleSelect={toggleSelect} onUpdateQuantity={updateQuantity} onDelete={deleteItem} />)}
+                        {group.items.map((item) => (
+                          <CartItemCard
+                            key={item.id}
+                            item={item}
+                            isSelected={selectedIds.has(item.id)}
+                            onToggleSelect={toggleSelect}
+                            onUpdateQuantity={updateQuantity}
+                            onDelete={deleteItem}
+                          />
+                        ))}
                       </div>
                     </div>
                   ))}
@@ -350,26 +447,76 @@ export default function Cart() {
                 <section>
                   <h2 className="text-xl font-black mb-4 px-2 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4e73df] to-[#6c8ef8] flex items-center justify-center text-white shadow-lg"><Plus size={20} /></div>
-                      <span className="bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] bg-clip-text text-transparent">Permintaan Nitip</span>
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4e73df] to-[#6c8ef8] flex items-center justify-center text-white shadow-lg">
+                        <Plus size={20} />
+                      </div>
+                      <span className="bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] bg-clip-text text-transparent">
+                        Permintaan Nitip
+                      </span>
                     </div>
-                    <div className="bg-blue-100 text-[#4e73df] text-xs px-2.5 py-1 rounded-full font-bold border border-blue-200">{Object.keys(pembeliGroups).length} tujuan</div>
+                    <div className="bg-blue-100 text-[#4e73df] text-xs px-2.5 py-1 rounded-full font-bold border border-blue-200">
+                      {Object.keys(pembeliGroups).length} tujuan
+                    </div>
                   </h2>
-                  {Object.values(pembeliGroups).map(group => (
-                    <div key={group.key} className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-sm mb-5 border-l-4 border-[#4e73df]">
+                  {Object.values(pembeliGroups).map((group) => (
+                    <div
+                      key={group.key}
+                      className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-sm mb-5 border-l-4 border-[#4e73df]"
+                    >
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm bg-gray-100">
-                            {group.partnerAvatar ? <img src={group.partnerAvatar} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-500"><User size={20} /></div>}
+                            {group.partnerAvatar ? (
+                              <img
+                                src={group.partnerAvatar}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-500">
+                                <User size={20} />
+                              </div>
+                            )}
                           </div>
-                          <div><p className="font-bold text-sm">{group.partnerName}</p><p className="text-[9px] opacity-60 uppercase tracking-wider block mb-0.5">{getShortAddress(group.warungAddress)}</p><span className="text-[9px] bg-blue-100 text-[#4e73df] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">Rekomendasi</span></div>
+                          <div>
+                            <p className="font-bold text-sm">
+                              {group.partnerName}
+                            </p>
+                            <p className="text-[9px] opacity-60 uppercase tracking-wider block mb-0.5">
+                              {getShortAddress(group.warungAddress)}
+                            </p>
+                            <span className="text-[9px] bg-blue-100 text-[#4e73df] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">
+                              Rekomendasi
+                            </span>
+                          </div>
                         </div>
-                        <button onClick={() => toggleSelectGroup(group.key, pembeliGroups)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90">
-                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-[#4e73df] border-[#4e73df] shadow-md shadow-blue-200' : 'border-gray-300'}`}>
-                            {group.items.every(it => selectedIds.has(it.id)) && (
-                              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
+                        <button
+                          onClick={() =>
+                            toggleSelectGroup(group.key, pembeliGroups)
+                          }
+                          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90"
+                        >
+                          <div
+                            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every((it) => selectedIds.has(it.id)) ? "bg-[#4e73df] border-[#4e73df] shadow-md shadow-blue-200" : "border-gray-300"}`}
+                          >
+                            {group.items.every((it) =>
+                              selectedIds.has(it.id),
+                            ) && (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                              >
+                                <svg
+                                  className="w-3 h-3 text-white"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={4}
+                                    d="M5 13l4 4L19 7"
+                                  />
                                 </svg>
                               </motion.div>
                             )}
@@ -377,7 +524,16 @@ export default function Cart() {
                         </button>
                       </div>
                       <div className="space-y-3">
-                        {group.items.map(item => <CartItemCard key={item.id} item={item} isSelected={selectedIds.has(item.id)} onToggleSelect={toggleSelect} onUpdateQuantity={updateQuantity} onDelete={deleteItem} />)}
+                        {group.items.map((item) => (
+                          <CartItemCard
+                            key={item.id}
+                            item={item}
+                            isSelected={selectedIds.has(item.id)}
+                            onToggleSelect={toggleSelect}
+                            onUpdateQuantity={updateQuantity}
+                            onDelete={deleteItem}
+                          />
+                        ))}
                       </div>
                     </div>
                   ))}
@@ -389,26 +545,76 @@ export default function Cart() {
                 <section>
                   <h2 className="text-xl font-black mb-4 px-2 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-lg"><ShoppingCart size={20} /></div>
-                      <span className="bg-gradient-to-r from-amber-700 to-orange-700 bg-clip-text text-transparent">Order di Warung</span>
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-lg">
+                        <ShoppingCart size={20} />
+                      </div>
+                      <span className="bg-gradient-to-r from-amber-700 to-orange-700 bg-clip-text text-transparent">
+                        Order di Warung
+                      </span>
                     </div>
-                    <div className="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold border border-amber-200">{Object.keys(milikGroups).length} pesanan</div>
+                    <div className="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold border border-amber-200">
+                      {Object.keys(milikGroups).length} pesanan
+                    </div>
                   </h2>
-                  {Object.values(milikGroups).map(group => (
-                    <div key={group.key} className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-sm mb-5 border-l-4 border-amber-500">
+                  {Object.values(milikGroups).map((group) => (
+                    <div
+                      key={group.key}
+                      className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-sm mb-5 border-l-4 border-amber-500"
+                    >
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm bg-gray-100">
-                            {group.partnerAvatar ? <img src={group.partnerAvatar} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-500"><User size={20} /></div>}
+                            {group.partnerAvatar ? (
+                              <img
+                                src={group.partnerAvatar}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-500">
+                                <User size={20} />
+                              </div>
+                            )}
                           </div>
-                          <div><p className="font-bold text-sm">{group.partnerName}</p><p className="text-[9px] opacity-60 uppercase tracking-wider block mb-0.5">{getShortAddress(group.warungAddress)}</p><span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">Customer</span></div>
+                          <div>
+                            <p className="font-bold text-sm">
+                              {group.partnerName}
+                            </p>
+                            <p className="text-[9px] opacity-60 uppercase tracking-wider block mb-0.5">
+                              {getShortAddress(group.warungAddress)}
+                            </p>
+                            <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">
+                              Customer
+                            </span>
+                          </div>
                         </div>
-                        <button onClick={() => toggleSelectGroup(group.key, milikGroups)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90">
-                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every(it => selectedIds.has(it.id)) ? 'bg-[#4e73df] border-[#4e73df] shadow-md shadow-blue-200' : 'border-gray-300'}`}>
-                            {group.items.every(it => selectedIds.has(it.id)) && (
-                              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
+                        <button
+                          onClick={() =>
+                            toggleSelectGroup(group.key, milikGroups)
+                          }
+                          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90"
+                        >
+                          <div
+                            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300 ${group.items.every((it) => selectedIds.has(it.id)) ? "bg-[#4e73df] border-[#4e73df] shadow-md shadow-blue-200" : "border-gray-300"}`}
+                          >
+                            {group.items.every((it) =>
+                              selectedIds.has(it.id),
+                            ) && (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                              >
+                                <svg
+                                  className="w-3 h-3 text-white"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={4}
+                                    d="M5 13l4 4L19 7"
+                                  />
                                 </svg>
                               </motion.div>
                             )}
@@ -416,7 +622,16 @@ export default function Cart() {
                         </button>
                       </div>
                       <div className="space-y-3">
-                        {group.items.map(item => <CartItemCard key={item.id} item={item} isSelected={selectedIds.has(item.id)} onToggleSelect={toggleSelect} onUpdateQuantity={updateQuantity} onDelete={deleteItem} />)}
+                        {group.items.map((item) => (
+                          <CartItemCard
+                            key={item.id}
+                            item={item}
+                            isSelected={selectedIds.has(item.id)}
+                            onToggleSelect={toggleSelect}
+                            onUpdateQuantity={updateQuantity}
+                            onDelete={deleteItem}
+                          />
+                        ))}
                       </div>
                     </div>
                   ))}
@@ -427,14 +642,29 @@ export default function Cart() {
                 <section>
                   <h2 className="text-xl font-black mb-4 px-2 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-500 to-slate-700 flex items-center justify-center text-white shadow-lg"><ShoppingCart size={20} /></div>
-                      <span className="bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">Item Lainnya</span>
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-500 to-slate-700 flex items-center justify-center text-white shadow-lg">
+                        <ShoppingCart size={20} />
+                      </div>
+                      <span className="bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
+                        Item Lainnya
+                      </span>
                     </div>
-                    <div className="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-full font-bold border border-slate-200">{ungroupedItems.length} item</div>
+                    <div className="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-full font-bold border border-slate-200">
+                      {ungroupedItems.length} item
+                    </div>
                   </h2>
                   <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-sm mb-5 border-l-4 border-slate-500">
                     <div className="space-y-3">
-                      {ungroupedItems.map(item => <CartItemCard key={item.id} item={item} isSelected={selectedIds.has(item.id)} onToggleSelect={toggleSelect} onUpdateQuantity={updateQuantity} onDelete={deleteItem} />)}
+                      {ungroupedItems.map((item) => (
+                        <CartItemCard
+                          key={item.id}
+                          item={item}
+                          isSelected={selectedIds.has(item.id)}
+                          onToggleSelect={toggleSelect}
+                          onUpdateQuantity={updateQuantity}
+                          onDelete={deleteItem}
+                        />
+                      ))}
                     </div>
                   </div>
                 </section>
@@ -445,41 +675,82 @@ export default function Cart() {
             <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-10 border-t border-white/20">
               <div className="max-w-3xl mx-auto">
                 <div className="flex items-center justify-between mb-4 px-1">
-                  <button onClick={toggleSelectAll} className="flex items-center gap-2.5 group active:scale-95 transition-all">
-                    <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${selectAll ? 'bg-[#4e73df] border-[#4e73df] shadow-lg shadow-blue-200' : 'border-gray-300 group-hover:border-[#4e73df]'}`}>
+                  <button
+                    onClick={toggleSelectAll}
+                    className="flex items-center gap-2.5 group active:scale-95 transition-all"
+                  >
+                    <div
+                      className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${selectAll ? "bg-[#4e73df] border-[#4e73df] shadow-lg shadow-blue-200" : "border-gray-300 group-hover:border-[#4e73df]"}`}
+                    >
                       {selectAll && (
-                        <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3.5} d="M5 13l4 4L19 7" />
+                        <motion.div
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                        >
+                          <svg
+                            className="w-4 h-4 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={3.5}
+                              d="M5 13l4 4L19 7"
+                            />
                           </svg>
                         </motion.div>
                       )}
                     </div>
-                    <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${selectAll ? 'text-[#4e73df]' : 'text-gray-400'}`}>Pilih Semua</span>
+                    <span
+                      className={`text-[11px] font-black uppercase tracking-wider transition-colors ${selectAll ? "text-[#4e73df]" : "text-gray-400"}`}
+                    >
+                      Pilih Semua
+                    </span>
                   </button>
                   {selectedIds.size > 0 && (
                     <div className="text-right">
-                      <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tight leading-none">{selectedIds.size} Item Dipilih</p>
-                      <p className="text-xl font-black text-[#4e73df]">Rp {totalPrice.toLocaleString("id-ID")}</p>
+                      <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tight leading-none">
+                        {selectedIds.size} Item Dipilih
+                      </p>
+                      <p className="text-xl font-black text-[#4e73df]">
+                        Rp {totalPrice.toLocaleString("id-ID")}
+                      </p>
                     </div>
                   )}
                 </div>
 
                 <div className="flex gap-2">
                   {selectedIds.size > 0 && (
-                    <button onClick={deleteSelected} className="w-12 h-12 rounded-2xl flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/30 active:scale-90 transition-all">
+                    <button
+                      onClick={deleteSelected}
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/30 active:scale-90 transition-all"
+                    >
                       <Trash2 size={20} />
                     </button>
                   )}
                   <button
                     onClick={() => handleDealSelected()}
-                    disabled={selectedIds.size === 0 || multipleOwnersSelected || isProcessing}
-                    className={`flex-1 rounded-2xl h-12 font-black text-sm flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98] ${selectedIds.size === 0 || multipleOwnersSelected || isProcessing ? 'bg-gray-100 text-gray-400 shadow-none' : 'bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] text-white shadow-blue-200'}`}
+                    disabled={
+                      selectedIds.size === 0 ||
+                      multipleOwnersSelected ||
+                      isProcessing
+                    }
+                    className={`flex-1 rounded-2xl h-12 font-black text-sm flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98] ${selectedIds.size === 0 || multipleOwnersSelected || isProcessing ? "bg-gray-100 text-gray-400 shadow-none" : "bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] text-white shadow-blue-200"}`}
                   >
-                    {isProcessing ? <span className="loading loading-spinner loading-sm"></span> : (
+                    {isProcessing ? (
+                      <span className="loading loading-spinner loading-sm"></span>
+                    ) : (
                       <>
                         <ShoppingCart size={18} />
-                        <span>{multipleOwnersSelected ? 'Pilih 1 Outlet' : (selectedIds.size === 0 ? 'Pilih Item' : `Deal Sekarang (${selectedIds.size})`)}</span>
+                        <span>
+                          {multipleOwnersSelected
+                            ? "Pilih 1 Outlet"
+                            : selectedIds.size === 0
+                              ? "Pilih Item"
+                              : `Deal Sekarang (${selectedIds.size})`}
+                        </span>
                       </>
                     )}
                   </button>

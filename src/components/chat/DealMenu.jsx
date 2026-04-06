@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import LoadingLogo from "../LoadingLogo";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 import { apiFetch } from "../../lib/apiClient";
@@ -279,7 +279,7 @@ export default function DealMenu({
   if (loading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
+        <LoadingLogo size="w-16 h-16" />
       </div>
     );
   }

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useClerk } from "@clerk/clerk-react";
 import { supabase } from "../lib/supabaseClient";
+import LoadingLogo from "../components/LoadingLogo";
 import PostCard from "../components/PostCard";
 import PostCardSkeleton from "../components/PostCardSkeleton";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -466,7 +467,7 @@ export default function Home() {
         {/* Content */}
         {loading ? (
           <div className="flex h-full items-center justify-center">
-            <span className="loading loading-spinner loading-lg text-white"></span>
+            <LoadingLogo size="w-16 h-16" className="text-white" />
           </div>
         ) : filteredPosts.length > 0 ? (
           <Swiper

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import LiveTrackingModal from "../components/transaksi/LiveTrackingModal";
 import TransaksiHeader from "../components/transaksi/TransaksiHeader";
 import DealStatusBadge from "../components/common/DealStatusBadge";
+import LoadingLogo from "../components/LoadingLogo";
 
 // ⬆️ sesuaikan path supabase client kamu
 
@@ -157,8 +158,8 @@ export default function TransaksiPage() {
 
   if (!isLoaded || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <span className="loading loading-spinner loading-lg"></span>
+      <div className="min-h-screen flex items-center justify-center bg-[#f0f7ff]">
+        <LoadingLogo size="w-20 h-20" />
       </div>
     );
   }

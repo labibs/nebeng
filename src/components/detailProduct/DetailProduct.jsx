@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 import DetailProductHeader from "./DetailProductHeader";
-import { motion } from "framer-motion";
+import LoadingLogo from "../LoadingLogo";
 import {
   ArrowRightLeft,
   MessageCircle,
@@ -232,7 +232,7 @@ export default function DetailProduct() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f0f7ff]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#4e73df]" />
+        <LoadingLogo size="w-20 h-20" />
       </div>
     );
   }

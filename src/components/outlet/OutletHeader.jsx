@@ -5,22 +5,21 @@ export default function OutletHeader() {
   const navigate = useNavigate();
 
   return (
-    
-    <div className="shrink-0 mb-0 pt-6 px-4 pb-0">
-      <div className="pointer-events-auto flex items-start gap-3 mb-5">
+    <div className="relative z-50 shrink-0 pt-6 px-4 pb-0">
+      <div className="flex items-start gap-3 mb-5">
         <button
           onClick={() => navigate(-1)}
-          className="bg-white rounded-full p-3 shadow-lg text-black"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_12px_28px_rgba(82,109,181,0.15)] transition-transform active:scale-95"
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={20} className="text-slate-700" />
         </button>
 
         <div className="flex flex-col">
-          <h3 className="text-base font-semibold leading-tight">
+          <h3 className="text-base font-semibold leading-tight text-slate-900">
             Outlet Saya
           </h3>
-          <p className="text-xs opacity-70">
-          Disini kamu bisa melihat dan menambahkan produk yang kamu jual di outletmu
+          <p className="text-xs text-slate-400 mt-0.5">
+            Kelola produk dan outletmu di sini
           </p>
         </div>
       </div>

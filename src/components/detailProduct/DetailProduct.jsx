@@ -232,9 +232,54 @@ export default function DetailProduct() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f0f7ff]">
-        <LoadingLogo size="w-20 h-20" />
-      </div>
+      <motion.div
+        className="min-h-screen bg-[#f0f7ff] pb-24 text-slate-900"
+        initial={{ x: "100%", opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: "-100%", opacity: 0 }}
+        transition={{ type: "tween", ease: "easeOut", duration: 0.35 }}
+      >
+        {/* Header skeleton */}
+        <div className="pt-3 px-4 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-full bg-white shadow-sm animate-pulse" />
+            <div className="h-5 w-28 rounded-full bg-[#e4edff] animate-pulse" />
+          </div>
+        </div>
+        {/* Hero image skeleton */}
+        <div className="h-72 bg-[#e4edff] animate-pulse" />
+        {/* Title & price skeleton */}
+        <div className="px-4 pt-4 space-y-3">
+          <div className="flex justify-between">
+            <div className="h-4 w-16 rounded-full bg-[#e4edff] animate-pulse" />
+            <div className="h-6 w-24 rounded-full bg-[#edf3ff] animate-pulse" />
+          </div>
+          <div className="h-7 w-3/4 rounded-full bg-[#e4edff] animate-pulse" />
+          <div className="flex gap-2">
+            <div className="h-8 w-20 rounded-full bg-[#edf3ff] animate-pulse" />
+            <div className="h-8 w-24 rounded-full bg-[#e4edff] animate-pulse" />
+          </div>
+        </div>
+        {/* Description skeleton */}
+        <div className="px-4 pt-6 space-y-2">
+          <div className="h-5 w-24 rounded-full bg-[#e4edff] animate-pulse" />
+          <div className="h-3 w-full rounded-full bg-[#edf3ff] animate-pulse" />
+          <div className="h-3 w-5/6 rounded-full bg-[#e4edff] animate-pulse" />
+        </div>
+        {/* Outlet section skeleton */}
+        <div className="px-4 pt-6 space-y-3">
+          <div className="h-5 w-28 rounded-full bg-[#e4edff] animate-pulse" />
+          <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-3 animate-pulse">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-[#e4edff]" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-3/4 rounded-full bg-[#edf3ff]" />
+                <div className="h-3 w-1/2 rounded-full bg-[#e4edff]" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     );
   }
 

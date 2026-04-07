@@ -27,7 +27,10 @@ export default function MarketOutletCard({ outlet }) {
         : "Promo hari ini";
 
   return (
-    <div className="overflow-hidden rounded-[26px] border border-slate-100 bg-white shadow-[0_14px_34px_rgba(0,0,0,0.06)] transition-all duration-300 hover:shadow-[0_18px_42px_rgba(0,0,0,0.1)]">
+    <div
+      onClick={() => navigate(`/outlet/${id}`)}
+      className="overflow-hidden rounded-[26px] border border-slate-100 bg-white shadow-[0_14px_34px_rgba(0,0,0,0.06)] transition-all duration-300 hover:shadow-[0_18px_42px_rgba(0,0,0,0.1)] cursor-pointer"
+    >
       <div className="relative p-2 pb-0">
         <div className="relative h-36 overflow-hidden rounded-[20px] bg-slate-100">
           <img
@@ -41,7 +44,10 @@ export default function MarketOutletCard({ outlet }) {
           </div>
 
           <button
-            onClick={() => navigate(`/outlet/${id}`)}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/outlet/${id}`);
+            }}
             className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-800 shadow-lg backdrop-blur-md transition-all active:scale-90"
           >
             <Heart size={14} fill="currentColor" className="text-pink-500" />
@@ -59,7 +65,13 @@ export default function MarketOutletCard({ outlet }) {
         <div className="mb-2.5 flex items-center gap-1.5 text-slate-500">
           <MapPinned size={12} className="shrink-0 text-emerald-500" />
           <div className="line-clamp-1 text-[11px] font-medium">
-            <AddressText address={address} onClick={() => setOpenMaps(true)} />
+            <AddressText
+              address={address}
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenMaps(true);
+              }}
+            />
           </div>
         </div>
 
@@ -109,14 +121,20 @@ export default function MarketOutletCard({ outlet }) {
           <div className="flex shrink-0">
             {status !== "milik" ? (
               <button
-                onClick={() => setOpenRoute(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenRoute(true);
+                }}
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-blue-100/60 bg-blue-50 text-[#4e73df] shadow-sm shadow-blue-100/50 transition-all active:scale-90 hover:bg-blue-100"
               >
                 <Route size={16} strokeWidth={2.5} />
               </button>
             ) : (
               <button
-                onClick={() => setOpenMaps(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenMaps(true);
+                }}
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-blue-100/60 bg-blue-50 text-[#4e73df] shadow-sm shadow-blue-100/50 transition-all active:scale-90 hover:bg-blue-100"
               >
                 <MapPinned size={16} strokeWidth={2.5} />

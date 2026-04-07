@@ -169,7 +169,51 @@ export default function DetailOutlet() {
     setProducts((prev) => prev.filter((p) => p.id !== id));
   }
 
-  if (loading) return <div className="p-4">Loading...</div>;
+  if (loading) {
+    return (
+      <motion.div
+        className="min-h-screen bg-[#f0f7ff] pb-24"
+        initial={{ x: "100%", opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: "-100%", opacity: 0 }}
+        transition={{ type: "tween", ease: "easeOut", duration: 0.35 }}
+      >
+        <div className="px-4 pt-4 space-y-4">
+          {/* Header skeleton */}
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-11 h-11 rounded-full bg-white shadow-sm animate-pulse" />
+            <div className="space-y-2">
+              <div className="h-5 w-24 rounded-full bg-[#e4edff] animate-pulse" />
+              <div className="h-3 w-16 rounded-full bg-[#edf3ff] animate-pulse" />
+            </div>
+          </div>
+          {/* Banner skeleton */}
+          <div className="h-40 rounded-2xl bg-[#e4edff] animate-pulse" />
+          {/* Info card skeleton */}
+          <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-3 animate-pulse">
+            <div className="h-4 w-3/4 rounded-full bg-[#edf3ff]" />
+            <div className="h-3 w-1/2 rounded-full bg-[#e4edff]" />
+            <div className="h-3 w-2/3 rounded-full bg-[#edf3ff]" />
+          </div>
+          {/* Category chips skeleton */}
+          <div className="flex gap-2 overflow-hidden">
+            <div className="h-9 w-24 rounded-full bg-[#e4edff] animate-pulse" />
+            <div className="h-9 w-20 rounded-full bg-[#edf3ff] animate-pulse" />
+            <div className="h-9 w-16 rounded-full bg-[#e4edff] animate-pulse" />
+          </div>
+          {/* Product grid skeleton */}
+          <div className="grid grid-cols-2 gap-3">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="h-48 rounded-2xl bg-[#e4edff] animate-pulse"
+              />
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
   if (!outlet) return <div className="p-4">Outlet tidak ditemukan</div>;
 
   return (

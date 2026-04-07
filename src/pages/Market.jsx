@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useUser } from "@clerk/clerk-react";
 import { apiFetch } from "../lib/apiClient";
+import LoadingLogo from "../components/LoadingLogo";
 import MarketHeader from "../components/market/MarketHeader";
 import MarketCategories from "../components/market/MarketCategories";
 import MarketSection from "../components/market/MarketSection";
@@ -10,7 +11,7 @@ import MarketHeroCard from "../components/market/MarketHeroCard";
 
 export default function MarketPage() {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
 
@@ -29,7 +30,6 @@ export default function MarketPage() {
       const data = await apiFetch(`/api/market/products?${params.toString()}`);
       setProducts(data || []);
     } catch (err) {
-      console.error("Error loading products:", err.message);
       setProducts([]);
     } finally {
       setLoading(false);
@@ -47,6 +47,14 @@ export default function MarketPage() {
 
     return () => clearTimeout(timeoutId);
   }, [search]);
+
+  if (loading && products.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f0f7ff]">
+        <LoadingLogo size="w-20 h-20" />
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -83,7 +91,7 @@ export default function MarketPage() {
           <MarketSection
             title="Daftar Item"
             products={(products || []).filter((p) => p.owner_id !== user?.id)}
-            loading={loading}
+            loading={false}
           />
         </div>
       </div>

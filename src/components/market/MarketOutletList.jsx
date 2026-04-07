@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useUser } from "@clerk/clerk-react";
 import MarketOutletCard from "./MarketOutletCard";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -7,6 +8,7 @@ export default function MarketOutletList({
   search = "",
   category = null,
 }) {
+  const { user } = useUser();
   const [outlets, setOutlets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -80,7 +82,8 @@ export default function MarketOutletList({
       `,
       )
       .order("created_at", { ascending: false })
-      .range(from, to);
+      .range(from, to)
+      .neq("created_by_clerk_id", user?.id || "");
 
     if (keyword) {
       if (relatedIds.length > 0) {
@@ -146,11 +149,13 @@ export default function MarketOutletList({
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
-        {outlets.map((outlet) => (
-          <div key={outlet.id} className="w-[78%] shrink-0 sm:w-[40%]">
-            <MarketOutletCard outlet={outlet} />
-          </div>
-        ))}
+        {outlets
+          .filter((o) => o.created_by_clerk_id !== user?.id)
+          .map((outlet) => (
+            <div key={outlet.id} className="w-[78%] shrink-0 sm:w-[40%]">
+              <MarketOutletCard outlet={outlet} />
+            </div>
+          ))}
       </div>
 
       {totalPage > 1 ? (

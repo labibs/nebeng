@@ -1,5 +1,5 @@
 // components/cart/CartItemCard.jsx
-import { Heart, Trash2, Plus, Minus } from "lucide-react";
+import { Trash2, Plus, Minus } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function CartItemCard({
@@ -19,27 +19,25 @@ export default function CartItemCard({
 
   const keteranganByStatus = () => {
     if (warung.status === "kurir") return "Mau Nitip";
-    if (warung.status === "pembeli" && warung.category === "Jasa") return "Anterin Kesini";
-    if (warung.status === "pembeli" && warung.category !== "Jasa") return "Beliin Kesini";
+    if (warung.status === "pembeli" && warung.category === "Jasa")
+      return "Anterin Kesini";
+    if (warung.status === "pembeli" && warung.category !== "Jasa")
+      return "Beliin Kesini";
     return "Nitip Sekarang";
   };
 
   return (
     <motion.div
       className={`
-        bg-white dark:bg-slate-800 
-        rounded-2xl shadow-md overflow-hidden
+        bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden
         flex items-start gap-3 p-3 relative
-        ${isSelected ? "ring-2 ring-emerald-500/70" : ""}
+        ${isSelected ? "ring-2 ring-[#4e73df]/30" : ""}
       `}
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
     >
-      {/* Checkbox */}
-
-
       <div className="w-full">
         <div className="flex items-start gap-3 w-full">
           {/* Gambar produk */}
@@ -47,85 +45,90 @@ export default function CartItemCard({
             <img
               src={product.image_url || "https://via.placeholder.com/90"}
               alt={product.name}
-              className="w-24 h-24 object-cover rounded-xl border border-gray-200 dark:border-slate-700"
+              className="w-20 h-20 object-cover rounded-xl border border-slate-100 bg-slate-50"
             />
           </div>
 
           {/* Konten utama */}
           <div className="flex-1 min-w-0 flex flex-col">
-            {/* Nama + tombol wishlist */}
+            {/* Checkbox + Nama */}
             <div className="flex justify-between items-start">
-
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {keteranganByStatus()} • {warung.name.substring(0, 15)}
-                {warung.name.length > 15 ? "..." : ""}
-              </p>
+              <div className="flex-1 min-w-0 pr-2">
+                <h4 className="font-semibold text-sm leading-tight line-clamp-2 text-slate-900">
+                  {product.name}
+                </h4>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  {keteranganByStatus()} • {warung.name.substring(0, 15)}
+                  {warung.name.length > 15 ? "..." : ""}
+                </p>
+              </div>
               <input
                 type="checkbox"
                 checked={isSelected}
                 onChange={() => onToggleSelect(item.id)}
-                className="checkbox checkbox-sm checkbox-primary mt-1"
+                className="checkbox checkbox-sm mt-1 accent-[#4e73df]"
               />
             </div>
 
-            {/* Info tambahan (warung / size / variant jika ada) */}
-            <h4 className="font-semibold text-base leading-tight line-clamp-2 pr-8">
-              {product.name}
-            </h4>
+            {/* Harga */}
             <div className="flex justify-between items-start mt-1">
-              <h4 className="font-semibold text-base leading-tight line-clamp-2 pr-8">
-                {product.estimated_price
-                  ? ` Rp ${Number(
-                    product.estimated_price
-                  ).toLocaleString("id-ID")}`
-                  : "Rp. 0"}
-              </h4>
-              <p>X {item.quantity} pcs</p>
+              <p className="text-sm font-semibold text-[#4e73df]">
+                Rp{" "}
+                {Number(product.estimated_price || 0).toLocaleString("id-ID")}
+              </p>
+              <p className="text-[10px] text-slate-400">{item.quantity} pcs</p>
             </div>
 
-            {/* Catatan (opsional) */}
+            {/* Catatan */}
             {item.notes && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
+              <p className="text-[10px] text-slate-400 mt-1 italic">
                 Catatan: {item.notes}
               </p>
             )}
           </div>
         </div>
-        <hr className="px-2 mt-2 mb-2 opacity-10" />
-        {/* Row Estimasi + controls (full width, below gambar & keterangan) */}
-        <div className="mt-1 flex items-center justify-between w-full">
+
+        <hr className="mt-2 mb-2 border-slate-50" />
+
+        {/* Estimasi Total + Controls */}
+        <div className="flex items-center justify-between w-full">
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Estimasi Total</p>
-            <p className="text-sm font-semibold text-emerald-600">
-              Rp {(Number(item.estimated_price || 0) * item.quantity).toLocaleString("id-ID")}
+            <p className="text-[10px] text-slate-400">Estimasi Total</p>
+            <p className="text-sm font-bold text-slate-900">
+              Rp{" "}
+              {(
+                Number(item.estimated_price || 0) * item.quantity
+              ).toLocaleString("id-ID")}
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center border border-gray-300 dark:border-slate-600 rounded-full overflow-hidden text-sm font-medium">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center border border-slate-200 rounded-full overflow-hidden text-sm font-medium">
               <button
                 onClick={() => handleQtyChange(item.quantity - 1)}
                 disabled={item.quantity <= 1}
-                className="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-slate-700 disabled:opacity-40"
+                className="w-8 h-8 flex items-center justify-center bg-slate-50 disabled:opacity-40 text-slate-600"
               >
-                <Minus size={16} />
+                <Minus size={14} />
               </button>
-              <span className="w-10 text-center">{item.quantity}</span>
+              <span className="w-9 text-center text-sm text-slate-700">
+                {item.quantity}
+              </span>
               <button
                 onClick={() => handleQtyChange(item.quantity + 1)}
-                className="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-slate-700"
+                className="w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-600 hover:bg-slate-100"
               >
-                <Plus size={16} />
+                <Plus size={14} />
               </button>
             </div>
 
             {/* Tombol hapus */}
             <button
               onClick={() => onDelete(item.id)}
-              className="w-9 h-9 flex items-center justify-center bg-gray-100 dark:bg-slate-700 text-red-500 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-full transition-colors -mr-2"
+              className="w-8 h-8 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-full transition-colors"
               title="Hapus item"
             >
-              <Trash2 size={16} />
+              <Trash2 size={14} />
             </button>
           </div>
         </div>

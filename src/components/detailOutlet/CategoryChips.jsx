@@ -52,8 +52,8 @@ export default function CategoryChips({
                 className={`px-4 py-2 rounded-full text-sm border flex items-center gap-2 whitespace-nowrap transition-all
                   ${
                     activeId === cat.id
-                      ? "bg-black text-white border-black"
-                      : "bg-base-100 hover:bg-base-200"
+                      ? "bg-[#4e73df] text-white border-[#4e73df]"
+                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                   }`}
               >
                 {cat.icon && <span className="text-md">{cat.icon}</span>}

@@ -25,15 +25,6 @@ export default function ChatInbox() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchVisible, setIsSearchVisible] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const loadUsers = async () => {
     setLoadingUsers(true);
@@ -333,16 +324,10 @@ export default function ChatInbox() {
   // };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e8f5e9] via-[#f0f8f1] to-[#d9f0e0] dark:from-[#1e293b] dark:via-[#0f172a] dark:to-[#1e293b] text-base-content flex flex-col mb-15">
-      {/* Floating Header */}
-      <div
-        className={`sticky top-0 z-30 px-4 pt-5 pb-3 transition-all duration-300 ${
-          isScrolled
-            ? "bg-white/70 dark:bg-slate-900/70 backdrop-blur-md shadow-sm"
-            : "bg-transparent"
-        }`}
-      >
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-[#f0f7ff] text-base-content flex flex-col">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-30 bg-[#f0f7ff] px-4 pt-3 pb-3">
+        <div className="flex items-center justify-between mb-3">
           <h3 className="bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] bg-clip-text text-[26px] font-extrabold text-transparent tracking-tight">
             Chat
           </h3>
@@ -374,7 +359,7 @@ export default function ChatInbox() {
         </div>
 
         {isSearchVisible && (
-          <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex items-center gap-3 rounded-[22px] bg-white px-4 py-3 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100">
               <Search size={18} className="shrink-0 text-[#4e73df]" />
               <input
@@ -388,7 +373,7 @@ export default function ChatInbox() {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500"
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200"
                 >
                   <X size={12} />
                 </button>
@@ -502,9 +487,9 @@ export default function ChatInbox() {
       )}
 
       {/* Chat List / Loading / Empty */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {loading ? (
-          <div className="p-4 space-y-6">
+          <div className="space-y-6">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i}>
                 <div className="flex items-center gap-4 px-2">

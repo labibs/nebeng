@@ -116,7 +116,7 @@ export default function OutletList({
                 ${isActive ? "ring-2 ring-primary rounded-[26px]" : ""}
               `}
             >
-              <MarketOutletCard outlet={outlet} />
+              <MarketOutletCard outlet={outlet} clickable={false} />
             </div>
           );
         })}

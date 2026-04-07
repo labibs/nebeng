@@ -854,34 +854,40 @@ export default function ChatRoom() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-base-200">
-      <ChatHeader recipient={recipient} isLoading={loading} />
+    <div className="flex h-screen flex-col bg-[#f0f7ff]">
+      <div className="shrink-0">
+        <ChatHeader recipient={recipient} isLoading={loading} />
+      </div>
 
-      <ChatMessages
-        messages={messages}
-        loading={loading}
-        currentUserId={currentUserId}
-        currentUserAvatar={currentUserAvatar}
-        recipientImageUrl={recipient.imageUrl}
-        postInfo={postInfo}
-        messagesEndRef={messagesEndRef}
-        onSendNego={sendMessage}
-        onInsertDeal={insertDeal}
-        onUpdateDealLocation={updateDealLocation}
-        onUpdateDealTime={updateDealTime}
-        onUpdateDealItem={updateDealItem}
-        onUpdateDealDelivery={updateDealDelivery}
-      />
+      <div className="flex-1 overflow-y-auto">
+        <ChatMessages
+          messages={messages}
+          loading={loading}
+          currentUserId={currentUserId}
+          currentUserAvatar={currentUserAvatar}
+          recipientImageUrl={recipient.imageUrl}
+          postInfo={postInfo}
+          messagesEndRef={messagesEndRef}
+          onSendNego={sendMessage}
+          onInsertDeal={insertDeal}
+          onUpdateDealLocation={updateDealLocation}
+          onUpdateDealTime={updateDealTime}
+          onUpdateDealItem={updateDealItem}
+          onUpdateDealDelivery={updateDealDelivery}
+        />
+      </div>
 
-      <MessageInput
-        currentUserId={currentUserId}
-        conversationId={conversationId}
-        conversationPostId={conversationPostId}
-        postInfo={postInfo}
-        setMessages={setMessages}
-        carrierId={carrierId}
-        depositorId={depositorId}
-      />
+      <div className="shrink-0">
+        <MessageInput
+          currentUserId={currentUserId}
+          conversationId={conversationId}
+          conversationPostId={conversationPostId}
+          postInfo={postInfo}
+          setMessages={setMessages}
+          carrierId={carrierId}
+          depositorId={depositorId}
+        />
+      </div>
     </div>
   );
 }

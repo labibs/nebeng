@@ -9,7 +9,9 @@
       "Bash(pkill *)",
       "Bash(sleep *)",
       "Bash(npm run *)",
-      "Bash(cd *)"
+      "Bash(cd *)",
+      "Bash(head *)",
+      "Bash(echo *)"
     ]
   },
   "$version": 3

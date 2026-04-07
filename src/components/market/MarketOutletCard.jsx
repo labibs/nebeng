@@ -5,12 +5,16 @@ import GoogleMapsPointViewer from "../GoogleMapsViewer";
 import AddressText from "./AddressText";
 import OutletRouteViewer from "./OutletRouteViewer";
 
-export default function MarketOutletCard({ outlet }) {
+export default function MarketOutletCard({ outlet, clickable = true }) {
   const [openRoute, setOpenRoute] = useState(false);
   const [openMaps, setOpenMaps] = useState(false);
   const navigate = useNavigate();
 
   const { name, id, category, image_url, address, status, owner } = outlet;
+
+  const handleClick = () => {
+    if (clickable) navigate(`/outlet/${id}`);
+  };
 
   const keteranganByStatus = () => {
     if (status === "kurir") return "Bisa nitip";
@@ -28,8 +32,8 @@ export default function MarketOutletCard({ outlet }) {
 
   return (
     <div
-      onClick={() => navigate(`/outlet/${id}`)}
-      className="overflow-hidden rounded-[26px] border border-slate-100 bg-white shadow-[0_14px_34px_rgba(0,0,0,0.06)] transition-all duration-300 hover:shadow-[0_18px_42px_rgba(0,0,0,0.1)] cursor-pointer"
+      onClick={handleClick}
+      className={`overflow-hidden rounded-[26px] border border-slate-100 bg-white shadow-[0_14px_34px_rgba(0,0,0,0.06)] transition-all duration-300 hover:shadow-[0_18px_42px_rgba(0,0,0,0.1)] ${clickable ? "cursor-pointer" : "cursor-default"}`}
     >
       <div className="relative p-2 pb-0">
         <div className="relative h-36 overflow-hidden rounded-[20px] bg-slate-100">

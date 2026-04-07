@@ -5,7 +5,7 @@ export default function OutletHeader() {
   const navigate = useNavigate();
 
   return (
-    <div className="relative z-50 shrink-0 pt-6 px-4 pb-0">
+    <div className="sticky top-0 z-50 bg-[#f0f7ff] shrink-0 pt-3 px-4 pb-1">
       <div className="flex items-start gap-3 mb-5">
         <button
           onClick={() => navigate(-1)}

@@ -28,7 +28,7 @@ export default function ChatMessages({
 }) {
   if (loading) {
     return (
-      <div className="flex-1 overflow-y-auto p-4 pb-32">
+      <div className="p-4 pb-32">
         <div className="space-y-6">
           {[1, 2, 3, 4].map((i) => (
             <div
@@ -59,7 +59,7 @@ export default function ChatMessages({
   }, {});
 
   return (
-    <div className="flex-1 overflow-y-auto relative p-4 pb-32">
+    <div className="relative p-4 pb-32">
       {Object.entries(grouped).map(([dateKey, msgs]) => (
         <div key={dateKey} className="space-y-6">
           {/* 🔹 STICKY DATE SEPARATOR */}

@@ -178,8 +178,7 @@ export default function DetailOutlet() {
         exit={{ x: "-100%", opacity: 0 }}
         transition={{ type: "tween", ease: "easeOut", duration: 0.35 }}
       >
-        <div className="px-4 pt-4 space-y-4">
-          {/* Header skeleton */}
+        <div className="sticky top-0 z-40 bg-[#f0f7ff] pt-3 px-4 pb-0">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-11 h-11 rounded-full bg-white shadow-sm animate-pulse" />
             <div className="space-y-2">
@@ -187,6 +186,8 @@ export default function DetailOutlet() {
               <div className="h-3 w-16 rounded-full bg-[#edf3ff] animate-pulse" />
             </div>
           </div>
+        </div>
+        <div className="px-4 pt-4 space-y-4">
           {/* Banner skeleton */}
           <div className="h-40 rounded-2xl bg-[#e4edff] animate-pulse" />
           {/* Info card skeleton */}
@@ -218,7 +219,7 @@ export default function DetailOutlet() {
 
   return (
     <motion.div
-      className="min-h-screen bg-base-100 pb-24"
+      className="min-h-screen bg-[#f0f7ff] pb-24"
       initial={{ x: "100%", opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: "-100%", opacity: 0 }}
@@ -226,7 +227,7 @@ export default function DetailOutlet() {
     >
       <OutletHeader outlet={outlet} isOwner={isOwner} />
 
-      <div className="px-4 space-y-4">
+      <div className="px-4 space-y-4 pb-4">
         <OutletInfoCard outlet={outlet} isOwner={isOwner} user={user} />
         <CategoryChips
           isOwner={isOwner}

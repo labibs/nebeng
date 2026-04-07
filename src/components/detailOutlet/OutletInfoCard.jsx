@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
-import { MessageCircle, User, UserRoundPlus, MapPin, Route } from "lucide-react";
+import {
+  MessageCircle,
+  User,
+  UserRoundPlus,
+  MapPin,
+  Route,
+} from "lucide-react";
 import AddressText from "../market/AddressText";
 import GoogleMapsPointViewer from "../GoogleMapsViewer";
 import OutletRouteViewer from "../market/OutletRouteViewer";
@@ -45,67 +51,80 @@ export default function OutletInfoCard({ outlet, isOwner, user }) {
   return (
     <div className="rounded-2xl overflow-hidden shadow-lg">
       <img
-        src={
-          outlet.image_url ||
-          "https://placehold.co/600x400?text=Outlet"
-        }
+        src={outlet.image_url || "https://placehold.co/600x400?text=Outlet"}
         alt="Outlet Banner"
         className="w-full h-40 object-cover"
       />
 
       <div className="p-4 space-y-3">
         <div className="flex items-center gap-3">
-          <div className="flex-1">
-            <p className="font-semibold">{outlet.name}</p>
-            <p className="text-xs opacity-60"><AddressText address={outlet.address} /></p>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-slate-900 truncate">
+              {outlet.name}
+            </p>
+            <p className="text-xs text-slate-400 truncate">
+              <AddressText address={outlet.address} />
+            </p>
           </div>
           {/* Kanan */}
           {!isOwner && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => setOpenMaps(true)}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 active:scale-95 transition-all"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-100 bg-white text-slate-500 shadow-sm transition-transform active:scale-95"
               >
-                <MapPin size={22} />
+                <MapPin size={16} />
               </button>
               <button
                 onClick={() => setOpenRoute(true)}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 active:scale-95 transition-all"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-100 bg-white text-slate-500 shadow-sm transition-transform active:scale-95"
               >
-                <Route size={22} />
+                <Route size={16} />
               </button>
             </div>
           )}
-
         </div>
 
-        <div className="flex items-center justify-between bg-green-100 rounded-xl p-3 text-center">
-          <p className="text-sm text-amber-950">{outlet.description || "Belum ada deskripsi"}</p>
+        <div className="flex items-center justify-between bg-blue-50 rounded-xl p-3 text-center border border-blue-100">
+          <p className="text-sm text-slate-600">
+            {outlet.description || "Belum ada deskripsi"}
+          </p>
         </div>
-        <hr className="my-2 " />
+        <hr className="my-2 border-slate-100" />
         {!isOwner && (
-          <div className="p-0 flex items-center gap-3 ">
-            <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm">
+          <div className="p-0 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm shrink-0">
               {outlet?.owner?.avatar_url ? (
-                <img src={outlet?.owner?.avatar_url} alt={outlet?.owner?.name} className="w-full h-full object-cover" />
+                <img
+                  src={outlet?.owner?.avatar_url}
+                  alt={outlet?.owner?.name}
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                <User size={24} className="text-indigo-300 dark:text-indigo-400" />
+                <User size={16} className="text-[#4e73df]" />
               )}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
-                <p className="text-sm font-bold text-gray-900 dark:text-white">{outlet?.owner?.name}</p>
-                <span className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded-full font-bold">Verifikasi</span>
+                <p className="text-sm font-semibold text-slate-700 truncate">
+                  {outlet?.owner?.name}
+                </p>
+                <span className="text-[9px] bg-blue-50 text-[#4e73df] px-1.5 py-0.5 rounded-full font-semibold border border-blue-100 shrink-0">
+                  Verifikasi
+                </span>
               </div>
-              <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Owner Terpercaya</p>
+              <p className="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">
+                Owner Terpercaya
+              </p>
             </div>
             <button
               onClick={() => startChatWith(outlet, user)}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 active:scale-95 transition-all">
-              <MessageCircle size={22} />
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-100 bg-white text-slate-500 shadow-sm transition-transform active:scale-95 shrink-0"
+            >
+              <MessageCircle size={16} />
             </button>
-            <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 active:scale-95 transition-all">
-              <UserRoundPlus size={22} />
+            <button className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-100 bg-white text-slate-500 shadow-sm transition-transform active:scale-95 shrink-0">
+              <UserRoundPlus size={16} />
             </button>
           </div>
         )}

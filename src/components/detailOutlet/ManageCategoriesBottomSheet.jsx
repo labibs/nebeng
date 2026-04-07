@@ -73,23 +73,23 @@ export default function ManageCategoriesBottomSheet({
             categories.map((cat) => (
               <div
                 key={cat.id}
-                className="flex items-center justify-between p-3 bg-base-200 rounded-xl"
+                className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100"
               >
-                <span className="font-medium text-base-content/90 truncate mr-2">
+                <span className="font-medium text-slate-700 truncate mr-2">
                   {cat.name}
                 </span>
                 <div className="flex gap-2 flex-shrink-0">
                   <button
                     onClick={() => setEditingCategory(cat)}
-                    className="btn btn-sm btn-square btn-ghost text-amber-500 bg-amber-500/10 hover:bg-amber-500/20"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 bg-slate-50 hover:bg-slate-100 transition-colors"
                   >
-                    <Pencil size={16} />
+                    <Pencil size={14} />
                   </button>
                   <button
                     onClick={() => handleDelete(cat)}
-                    className="btn btn-sm btn-square btn-ghost text-red-500 bg-red-500/10 hover:bg-red-500/20"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-red-500 bg-red-50 hover:bg-red-100 transition-colors"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>

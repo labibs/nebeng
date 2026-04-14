@@ -103,20 +103,23 @@ export default function OutletRouteViewer({
   return (
     <div
       className={`
-        fixed inset-0 z-[9999]
+        fixed inset-0 z-[11000]
         bg-gradient-to-br from-green-100 to-emerald-200
         dark:from-slate-900 dark:to-slate-800
         transition-transform duration-300 ease-out
         ${open ? "translate-x-0" : "translate-x-full"}
       `}
     >
-      <div className="fixed inset-0 flex flex-col">
+      <div className="h-full flex flex-col pt-12 pb-20">
         {/* HEADER */}
         <div className="shrink-0">
-          <div className="pointer-events-auto flex items-start gap-3 mb-2 pt-6 px-4 pb-2">
+          <div className="flex items-start gap-3 mb-2 px-4 pb-2">
             <button
-              onClick={() => setOpen(false)}
-              className="bg-white rounded-full p-3 shadow-lg text-black"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpen(false);
+              }}
+              className="bg-white rounded-full p-3 shadow-lg text-black active:scale-95 transition-all hover:bg-slate-50"
             >
               <ArrowLeft size={20} />
             </button>
@@ -130,11 +133,12 @@ export default function OutletRouteViewer({
         </div>
 
         {/* MAP */}
-        <div className="flex-1">
+        <div className="flex-1 relative bg-white border-y">
           {loading && (
-            <div className="absolute inset-0 flex items-center justify-center z-50">
-              <div className="bg-white px-4 py-2 rounded-xl shadow">
-                Memuat rute...
+            <div className="absolute inset-0 flex items-center justify-center z-[11001] bg-white/50 backdrop-blur-sm">
+              <div className="bg-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-3">
+                <div className="w-5 h-5 border-2 border-[#4e73df] border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm font-medium">Memuat rute...</span>
               </div>
             </div>
           )}
@@ -155,8 +159,9 @@ export default function OutletRouteViewer({
               <Polyline
                 positions={route}
                 pathOptions={{
-                  color: "blue",
-                  weight: 4,
+                  color: "#4e73df",
+                  weight: 5,
+                  opacity: 0.8,
                 }}
               />
             )}
@@ -167,10 +172,17 @@ export default function OutletRouteViewer({
 
         {/* INFO */}
         {outlet && (
-          <div className="shrink-0 p-4 bg-white/80 backdrop-blur">
-            <h4 className="font-semibold">{outlet.name}</h4>
-
-            <p className="text-xs opacity-70">{outlet.address}</p>
+          <div className="shrink-0 p-4 bg-white/95 backdrop-blur-md shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 rounded-full bg-[#4e73df]" />
+              <h4 className="font-bold text-sm text-slate-800 uppercase tracking-tight">
+                Detail Rute
+              </h4>
+            </div>
+            <p className="font-semibold text-xs text-slate-700 leading-snug">
+              {outlet.name}
+            </p>
+            <p className="text-[10px] text-slate-500 mt-1">{outlet.address}</p>
           </div>
         )}
       </div>

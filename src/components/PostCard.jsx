@@ -19,6 +19,7 @@ import {
   Navigation,
   MapPin,
   Heart,
+  ArrowLeft,
 } from "lucide-react";
 import {
   MapContainer,
@@ -64,6 +65,8 @@ export default function PostCard({ post }) {
   const [toMapOpen, setToMapOpen] = useState(false);
   const [fromExpanded, setFromExpanded] = useState(false);
   const [toExpanded, setToExpanded] = useState(false);
+  const [fullImageOpen, setFullImageOpen] = useState(false);
+  const [inlineMapMode, setInlineMapMode] = useState(null); // null, 'dari', 'ke', 'rute'
 
   const currentUserId = clerkUser?.id;
   const poster = post.users || {};
@@ -280,11 +283,16 @@ export default function PostCard({ post }) {
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black">
-      <LazyImage
-        src={itemPhoto}
-        alt="Item"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      <div
+        className="absolute inset-0 w-full h-full cursor-pointer"
+        onClick={() => setFullImageOpen(true)}
+      >
+        <LazyImage
+          src={itemPhoto}
+          alt="Item"
+          className="w-full h-full object-cover"
+        />
+      </div>
 
       {/* Main Info Card */}
       <div className="absolute inset-x-0 bottom-20 z-20">
@@ -346,7 +354,7 @@ export default function PostCard({ post }) {
         className={`transition-all duration-500 overflow-hidden ${open ? "max-h-screen opacity-100" : "max-h-0 opacity-0"}`}
       >
         <div className="absolute inset-x-0 bottom-20 z-30 px-4 pb-3">
-          <div className="rounded-2xl backdrop-blur-xl bg-black/60 border border-white/20 p-4 space-y-3">
+          <div className="rounded-2xl backdrop-blur-xl bg-black/60 border border-white/20 p-4 space-y-4">
             {/* Close Button + Profile Info */}
             <div className="flex items-center justify-between">
               {/* Profile Info */}
@@ -379,18 +387,20 @@ export default function PostCard({ post }) {
 
             {/* Content Post */}
             {post.type === "content" && post.description && (
-              <div className="rounded-xl bg-white/10 p-4 border border-white/15">
+              <div className="rounded-2xl bg-white/10 p-4 border border-white/15">
                 <p className="text-sm text-white/90 leading-relaxed">
                   {post.description}
                 </p>
               </div>
             )}
 
-            {/* Route Card - Floating Illustration Style */}
+            {/* Route Card - Refined layout with vertical actions */}
             {post.type !== "content" && (
-              <div className="relative mt-10 mb-2 mx-1">
-                {/* Floating Illustration - Outside overflow-hidden */}
-                <div className="absolute -top-10 left-12 w-36 h-36 pointer-events-none z-30 drop-shadow-[0_15px_15px_rgba(0,0,0,0.3)]">
+              <div className="relative mt-8">
+                {/* Floating Illustration - MOVED OUTSIDE overflow-hidden */}
+                <div
+                  className={`absolute -top-10 left-12 w-36 h-36 pointer-events-none z-30 drop-shadow-[0_15px_15px_rgba(0,0,0,0.3)] transition-opacity duration-300 ${inlineMapMode ? "opacity-0 invisible" : "opacity-100 visible"}`}
+                >
                   <div className="transform -rotate-6 scale-100">
                     <img
                       src={
@@ -416,86 +426,153 @@ export default function PostCard({ post }) {
                   </div>
                 </div>
 
-                <div className="rounded-2xl bg-[#4e73df] p-4 shadow-2xl relative overflow-hidden text-white">
+                <div className="rounded-2xl bg-[#4e73df] shadow-2xl relative overflow-hidden text-white transition-all duration-300 min-h-[160px]">
                   {/* Decoration Circles */}
                   <div className="absolute top-[-20px] right-[-20px] w-40 h-40 bg-white/5 rounded-full blur-3xl" />
                   <div className="absolute bottom-[-20px] left-[-20px] w-32 h-32 bg-white/5 rounded-full blur-2xl" />
 
-                  <div className="relative z-10 flex gap-4">
-                    {/* Left Column: Main Details */}
-                    <div className="flex-1 flex flex-col justify-end min-w-0 pt-14">
-                      <div className="space-y-1 mb-3">
-                        {/* Title & Date */}
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-base">{config.icon}</span>
-                            <h3 className="font-bold text-base truncate leading-tight">
-                              {config.label.charAt(0).toUpperCase() +
-                                config.label.slice(1)}
-                            </h3>
+                  {/* INLINE MAP VIEW */}
+                  {inlineMapMode ? (
+                    <div className="relative h-64 w-full animate-in fade-in zoom-in duration-300">
+                      {/* Map Header */}
+                      <div className="absolute top-3 left-3 right-3 z-[401] flex items-center justify-between pointer-events-none">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setInlineMapMode(null);
+                          }}
+                          className="pointer-events-auto bg-white/90 backdrop-blur shadow-lg px-3 py-1.5 rounded-full text-black font-bold text-xs flex items-center gap-1.5 active:scale-95 transition"
+                        >
+                          <ArrowLeft size={14} strokeWidth={3} />
+                          Kembali
+                        </button>
+                        <div className="bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                          {inlineMapMode === "dari"
+                            ? "Lokasi Asal"
+                            : inlineMapMode === "ke"
+                              ? "Lokasi Tujuan"
+                              : "Rute Perjalanan"}
+                        </div>
+                      </div>
+
+                      <MapContainer
+                        center={
+                          inlineMapMode === "dari"
+                            ? [post.from_lat, post.from_lng]
+                            : inlineMapMode === "ke"
+                              ? [post.to_lat, post.to_lng]
+                              : [post.from_lat, post.from_lng]
+                        }
+                        zoom={14}
+                        className="w-full h-full"
+                        zoomControl={false}
+                        attributionControl={false}
+                      >
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+                        {inlineMapMode === "dari" && (
+                          <Marker position={[post.from_lat, post.from_lng]} />
+                        )}
+                        {inlineMapMode === "ke" && (
+                          <Marker position={[post.to_lat, post.to_lng]} />
+                        )}
+                        {inlineMapMode === "rute" && (
+                          <>
+                            <Marker position={[post.from_lat, post.from_lng]} />
+                            <Marker position={[post.to_lat, post.to_lng]} />
+                            {route && (
+                              <Polyline
+                                positions={route}
+                                pathOptions={{
+                                  color: "white",
+                                  weight: 4,
+                                  opacity: 1,
+                                  dashArray: "1, 10",
+                                }}
+                              />
+                            )}
+                            {route && <FitBounds points={route} />}
+                          </>
+                        )}
+                      </MapContainer>
+                    </div>
+                  ) : (
+                    <div className="relative z-10 flex gap-4 p-4">
+                      {/* Left Column: Main Details */}
+                      <div className="flex-1 flex flex-col justify-end min-w-0 pt-14">
+                        <div className="space-y-1 mb-3">
+                          {/* Title & Date */}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <span className="text-base">{config.icon}</span>
+                              <h3 className="font-bold text-base truncate leading-tight">
+                                {config.label.charAt(0).toUpperCase() +
+                                  config.label.slice(1)}
+                              </h3>
+                            </div>
+                            <p className="text-xs font-medium text-white/80 leading-tight">
+                              Berangkat: {displayDate || "Waktu fleksibel"}
+                            </p>
                           </div>
-                          <p className="text-xs font-medium text-white/80 leading-tight">
-                            Berangkat: {displayDate || "Waktu fleksibel"}
-                          </p>
                         </div>
-                      </div>
 
-                      {/* Ongkos (Bottom of Left Column) */}
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-xs font-bold text-white/60">
-                          Ongkos
-                        </span>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-sm font-bold">Rp</span>
-                          <span className="text-2xl font-black leading-none">
-                            {post.fee?.toLocaleString("id-ID") || "0"}
+                        {/* Ongkos (Bottom of Left Column) */}
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-xs font-bold text-white/60">
+                            Ongkos
                           </span>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-sm font-bold">Rp</span>
+                            <span className="text-2xl font-black leading-none">
+                              {post.fee?.toLocaleString("id-ID") || "0"}
+                            </span>
+                          </div>
                         </div>
                       </div>
+
+                      {/* Right Column: Vertical Actions (Dari, Ke, Rute) */}
+                      <div className="flex flex-col gap-2 shrink-0 border-l border-white/10 pl-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setInlineMapMode("dari");
+                          }}
+                          className="w-12 h-12 bg-white/15 rounded-lg flex flex-col items-center justify-center hover:bg-white/25 transition border border-white/10 group shadow-sm"
+                        >
+                          <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
+                            Dari
+                          </span>
+                          <MapPin size={14} className="text-white" />
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setInlineMapMode("ke");
+                          }}
+                          className="w-12 h-12 bg-white/15 rounded-lg flex flex-col items-center justify-center hover:bg-white/25 transition border border-white/10 group shadow-sm"
+                        >
+                          <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
+                            Ke
+                          </span>
+                          <MapPin size={14} className="text-white" />
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setInlineMapMode("rute");
+                          }}
+                          className="w-12 h-12 bg-white/20 rounded-lg flex flex-col items-center justify-center hover:bg-white/30 transition border border-white/10 group shadow-sm"
+                        >
+                          <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
+                            Rute
+                          </span>
+                          <Navigation size={14} className="text-white" />
+                        </button>
+                      </div>
                     </div>
-
-                    {/* Right Column: Vertical Actions (Dari, Ke, Rute) */}
-                    <div className="flex flex-col gap-2 shrink-0 border-l border-white/10 pl-3">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setFromMapOpen(true);
-                        }}
-                        className="w-12 h-12 bg-white/15 rounded-lg flex flex-col items-center justify-center hover:bg-white/25 transition border border-white/10 group shadow-sm"
-                      >
-                        <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
-                          Dari
-                        </span>
-                        <MapPin size={14} className="text-white" />
-                      </button>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setToMapOpen(true);
-                        }}
-                        className="w-12 h-12 bg-white/15 rounded-lg flex flex-col items-center justify-center hover:bg-white/25 transition border border-white/10 group shadow-sm"
-                      >
-                        <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
-                          Ke
-                        </span>
-                        <MapPin size={14} className="text-white" />
-                      </button>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setRouteViewerOpen(true);
-                        }}
-                        className="w-12 h-12 bg-white/20 rounded-lg flex flex-col items-center justify-center hover:bg-white/30 transition border border-white/10 group shadow-sm"
-                      >
-                        <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
-                          Rute
-                        </span>
-                        <Navigation size={14} className="text-white" />
-                      </button>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             )}
@@ -505,10 +582,10 @@ export default function PostCard({ post }) {
               <div className="flex gap-3 overflow-x-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent snap-x snap-mandatory pb-1">
                 {/* Dari Card */}
                 {post.from_city && (
-                  <div className="flex-shrink-0 w-80 snap-start rounded-xl bg-white/10 p-3 border border-white/15">
+                  <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                      <p className="text-xs text-white/60">Dari</p>
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+                      <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Asal</p>
                     </div>
                     <p className="text-sm font-semibold text-white leading-relaxed">
                       {fromExpanded
@@ -533,10 +610,10 @@ export default function PostCard({ post }) {
 
                 {/* Ke Card */}
                 {post.to_city && (
-                  <div className="flex-shrink-0 w-80 snap-start rounded-xl bg-white/10 p-3 border border-white/15">
+                  <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                      <p className="text-xs text-white/60">Ke</p>
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.5)]" />
+                      <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Tujuan</p>
                     </div>
                     <p className="text-sm font-semibold text-white leading-relaxed">
                       {toExpanded
@@ -559,44 +636,30 @@ export default function PostCard({ post }) {
                   </div>
                 )}
 
-                {/* Route Icon Card */}
-                {post.from_lat && post.to_lat && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setRouteViewerOpen(true);
-                    }}
-                    className="flex-shrink-0 w-24 snap-start rounded-xl bg-gradient-to-br from-blue-500/30 to-blue-600/30 border border-blue-400/40 flex flex-col items-center justify-center gap-2 hover:from-blue-500/40 hover:to-blue-600/40 transition"
-                  >
-                    <Navigation className="w-8 h-8 text-blue-400" />
-                    <p className="text-xs text-blue-300 font-medium">Rute</p>
-                  </button>
-                )}
-
                 {post.description && (
-                  <div className="flex-shrink-0 w-64 snap-start rounded-xl bg-white/10 p-3 border border-white/15">
-                    <p className="text-xs text-white/60 mb-1.5">Deskripsi</p>
-                    <p className="text-sm text-white/90 leading-relaxed">
+                  <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
+                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">Deskripsi</p>
+                    <p className="text-sm text-white/90 leading-relaxed line-clamp-4">
                       {post.description}
                     </p>
                   </div>
                 )}
                 {post.item_description && (
-                  <div className="flex-shrink-0 w-64 snap-start rounded-xl bg-white/10 p-3 border border-white/15">
-                    <p className="text-xs text-white/60 mb-1.5">
+                  <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
+                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
                       {post.type === "nitip_bawakan" ||
                       post.type === "nitip_belikan"
                         ? "Barang yang dititipkan"
                         : "Info tambahan"}
                     </p>
-                    <p className="text-sm text-white/90 leading-relaxed">
+                    <p className="text-sm text-white/90 leading-relaxed line-clamp-4">
                       {post.item_description}
                     </p>
                   </div>
                 )}
                 {post.price && (
-                  <div className="flex-shrink-0 w-48 snap-start rounded-xl bg-white/10 p-3 border border-white/15">
-                    <p className="text-xs text-white/60 mb-1.5">
+                  <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
+                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
                       {isTitip
                         ? "Perkiraan harga barang"
                         : "Harga barang maksimal"}
@@ -607,8 +670,8 @@ export default function PostCard({ post }) {
                   </div>
                 )}
                 {post.armada && (
-                  <div className="flex-shrink-0 w-36 snap-start rounded-xl bg-white/10 p-3 border border-white/15">
-                    <p className="text-xs text-white/60 mb-1.5">Armada</p>
+                  <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
+                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">Armada</p>
                     <div className="flex items-center gap-2">
                       <ArmadaIcon type={post.armada} />
                       <p className="text-sm font-semibold text-white capitalize">
@@ -618,8 +681,8 @@ export default function PostCard({ post }) {
                   </div>
                 )}
                 {post.location && post.location.lat && post.location.lng && (
-                  <div className="flex-shrink-0 w-56 snap-start rounded-xl bg-white/10 p-3 border border-white/15">
-                    <p className="text-xs text-white/60 mb-1.5">Lokasi</p>
+                  <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
+                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">Lokasi</p>
                     <p className="text-sm font-semibold text-white mb-1">
                       {post.location.name || "Lokasi"}
                     </p>
@@ -803,41 +866,81 @@ export default function PostCard({ post }) {
               </div>
             )}
 
-            {/* Route Viewer Modal */}
-            <OutletRouteViewer
-              open={routeViewerOpen}
-              setOpen={setRouteViewerOpen}
-              outletId={null}
-              customRoute={{
-                from_lat: post.from_lat,
-                from_lng: post.from_lng,
-                to_lat: post.to_lat,
-                to_lng: post.to_lng,
-                from_city: post.from_city,
-                to_city: post.to_city,
-              }}
-            />
-
-            {/* Dari Map Modal */}
-            <GoogleMapsEmbedViewer
-              open={fromMapOpen}
-              setOpen={setFromMapOpen}
-              latitude={post.from_lat}
-              longitude={post.from_lng}
-              address={post.from_city}
-              title="Lokasi Penjemputan"
-            />
-
-            {/* Ke Map Modal */}
-            <GoogleMapsEmbedViewer
-              open={toMapOpen}
-              setOpen={setToMapOpen}
-              latitude={post.to_lat}
-              longitude={post.to_lng}
-              address={post.to_city}
-              title="Lokasi Tujuan"
             />
           </div>
+        </div>
+      </div>
+
+      {/* MODALS - Moved to root level so they work regardless of detail card state */}
+      {/* Route Viewer Modal */}
+      <OutletRouteViewer
+        open={routeViewerOpen}
+        setOpen={setRouteViewerOpen}
+        outletId={null}
+        customRoute={{
+          from_lat: post.from_lat,
+          from_lng: post.from_lng,
+          to_lat: post.to_lat,
+          to_lng: post.to_lng,
+          from_city: post.from_city,
+          to_city: post.to_city,
+        }}
+      />
+
+      {/* Dari Map Modal */}
+      <GoogleMapsEmbedViewer
+        open={fromMapOpen}
+        setOpen={setFromMapOpen}
+        latitude={post.from_lat}
+        longitude={post.from_lng}
+        address={post.from_city}
+        title="Lokasi Penjemputan"
+      />
+
+      {/* Ke Map Modal */}
+      <GoogleMapsEmbedViewer
+        open={toMapOpen}
+        setOpen={setToMapOpen}
+        latitude={post.to_lat}
+        longitude={post.to_lng}
+        address={post.to_city}
+        title="Lokasi Tujuan"
+      />
+
+      {/* Full Screen Image Viewer Modal */}
+      <div
+        className={`fixed inset-0 z-[10000] bg-black transition-all duration-300 flex items-center justify-center ${
+          fullImageOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
+        onClick={() => setFullImageOpen(false)}
+      >
+        {/* Close Button */}
+        <button
+          className="absolute top-10 right-6 z-[10001] bg-white/20 hover:bg-white/30 p-2.5 rounded-full backdrop-blur-md transition-colors border border-white/20"
+          onClick={(e) => {
+            e.stopPropagation();
+            setFullImageOpen(false);
+          }}
+        >
+          <X size={24} className="text-white" />
+        </button>
+
+        <div className="w-full h-full p-4 flex items-center justify-center">
+          <img
+            src={itemPhoto}
+            alt="Full view"
+            className={`max-w-full max-h-full object-contain transition-transform duration-500 ${
+              fullImageOpen ? "scale-100" : "scale-90"
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+
+        {/* Tips */}
+        <div className="absolute bottom-10 left-0 right-0 text-center">
+          <p className="text-white/40 text-xs font-medium tracking-wide uppercase">
+            Ketuk di mana saja untuk kembali
+          </p>
         </div>
       </div>
     </div>

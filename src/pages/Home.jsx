@@ -6,7 +6,7 @@ import LoadingLogo from "../components/LoadingLogo";
 import PostCard from "../components/PostCard";
 import PostCardSkeleton from "../components/PostCardSkeleton";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Navigation, Mousewheel, Keyboard } from "swiper/modules";
+import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
 import { Bike, Car, Bus, Train, Plane, Search, X } from "lucide-react";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
@@ -14,7 +14,6 @@ import SearchModal from "../components/common/SearchModal";
 
 // Import CSS Swiper
 import "swiper/css";
-import "swiper/css/pagination";
 import "swiper/css/navigation";
 import Profile from "./Profile";
 
@@ -490,8 +489,7 @@ export default function Home() {
             spaceBetween={0}
             mousewheel={{ forceToAxis: true }}
             keyboard={true}
-            pagination={{ clickable: true }}
-            modules={[Pagination, Mousewheel, Keyboard]}
+            modules={[Mousewheel, Keyboard]}
             className="h-full w-full"
             speed={600}
             allowTouchMove={true}

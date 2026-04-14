@@ -76,7 +76,7 @@ export default function CreateCariTukang({ onBack }) {
     await supabase.from("posts").insert({
       user_id: userRow.id,
       clerk_user_id: user.id,
-      type: "nitip_bawakan",
+      type: "tukang",
       from_city: fromLocation.address,
       to_city: toLocation.address,
       travel_date: form.travel_date,
@@ -110,16 +110,15 @@ export default function CreateCariTukang({ onBack }) {
                 Nyari Tukang
               </h3>
               <p className="text-xs opacity-70">
-                Tulis kebutuhanmu, cari tukang yang bisa mampir dan bantu di lokasi.
+                Tulis kebutuhanmu, cari tukang yang bisa mampir dan bantu di
+                lokasi.
               </p>
             </div>
           </div>
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto pb-20">
-          <div
-            className="overflow-hidden rounded-2xl border-2 border-dashed transition hover:bg-emerald-50 dark:hover:bg-white/5"
-          >
+          <div className="overflow-hidden rounded-2xl border-2 border-dashed transition hover:bg-emerald-50 dark:hover:bg-white/5">
             <div
               className="relative flex h-40 cursor-pointer items-center justify-center"
               onClick={() => fileRef.current.click()}
@@ -183,7 +182,9 @@ export default function CreateCariTukang({ onBack }) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl border bg-white/70 px-4 py-3 dark:bg-white/5">
-              <p className="mb-1 text-xs opacity-60">Budget kerja kisaran berapa?</p>
+              <p className="mb-1 text-xs opacity-60">
+                Budget kerja kisaran berapa?
+              </p>
               <div className="flex items-center gap-1">
                 <span className="text-sm opacity-60">Rp</span>
                 <input
@@ -200,7 +201,9 @@ export default function CreateCariTukang({ onBack }) {
             </div>
 
             <div className="rounded-2xl border bg-white/70 px-4 py-3 dark:bg-white/5">
-              <p className="mb-1 text-xs opacity-60">Ongkos panggil / tambahan</p>
+              <p className="mb-1 text-xs opacity-60">
+                Ongkos panggil / tambahan
+              </p>
               <div className="flex items-center gap-1">
                 <span className="text-sm opacity-60">Rp</span>
                 <input
@@ -234,9 +237,7 @@ export default function CreateCariTukang({ onBack }) {
               <p className="mb-1 text-xs opacity-60">Mobilitas tukang</p>
               <select
                 value={form.armada}
-                onChange={(e) =>
-                  setForm({ ...form, armada: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, armada: e.target.value })}
                 className="w-full bg-transparent text-sm font-semibold focus:outline-none"
               >
                 <option value="motor">Motor</option>

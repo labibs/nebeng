@@ -7,7 +7,7 @@ import {
   TileLayer,
   Marker,
   Polyline,
-  useMap
+  useMap,
 } from "react-leaflet";
 
 import L from "leaflet";
@@ -25,15 +25,35 @@ function FitBounds({ points }) {
   return null;
 }
 
-export default function OutletRouteViewer({ open, setOpen, outletId }) {
-
+export default function OutletRouteViewer({
+  open,
+  setOpen,
+  outletId,
+  customRoute,
+}) {
   const [route, setRoute] = useState(null);
   const [outlet, setOutlet] = useState(null);
   const [loading, setLoading] = useState(false);
 
   // ===== AMBIL DATA OUTLET =====
   useEffect(() => {
-    if (!outletId || !open) return;
+    if (!open) return;
+
+    // Kalau ada customRoute, pakai itu langsung
+    if (customRoute) {
+      setOutlet({
+        name: `${customRoute.from_city || "Asal"} → ${customRoute.to_city || "Tujuan"}`,
+        address: `Rute perjalanan`,
+        from_lat: customRoute.from_lat,
+        from_lng: customRoute.from_lng,
+        to_lat: customRoute.to_lat,
+        to_lng: customRoute.to_lng,
+      });
+      getRoute(customRoute);
+      return;
+    }
+
+    if (!outletId) return;
 
     const fetchOutlet = async () => {
       const { data } = await supabase
@@ -51,7 +71,7 @@ export default function OutletRouteViewer({ open, setOpen, outletId }) {
     };
 
     fetchOutlet();
-  }, [outletId, open]);
+  }, [outletId, open, customRoute]);
 
   // ===== AMBIL RUTE DARI OSRM =====
   const getRoute = async (o) => {
@@ -65,24 +85,17 @@ export default function OutletRouteViewer({ open, setOpen, outletId }) {
     const res = await fetch(url);
     const json = await res.json();
 
-    const coords = json.routes[0].geometry.coordinates.map(c => [
-      c[1],
-      c[0],
-    ]);
+    const coords = json.routes[0].geometry.coordinates.map((c) => [c[1], c[0]]);
 
     setRoute(coords);
     setLoading(false);
   };
 
-  const startPoint =
-    outlet?.from_lat
-      ? [outlet.from_lat, outlet.from_lng]
-      : null;
+  const startPoint = outlet?.from_lat
+    ? [outlet.from_lat, outlet.from_lng]
+    : null;
 
-  const endPoint =
-    outlet?.to_lat
-      ? [outlet.to_lat, outlet.to_lng]
-      : null;
+  const endPoint = outlet?.to_lat ? [outlet.to_lat, outlet.to_lng] : null;
 
   const points = [startPoint, endPoint].filter(Boolean);
 
@@ -97,9 +110,7 @@ export default function OutletRouteViewer({ open, setOpen, outletId }) {
         ${open ? "translate-x-0" : "translate-x-full"}
       `}
     >
-
       <div className="fixed inset-0 flex flex-col">
-
         {/* HEADER */}
         <div className="shrink-0">
           <div className="pointer-events-auto flex items-start gap-3 mb-2 pt-6 px-4 pb-2">
@@ -111,20 +122,15 @@ export default function OutletRouteViewer({ open, setOpen, outletId }) {
             </button>
 
             <div className="flex flex-col">
-              <h3 className="text-base font-semibold leading-tight">
-                Rute 
-              </h3>
+              <h3 className="text-base font-semibold leading-tight">Rute</h3>
 
-              <p className="text-xs opacity-70">
-                Jalur yang akan dilewati 
-              </p>
+              <p className="text-xs opacity-70">Jalur yang akan dilewati</p>
             </div>
           </div>
         </div>
 
         {/* MAP */}
         <div className="flex-1">
-
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center z-50">
               <div className="bg-white px-4 py-2 rounded-xl shadow">
@@ -139,17 +145,11 @@ export default function OutletRouteViewer({ open, setOpen, outletId }) {
             className="w-full h-full"
             zoomControl={false}
           >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-            {startPoint && (
-              <Marker position={startPoint} />
-            )}
+            {startPoint && <Marker position={startPoint} />}
 
-            {endPoint && (
-              <Marker position={endPoint} />
-            )}
+            {endPoint && <Marker position={endPoint} />}
 
             {route && (
               <Polyline
@@ -168,16 +168,11 @@ export default function OutletRouteViewer({ open, setOpen, outletId }) {
         {/* INFO */}
         {outlet && (
           <div className="shrink-0 p-4 bg-white/80 backdrop-blur">
-            <h4 className="font-semibold">
-              {outlet.name}
-            </h4>
+            <h4 className="font-semibold">{outlet.name}</h4>
 
-            <p className="text-xs opacity-70">
-              {outlet.address}
-            </p>
+            <p className="text-xs opacity-70">{outlet.address}</p>
           </div>
         )}
-
       </div>
     </div>
   );

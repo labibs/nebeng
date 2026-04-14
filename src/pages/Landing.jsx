@@ -148,7 +148,7 @@ export default function Landing() {
 
           {/* Footer with Version Combined */}
           <div className="relative z-10 mt-8 flex items-center justify-center gap-2 text-xs sm:text-sm text-slate-400">
-            <span className="font-bold text-[#4e73df]/60">V 2.0.2</span>
+            <span className="font-bold text-[#4e73df]/60">V 2.0.3</span>
             <span className="h-1 w-1 rounded-full bg-slate-300" />
             <p>
               Powered by{" "}

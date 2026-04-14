@@ -11,7 +11,8 @@
       "Bash(npm run *)",
       "Bash(cd *)",
       "Bash(head *)",
-      "Bash(echo *)"
+      "Bash(echo *)",
+      "Bash(sed *)"
     ]
   },
   "$version": 3

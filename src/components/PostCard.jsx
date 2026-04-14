@@ -7,14 +7,31 @@ import {
 import { id as localeId } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import LazyImage from "./LazyImage";
-import { Bike, Car, Bus, Train, X } from "lucide-react";
+import {
+  Bike,
+  Car,
+  Bus,
+  Train,
+  X,
+  Navigation,
+  MapPin,
+  Heart,
+} from "lucide-react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Polyline,
+  useMap,
+} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import OutletRouteViewer from "./market/OutletRouteViewer";
+import GoogleMapsEmbedViewer from "./GoogleMapsViewer";
 
 // Fix icon marker
-import L from "leaflet";
-delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -22,11 +39,31 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
+function FitBounds({ points }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (points.length > 1) {
+      const bounds = L.latLngBounds(points);
+      map.fitBounds(bounds, { padding: [30, 30] });
+    }
+  }, [points]);
+
+  return null;
+}
+
 export default function PostCard({ post }) {
   const navigate = useNavigate();
   const { user: clerkUser, isSignedIn } = useUser();
   const [open, setOpen] = useState(false);
   const [loadingChat, setLoadingChat] = useState(false);
+  const [route, setRoute] = useState(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeViewerOpen, setRouteViewerOpen] = useState(false);
+  const [fromMapOpen, setFromMapOpen] = useState(false);
+  const [toMapOpen, setToMapOpen] = useState(false);
+  const [fromExpanded, setFromExpanded] = useState(false);
+  const [toExpanded, setToExpanded] = useState(false);
 
   const currentUserId = clerkUser?.id;
   const poster = post.users || {};
@@ -134,6 +171,31 @@ export default function PostCard({ post }) {
     post.item_photo ||
     "https://beritabeta.com/storage/img/2020/06/jastip-ota-ok-17668.jpg";
 
+  // Fetch route dari OSRM
+  useEffect(() => {
+    if (!post.from_lat || !post.to_lat || !open) return;
+    const fetchRoute = async () => {
+      setRouteLoading(true);
+      try {
+        const url = `https://router.project-osrm.org/route/v1/driving/${post.from_lng},${post.from_lat};${post.to_lng},${post.to_lat}?overview=full&geometries=geojson`;
+        const res = await fetch(url);
+        const json = await res.json();
+        if (json.routes?.length > 0) {
+          const coords = json.routes[0].geometry.coordinates.map((c) => [
+            c[1],
+            c[0],
+          ]);
+          setRoute(coords);
+        }
+      } catch (e) {
+        console.error("Gagal ambil rute:", e);
+      } finally {
+        setRouteLoading(false);
+      }
+    };
+    fetchRoute();
+  }, [post.from_lat, post.to_lat, open]);
+
   const handleChatDeal = async () => {
     if (!isSignedIn) {
       alert("Kamu harus login dulu untuk chat!");
@@ -211,9 +273,9 @@ export default function PostCard({ post }) {
   };
 
   const icons = { motor: Bike, mobil: Car, bus: Bus, kereta: Train };
-  const ArmadaIcon = ({ type }) => {
+  const ArmadaIcon = ({ type, className = "w-5 h-5 text-white" }) => {
     const Icon = icons[type] ?? Bike;
-    return <Icon className="w-5 h-5 text-white" />;
+    return <Icon className={className} />;
   };
 
   return (
@@ -285,8 +347,25 @@ export default function PostCard({ post }) {
       >
         <div className="absolute inset-x-0 bottom-20 z-30 px-4 pb-3">
           <div className="rounded-2xl backdrop-blur-xl bg-black/60 border border-white/20 p-4 space-y-3">
-            {/* Close Button */}
-            <div className="flex justify-end">
+            {/* Close Button + Profile Info */}
+            <div className="flex items-center justify-between">
+              {/* Profile Info */}
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full ring-1 ring-white/30 overflow-hidden">
+                  <img
+                    src={userAvatar}
+                    alt={username}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-semibold text-white">{username}</p>
+                  <span className="text-xs text-white/40">·</span>
+                  <span className="text-xs text-white/50">{createDate}</span>
+                </div>
+              </div>
+
+              {/* Close Button */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -298,7 +377,7 @@ export default function PostCard({ post }) {
               </button>
             </div>
 
-            {/* Content Post - Description only */}
+            {/* Content Post */}
             {post.type === "content" && post.description && (
               <div className="rounded-xl bg-white/10 p-4 border border-white/15">
                 <p className="text-sm text-white/90 leading-relaxed">
@@ -307,56 +386,193 @@ export default function PostCard({ post }) {
               </div>
             )}
 
-            {/* Route Card - Non content */}
+            {/* Route Card - Floating Illustration Style */}
             {post.type !== "content" && (
-              <div className="rounded-xl bg-gradient-to-br from-sky-500/90 to-blue-600/90 p-4 shadow-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-white/70 text-xs">Ongkos</span>
-                    <span className="text-white font-bold text-base">
-                      Rp{post.fee?.toLocaleString("id-ID") || "0"}
-                    </span>
+              <div className="relative mt-10 mb-2 mx-1">
+                {/* Floating Illustration - Outside overflow-hidden */}
+                <div className="absolute -top-10 left-12 w-36 h-36 pointer-events-none z-30 drop-shadow-[0_15px_15px_rgba(0,0,0,0.3)]">
+                  <div className="transform -rotate-6 scale-100">
+                    <img
+                      src={
+                        post.armada === "motor"
+                          ? "https://img.icons8.com/3d-fluency/200/motorcycle.png"
+                          : post.armada === "mobil"
+                            ? "https://img.icons8.com/3d-fluency/200/car.png"
+                            : post.armada === "bus"
+                              ? "https://img.icons8.com/3d-fluency/200/bus.png"
+                              : post.armada === "kereta"
+                                ? "https://img.icons8.com/3d-fluency/200/train.png"
+                                : post.armada === "pesawat"
+                                  ? "https://img.icons8.com/3d-fluency/200/airplane-mode-on.png"
+                                  : "https://img.icons8.com/3d-fluency/200/bicycle.png"
+                      }
+                      alt={post.armada}
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.target.src =
+                          "https://img.icons8.com/3d-fluency/200/bicycle.png";
+                      }}
+                    />
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-2 h-2 rounded-full bg-white/80" />
-                      <p className="text-xs text-white/70">Dari</p>
+
+                <div className="rounded-2xl bg-[#4e73df] p-4 shadow-2xl relative overflow-hidden text-white">
+                  {/* Decoration Circles */}
+                  <div className="absolute top-[-20px] right-[-20px] w-40 h-40 bg-white/5 rounded-full blur-3xl" />
+                  <div className="absolute bottom-[-20px] left-[-20px] w-32 h-32 bg-white/5 rounded-full blur-2xl" />
+
+                  <div className="relative z-10 flex gap-4">
+                    {/* Left Column: Main Details */}
+                    <div className="flex-1 flex flex-col justify-end min-w-0 pt-14">
+                      <div className="space-y-1 mb-3">
+                        {/* Title & Date */}
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span className="text-base">{config.icon}</span>
+                            <h3 className="font-bold text-base truncate leading-tight">
+                              {config.label.charAt(0).toUpperCase() +
+                                config.label.slice(1)}
+                            </h3>
+                          </div>
+                          <p className="text-xs font-medium text-white/80 leading-tight">
+                            Berangkat: {displayDate || "Waktu fleksibel"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Ongkos (Bottom of Left Column) */}
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xs font-bold text-white/60">
+                          Ongkos
+                        </span>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-sm font-bold">Rp</span>
+                          <span className="text-2xl font-black leading-none">
+                            {post.fee?.toLocaleString("id-ID") || "0"}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm font-semibold text-white truncate">
-                      {post.from_city || "—"}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-center px-2">
-                    <div className="mb-1">
-                      <ArmadaIcon type={post.armada} />
+
+                    {/* Right Column: Vertical Actions (Dari, Ke, Rute) */}
+                    <div className="flex flex-col gap-2 shrink-0 border-l border-white/10 pl-3">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setFromMapOpen(true);
+                        }}
+                        className="w-12 h-12 bg-white/15 rounded-lg flex flex-col items-center justify-center hover:bg-white/25 transition border border-white/10 group shadow-sm"
+                      >
+                        <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
+                          Dari
+                        </span>
+                        <MapPin size={14} className="text-white" />
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setToMapOpen(true);
+                        }}
+                        className="w-12 h-12 bg-white/15 rounded-lg flex flex-col items-center justify-center hover:bg-white/25 transition border border-white/10 group shadow-sm"
+                      >
+                        <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
+                          Ke
+                        </span>
+                        <MapPin size={14} className="text-white" />
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRouteViewerOpen(true);
+                        }}
+                        className="w-12 h-12 bg-white/20 rounded-lg flex flex-col items-center justify-center hover:bg-white/30 transition border border-white/10 group shadow-sm"
+                      >
+                        <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
+                          Rute
+                        </span>
+                        <Navigation size={14} className="text-white" />
+                      </button>
                     </div>
-                    <div className="w-12 h-0.5 bg-white/40 rounded-full" />
-                  </div>
-                  <div className="flex-1 min-w-0 text-right">
-                    <div className="flex items-center gap-2 mb-1 justify-end">
-                      <p className="text-xs text-white/70">Ke</p>
-                      <div className="w-2 h-2 rounded-full bg-white/80" />
-                    </div>
-                    <p className="text-sm font-semibold text-white truncate">
-                      {post.to_city || "—"}
-                    </p>
                   </div>
                 </div>
-                {displayDate && (
-                  <div className="mt-3 pt-3 border-t border-white/20">
-                    <p className="text-xs text-white/80 text-center">
-                      Berangkat: {displayDate}
-                    </p>
-                  </div>
-                )}
               </div>
             )}
 
             {/* Info Cards - Horizontal Scroll */}
             {post.type !== "content" && (
               <div className="flex gap-3 overflow-x-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent snap-x snap-mandatory pb-1">
+                {/* Dari Card */}
+                {post.from_city && (
+                  <div className="flex-shrink-0 w-80 snap-start rounded-xl bg-white/10 p-3 border border-white/15">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                      <p className="text-xs text-white/60">Dari</p>
+                    </div>
+                    <p className="text-sm font-semibold text-white leading-relaxed">
+                      {fromExpanded
+                        ? post.from_city
+                        : post.from_city.length > 50
+                          ? `${post.from_city.substring(0, 50)}...`
+                          : post.from_city}
+                      {post.from_city.length > 50 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFromExpanded(!fromExpanded);
+                          }}
+                          className="ml-1 text-sky-400 font-bold hover:text-sky-300"
+                        >
+                          {fromExpanded ? "Tutup" : "Selengkapnya"}
+                        </button>
+                      )}
+                    </p>
+                  </div>
+                )}
+
+                {/* Ke Card */}
+                {post.to_city && (
+                  <div className="flex-shrink-0 w-80 snap-start rounded-xl bg-white/10 p-3 border border-white/15">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                      <p className="text-xs text-white/60">Ke</p>
+                    </div>
+                    <p className="text-sm font-semibold text-white leading-relaxed">
+                      {toExpanded
+                        ? post.to_city
+                        : post.to_city.length > 50
+                          ? `${post.to_city.substring(0, 50)}...`
+                          : post.to_city}
+                      {post.to_city.length > 50 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setToExpanded(!toExpanded);
+                          }}
+                          className="ml-1 text-sky-400 font-bold hover:text-sky-300"
+                        >
+                          {toExpanded ? "Tutup" : "Selengkapnya"}
+                        </button>
+                      )}
+                    </p>
+                  </div>
+                )}
+
+                {/* Route Icon Card */}
+                {post.from_lat && post.to_lat && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRouteViewerOpen(true);
+                    }}
+                    className="flex-shrink-0 w-24 snap-start rounded-xl bg-gradient-to-br from-blue-500/30 to-blue-600/30 border border-blue-400/40 flex flex-col items-center justify-center gap-2 hover:from-blue-500/40 hover:to-blue-600/40 transition"
+                  >
+                    <Navigation className="w-8 h-8 text-blue-400" />
+                    <p className="text-xs text-blue-300 font-medium">Rute</p>
+                  </button>
+                )}
+
                 {post.description && (
                   <div className="flex-shrink-0 w-64 snap-start rounded-xl bg-white/10 p-3 border border-white/15">
                     <p className="text-xs text-white/60 mb-1.5">Deskripsi</p>
@@ -586,6 +802,41 @@ export default function PostCard({ post }) {
                 </button>
               </div>
             )}
+
+            {/* Route Viewer Modal */}
+            <OutletRouteViewer
+              open={routeViewerOpen}
+              setOpen={setRouteViewerOpen}
+              outletId={null}
+              customRoute={{
+                from_lat: post.from_lat,
+                from_lng: post.from_lng,
+                to_lat: post.to_lat,
+                to_lng: post.to_lng,
+                from_city: post.from_city,
+                to_city: post.to_city,
+              }}
+            />
+
+            {/* Dari Map Modal */}
+            <GoogleMapsEmbedViewer
+              open={fromMapOpen}
+              setOpen={setFromMapOpen}
+              latitude={post.from_lat}
+              longitude={post.from_lng}
+              address={post.from_city}
+              title="Lokasi Penjemputan"
+            />
+
+            {/* Ke Map Modal */}
+            <GoogleMapsEmbedViewer
+              open={toMapOpen}
+              setOpen={setToMapOpen}
+              latitude={post.to_lat}
+              longitude={post.to_lng}
+              address={post.to_city}
+              title="Lokasi Tujuan"
+            />
           </div>
         </div>
       </div>

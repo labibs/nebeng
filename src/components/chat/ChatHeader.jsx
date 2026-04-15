@@ -62,7 +62,10 @@ export default function ChatHeader({ recipient, isLoading = false }) {
           </svg>
         </button>
 
-        <div className="flex-1 flex items-center gap-3 min-w-0">
+        <div
+          className="flex-1 flex items-center gap-3 min-w-0 cursor-pointer active:opacity-70 transition-opacity"
+          onClick={() => navigate(`/profile/detail/${recipient.id}`)}
+        >
           <div className="avatar online">
             <div className="w-12 rounded-full ring ring-[#4e73df]/30 ring-offset-2 ring-offset-white bg-slate-100 relative overflow-hidden">
               {!imageLoaded && (

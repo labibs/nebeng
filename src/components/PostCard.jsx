@@ -285,7 +285,7 @@ export default function PostCard({ post }) {
     <div className="relative w-full h-screen overflow-hidden bg-black">
       <div
         className="absolute inset-0 w-full h-full cursor-pointer"
-        onClick={() => setFullImageOpen(true)}
+        onClick={() => navigate(`/post/${post.id}`)}
       >
         <LazyImage
           src={itemPhoto}
@@ -299,7 +299,13 @@ export default function PostCard({ post }) {
         <div className="px-4 pb-3">
           <div className="flex items-start gap-3 mb-2">
             {/* Avatar */}
-            <div className="flex-shrink-0">
+            <div
+              className="flex-shrink-0 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/profile/detail/${post.clerk_user_id}`);
+              }}
+            >
               <div className="w-10 h-10 rounded-full ring-2 ring-white/40 overflow-hidden">
                 <img
                   src={userAvatar}
@@ -309,7 +315,13 @@ export default function PostCard({ post }) {
               </div>
             </div>
 
-            <div className="flex-1 min-w-0">
+            <div
+              className="flex-1 min-w-0 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/profile/detail/${post.clerk_user_id}`);
+              }}
+            >
               <h3 className="text-sm font-bold text-white">{username}</h3>
               <span className="text-xs text-white/60">{createDate}</span>
             </div>
@@ -585,7 +597,9 @@ export default function PostCard({ post }) {
                   <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
-                      <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Asal</p>
+                      <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider">
+                        Asal
+                      </p>
                     </div>
                     <p className="text-sm font-semibold text-white leading-relaxed">
                       {fromExpanded
@@ -613,7 +627,9 @@ export default function PostCard({ post }) {
                   <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-2.5 h-2.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.5)]" />
-                      <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Tujuan</p>
+                      <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider">
+                        Tujuan
+                      </p>
                     </div>
                     <p className="text-sm font-semibold text-white leading-relaxed">
                       {toExpanded
@@ -638,7 +654,9 @@ export default function PostCard({ post }) {
 
                 {post.description && (
                   <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
-                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">Deskripsi</p>
+                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
+                      Deskripsi
+                    </p>
                     <p className="text-sm text-white/90 leading-relaxed line-clamp-4">
                       {post.description}
                     </p>
@@ -671,7 +689,9 @@ export default function PostCard({ post }) {
                 )}
                 {post.armada && (
                   <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
-                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">Armada</p>
+                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
+                      Armada
+                    </p>
                     <div className="flex items-center gap-2">
                       <ArmadaIcon type={post.armada} />
                       <p className="text-sm font-semibold text-white capitalize">
@@ -682,7 +702,9 @@ export default function PostCard({ post }) {
                 )}
                 {post.location && post.location.lat && post.location.lng && (
                   <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
-                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">Lokasi</p>
+                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
+                      Lokasi
+                    </p>
                     <p className="text-sm font-semibold text-white mb-1">
                       {post.location.name || "Lokasi"}
                     </p>
@@ -733,7 +755,10 @@ export default function PostCard({ post }) {
                 </button>
                 <button
                   className="flex flex-col items-center gap-1.5"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/post/${post.id}`);
+                  }}
                 >
                   <div className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition">
                     <svg
@@ -865,8 +890,6 @@ export default function PostCard({ post }) {
                 </button>
               </div>
             )}
-
-            />
           </div>
         </div>
       </div>

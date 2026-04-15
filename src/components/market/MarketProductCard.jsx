@@ -31,7 +31,6 @@ export default function MarketProductCard({ product }) {
           <div className="absolute left-2 top-2 rounded-full bg-slate-900/50 px-2 py-0.5 text-[8px] font-medium text-white backdrop-blur-md">
             {product.category_name?.slice(0, 10) || "Item"}
           </div>
-
         </div>
       </div>
 
@@ -64,7 +63,13 @@ export default function MarketProductCard({ product }) {
 
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 overflow-hidden">
-            <div className="flex h-6.5 items-center gap-1 rounded-full border border-slate-100 bg-slate-50 px-1 pr-2 shadow-sm">
+            <div
+              className="flex h-6.5 items-center gap-1 rounded-full border border-slate-100 bg-slate-50 px-1 pr-2 shadow-sm cursor-pointer active:scale-95 transition-transform"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/profile/detail/${product.owner_id}`);
+              }}
+            >
               <div className="h-4.5 w-4.5 shrink-0 overflow-hidden rounded-full ring-1 ring-slate-100">
                 {ownerAvatar ? (
                   <img

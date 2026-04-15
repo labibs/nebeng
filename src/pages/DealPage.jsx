@@ -954,7 +954,12 @@ export default function DealPage() {
             {/* CARD UTAMA */}
             <div className="p-4 flex items-center justify-between">
               {/* Kiri */}
-              <div className="flex items-center gap-4 min-w-0">
+              <div
+                className="flex items-center gap-4 min-w-0 cursor-pointer active:opacity-70 transition-opacity"
+                onClick={() =>
+                  navigate(`/profile/detail/${opponent?.clerk_id}`)
+                }
+              >
                 <div className="avatar">
                   <div className="w-14 h-14 rounded-full ring-2 ring-[#4e73df]/20">
                     <img

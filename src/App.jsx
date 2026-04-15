@@ -14,11 +14,14 @@ import ChatInbox from "./pages/Chat";
 import ChatRoom from "./components/chat/ChatRoom";
 
 import Profile from "./pages/Profile";
+import ProfileDetail from "./pages/ProfileDetail";
 import Transaksi from "./pages/Transaksi";
 import Market from "./pages/Market";
 import Outlet from "./pages/Outlet";
 import BottomNav from "./components/BottomNav";
 import DealPage from "./pages/DealPage";
+import DetailPost from "./pages/DetailPost";
+import EditPost from "./pages/EditPost";
 import DetailOutlet from "./pages/DetailOutlet";
 import EditOutlet from "./components/outlet/EditOutlet";
 import DetailProduct from "./components/detailProduct/DetailProduct";
@@ -44,12 +47,18 @@ function App() {
                 <Route path="/create" element={<CreatePost />} />
                 <Route path="/chat" element={<ChatInbox />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route
+                  path="/profile/detail/:clerkId"
+                  element={<ProfileDetail />}
+                />
                 <Route path="/transaksi" element={<Transaksi />} />
                 <Route path="/market" element={<Market />} />
                 <Route path="/outlet" element={<Outlet />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
               <Route element={<ChatLayout />}>
+                <Route path="/post/:postId" element={<DetailPost />} />
+                <Route path="/post/:postId/edit" element={<EditPost />} />
                 <Route path="/chat/:conversationId" element={<ChatRoom />} />
                 <Route path="/deal" element={<DealPage />} />
                 <Route path="/outlet/:id" element={<DetailOutlet />} />

@@ -34,14 +34,14 @@ export default function Landing() {
     },
     {
       title: "100% Aman dengan Escrow",
-      desc: "Uang ditahan platform sampai barang sampai.\nOrang yang searah & pengirim sama-sama tenang.",
+      desc: "Uang ditahan platform sampai barang sampai.\nPembawa titipan & penitip sama-sama tenang.",
       emoji: "🔒",
       gradient: "from-[#1e3a8a]/80 via-[#1e3a8a]/40 to-transparent",
       img: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&q=80",
     },
     {
       title: "Hemat Hingga 70% Biaya Kirim",
-      desc: "Lebih murah dari ekspedisi biasa,\nkarena nebeng bagasi orang yang searah.",
+      desc: "Lebih murah dari ekspedisi biasa,\nkarena nebeng bagasi orang yang searah ke tujuanmu.",
       emoji: "💸",
       gradient: "from-[#0f172a]/80 via-[#0f172a]/40 to-transparent",
       img: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1600&q=80",
@@ -83,7 +83,7 @@ export default function Landing() {
     },
     {
       title: "Kelola Outlet & Jasa Titip",
-      desc: "Bisa buat jualan sendiri, tawarkan jasa titip beli,\natau minta tolong orang searah belikan barang di outlet favoritmu.",
+      desc: "Bisa buat jualan sendiri, tawarkan jasa titip beli,\natau minta tolong orang searah ke tujuanmu belikan barang di outlet favoritmu.",
       emoji: "🏪",
       gradient: "from-indigo-900/80 via-indigo-900/40 to-transparent",
       img: "https://images.unsplash.com/photo-1534723452862-4c874018d66d?w=1600&q=80",

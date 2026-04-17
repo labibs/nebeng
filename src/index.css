@@ -27,9 +27,8 @@ body {
     -moz-osx-font-smoothing: grayscale;
     background: #f0f7ff;
     color: #0f172a;
-    padding-bottom: env(safe-area-inset-bottom); /* Support for notches */
+    /* Remove padding-bottom to allow fullscreen content */
 }
-
 .min-h-screen[class*="bg-gradient-to-br"][class*="from-[#e8f5e9]"][class*="via-[#f0f8f1]"][class*="to-[#d9f0e0]"],
 .min-h-screen[class*="bg-gradient-to-br"][class*="from-green-100"][class*="to-emerald-200"],
 .min-h-screen[class*="bg-base-100"],

@@ -62,14 +62,14 @@ export default function Landing() {
     },
     {
       title: "Nebeng Searah Lebih Asyik",
-      desc: "Cari boncengan atau beri tumpangan saat berangkat kerja.\nHemat bensin, tambah teman di jalan.",
+      desc: "Cari boncengan atau beri tumpangan kemanapun tujuanmu.\nHemat bensin, kurangi polusi, dan tambah teman di jalan.",
       emoji: "🛵",
       gradient: "from-green-900/80 via-green-900/40 to-transparent",
       img: "https://images.unsplash.com/photo-1558191053-c03db2757e3d?w=1600&q=80",
     },
     {
-      title: "Panggil & Jemput Tukang",
-      desc: "Butuh teknisi atau servis? Cari ahli jasa di rute jalanmu.\nLebih praktis, jemput dan antar langsung ke lokasi.",
+      title: "Panggil & Jemput Tukang Searah",
+      desc: "Butuh teknisi? Panggil tukang favoritmu dan minta tolong orang yang searah ke tujuanmu untuk menjemputnya. Lebih hemat dan praktis dalam sekali jalan.",
       emoji: "👷",
       gradient: "from-orange-900/80 via-orange-900/40 to-transparent",
       img: "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=1600&q=80",
@@ -82,8 +82,8 @@ export default function Landing() {
       img: "https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?w=1600&q=80",
     },
     {
-      title: "Eksplorasi Outlet Lokal",
-      desc: "Temukan dan rekomendasikan warung atau outlet terbaik\ndi sepanjang rute harianmu.",
+      title: "Kelola Outlet & Jasa Titip",
+      desc: "Bisa buat jualan sendiri, tawarkan jasa titip beli,\natau minta tolong orang searah belikan barang di outlet favoritmu.",
       emoji: "🏪",
       gradient: "from-indigo-900/80 via-indigo-900/40 to-transparent",
       img: "https://images.unsplash.com/photo-1534723452862-4c874018d66d?w=1600&q=80",

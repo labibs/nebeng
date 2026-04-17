@@ -73,7 +73,7 @@ export default function BottomNav() {
 
   return (
     <div
-      className={`fixed inset-x-0 bottom-1 z-50 flex justify-center pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${hidden ? "translate-y-24 opacity-0 scale-[0.98]" : "translate-y-0 opacity-100 scale-100"}`}
+      className={`fixed inset-x-0 bottom-0 pb-[env(safe-area-inset-bottom)] z-50 flex justify-center pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${hidden ? "translate-y-24 opacity-0 scale-[0.98]" : "translate-y-0 opacity-100 scale-100"}`}
     >
       <div className="relative h-20 w-[95%] max-w-md pointer-events-auto">
         {/* Background dengan notch */}

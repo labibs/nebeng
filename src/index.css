@@ -7,12 +7,17 @@
 }
 
 /* Reset minimal untuk PWA & mobile */
+html {
+    background: #f0f7ff; /* Match app background to hide black gaps */
+}
+
 html,
 body,
 #root {
     margin: 0;
     padding: 0;
-    height: 100dvh; /* Dynamic Viewport Height */
+    height: 100%;
+    min-height: 100%;
     width: 100%;
     overflow-x: hidden;
 }

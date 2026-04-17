@@ -12,39 +12,46 @@ export default function Landing() {
 
   const slides = [
     {
+      title: "Tanpa Install, Langsung Transaksi",
+      desc: "Bisa langsung dipakai di browser atau simpan di layar utama.\nHemat memori HP, tanpa perlu ribet download di Store.",
+      emoji: "📱",
+      gradient: "from-[#4e73df]/80 via-[#4e73df]/40 to-transparent",
+      img: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1600&q=80",
+    },
+    {
       title: "Pengiriman Langsung Tanpa Transit",
-      desc: "Barang dibawa langsung oleh traveller terverifikasi.\nLebih cepat, tanpa ribet gudang atau sorting.",
+      desc: "Barang dibawa langsung oleh orang yang searah dengan tujuanmu.\nLebih cepat, tanpa ribet gudang atau sorting.",
       emoji: "✈️",
       gradient: "from-slate-900/80 via-slate-900/40 to-transparent",
       img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1600&q=80",
     },
     {
       title: "Liburan Tetap Cuan",
-      desc: "Bawa paket saat travelling,\ndapat fee menarik tanpa ganggu rencana liburanmu.",
+      desc: "Bawa paket saat bepergian,\ndapat fee menarik tanpa ganggu rencana perjalananmu.",
       emoji: "💰",
       gradient: "from-blue-900/80 via-blue-900/40 to-transparent",
       img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80",
     },
     {
       title: "100% Aman dengan Escrow",
-      desc: "Uang ditahan platform sampai barang sampai.\nTraveller & pengirim sama-sama tenang.",
+      desc: "Uang ditahan platform sampai barang sampai.\nPembawa titipan & penitip sama-sama tenang.",
       emoji: "🔒",
       gradient: "from-[#1e3a8a]/80 via-[#1e3a8a]/40 to-transparent",
       img: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&q=80",
     },
     {
       title: "Hemat Hingga 70% Biaya Kirim",
-      desc: "Lebih murah dari ekspedisi biasa,\nkarena nebeng bagasi traveller.",
+      desc: "Lebih murah dari ekspedisi biasa,\nkarena nebeng bagasi orang yang searah dengan tujuanamu.",
       emoji: "💸",
       gradient: "from-[#0f172a]/80 via-[#0f172a]/40 to-transparent",
       img: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1600&q=80",
     },
     {
-      title: "Komunitas Traveller Solid",
-      desc: "Saling bantu dan ciptakan koneksi baru di jalan.",
-      emoji: "🤝",
+      title: "Rute Harian Jadi Cuan",
+      desc: "Berangkat atau pulang kerja tinggal bawa titipan searah.\nTanpa muter jalan, paket sampai, cuan di tangan.",
+      emoji: "🛵",
       gradient: "from-[#4e73df]/80 via-[#4e73df]/40 to-transparent",
-      img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80",
+      img: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=1600&q=80",
     },
   ];
 

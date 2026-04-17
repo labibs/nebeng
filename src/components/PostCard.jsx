@@ -71,7 +71,7 @@ export default function PostCard({ post }) {
   const currentUserId = clerkUser?.id;
   const poster = post.users || {};
   const username =
-    poster.name || (post.type === "titip" ? "Titipers" : "Traveler");
+    poster.name || (post.type === "titip" ? "Titipers" : "Orang Searah");
   const userAvatar =
     poster.avatar_url ||
     "https://img.freepik.com/free-vector/user-circles-set_78370-4704.jpg";

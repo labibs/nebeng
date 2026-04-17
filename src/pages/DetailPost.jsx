@@ -5,12 +5,14 @@ import { supabase } from "../lib/supabaseClient";
 import {
   ArrowLeft,
   MapPin,
-  Calendar,
   DollarSign,
-  Info,
   MessageSquare,
   Send,
-  User,
+  Trash2,
+  MoreHorizontal,
+  Heart,
+  ThumbsUp,
+  Eye,
 } from "lucide-react";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
@@ -26,10 +28,28 @@ export default function DetailPost() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
 
+  const formatTime = (value) =>
+    format(new Date(value), "HH:mm", {
+      locale: localeId,
+    });
+
+  const formatPostAge = (value) => {
+    const createdAt = new Date(value);
+    const now = new Date();
+    const diffMs = now.getTime() - createdAt.getTime();
+    const diffMinutes = Math.max(1, Math.floor(diffMs / 60000));
+
+    if (diffMinutes < 60) return `${diffMinutes} menit lalu`;
+
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours} jam lalu`;
+
+    return format(createdAt, "d MMM", { locale: localeId });
+  };
+
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      // Fetch Post
       const { data: postData } = await supabase
         .from("posts")
         .select("*, users(*)")
@@ -38,7 +58,6 @@ export default function DetailPost() {
 
       if (postData) setPost(postData);
 
-      // Fetch Comments (assuming table exists, if not we'll handle gracefully)
       const { data: commentData, error } = await supabase
         .from("post_comments")
         .select("*, users(*)")
@@ -77,17 +96,33 @@ export default function DetailPost() {
       setNewComment("");
     } catch (err) {
       console.error(err);
-      alert(
-        "Gagal mengirim komentar. Pastikan tabel 'post_comments' sudah dibuat.",
-      );
+      alert("Gagal mengirim komentar.");
     } finally {
       setSending(false);
     }
   };
 
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm("Hapus komentar ini?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("post_comments")
+        .delete()
+        .eq("id", commentId);
+
+      if (error) throw error;
+
+      setComments(comments.filter((c) => c.id !== commentId));
+    } catch (err) {
+      console.error(err);
+      alert("Gagal menghapus komentar");
+    }
+  };
+
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f8fbff]">
+      <div className="min-h-screen flex items-center justify-center bg-[#f0f7ff]">
         <div className="w-10 h-10 border-4 border-[#4e73df] border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -95,24 +130,29 @@ export default function DetailPost() {
   if (!post)
     return <div className="p-10 text-center">Postingan tidak ditemukan</div>;
 
+  const leadComment = comments[0] || null;
+  const threadComments = comments.slice(1);
+  const threadPreviewUsers = threadComments.slice(0, 4);
+
   return (
-    <div className="min-h-screen bg-[#f8fbff] flex flex-col">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 py-3 flex items-center gap-4">
+    <div className="min-h-screen bg-[#f0f7ff] flex flex-col overflow-hidden">
+      {/* 1. Header (Static) */}
+      <div className="shrink-0 z-50 bg-white border-b border-slate-100 px-4 py-3 flex items-center gap-4">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-slate-100 transition-colors"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white border border-slate-100 text-slate-600 shadow-sm active:scale-95 transition-all"
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={18} />
         </button>
-        <h1 className="font-bold text-lg text-slate-800">
-          Postingan & Komentar
+        <h1 className="font-bold text-[17px] text-slate-800">
+          Detail & Diskusi
         </h1>
       </div>
 
-      <div className="flex-1 overflow-y-auto pb-32">
+      {/* 2. Fixed Top Content (Image + Description) */}
+      <div className="shrink-0 flex flex-col bg-white border-b border-slate-100 shadow-sm z-10">
         {/* Hero Image */}
-        <div className="w-full bg-slate-900 flex items-center justify-center overflow-hidden h-64">
+        <div className="h-[30vh] bg-slate-900 flex items-center justify-center overflow-hidden">
           <img
             src={
               post.item_photo ||
@@ -123,100 +163,193 @@ export default function DetailPost() {
           />
         </div>
 
-        <div className="px-6 py-6 space-y-6">
-          {/* Post Content */}
+        {/* Post Description Section (Fixed) */}
+        <div className="px-5 pt-5 pb-4">
           <div className="flex items-start gap-3">
             <img
               src={post.users?.avatar_url}
-              className="w-10 h-10 rounded-full object-cover ring-2 ring-[#4e73df]/10"
+              className="h-10 w-10 rounded-full object-cover ring-2 ring-slate-50"
               alt="Avatar"
             />
-            <div className="flex-1 bg-white p-4 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm">
-              <h2 className="font-bold text-sm text-slate-900">
-                {post.users?.name}
-              </h2>
-              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                {post.description}
-              </p>
-              <div className="flex items-center gap-3 mt-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                <span className="flex items-center gap-1">
-                  <MapPin size={10} /> {post.to_city?.split(",")[0]}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <h2 className="text-[15px] font-bold text-slate-900 leading-none truncate">
+                      {post.users?.name}
+                    </h2>
+                    <span className="text-[11px] font-medium text-slate-400">
+                      • {formatPostAge(post.created_at)}
+                    </span>
+                  </div>
+                  <p className="mt-2.5 whitespace-pre-line text-[14px] leading-relaxed text-slate-600 line-clamp-2">
+                    {post.description}
+                  </p>
+                </div>
+                <button className="rounded-full p-2 text-slate-300 transition-colors hover:bg-slate-50">
+                  <MoreHorizontal size={18} />
+                </button>
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50/50 border border-blue-100 px-3 py-1.5 text-[11px] font-semibold text-[#4e73df]">
+                  <MapPin size={11} />
+                  {post.to_city?.split(",")[0] || "Lokasi"}
                 </span>
-                <span className="flex items-center gap-1">
-                  <DollarSign size={10} /> Rp{post.fee?.toLocaleString("id-ID")}
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50/50 border border-amber-100 px-3 py-1.5 text-[11px] font-semibold text-amber-600">
+                  <DollarSign size={11} />
+                  Rp{post.fee?.toLocaleString("id-ID") || "0"}
                 </span>
               </div>
-            </div>
-          </div>
 
-          <div className="border-t border-slate-100 pt-6">
-            <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 px-1">
-              Diskusi ({comments.length})
-            </h3>
-
-            {/* Comments List */}
-            <div className="space-y-6">
-              {comments.length > 0 ? (
-                comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-3">
+              <div className="mt-4 flex items-center gap-2 border-t border-slate-50 pt-3">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-500">
+                  <Heart size={10} fill="currentColor" />2
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-500">
+                  <Eye size={10} />
+                  {Math.max(comments.length, 1)}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-[#4e73df]">
+                  <ThumbsUp size={10} />6
+                </span>
+                <div className="ml-auto flex -space-x-1.5">
+                  {threadPreviewUsers.map((comment) => (
                     <img
+                      key={comment.id}
                       src={comment.users?.avatar_url}
-                      className="w-8 h-8 rounded-full object-cover shrink-0"
-                      alt="avatar"
+                      className="h-4.5 w-4.5 rounded-full border border-white object-cover shadow-sm"
                     />
-                    <div className="flex-1">
-                      <div className="bg-slate-100/50 p-3 rounded-2xl rounded-tl-none border border-slate-50">
-                        <p className="text-xs font-bold text-slate-800">
-                          {comment.users?.name}
-                        </p>
-                        <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                          {comment.content}
-                        </p>
-                      </div>
-                      <p className="text-[9px] text-slate-400 mt-1.5 ml-1 font-medium">
-                        {format(new Date(comment.created_at), "d MMM, HH:mm", {
-                          locale: localeId,
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="py-10 text-center">
-                  <MessageSquare
-                    size={32}
-                    className="mx-auto text-slate-200 mb-2"
-                  />
-                  <p className="text-sm text-slate-400">Belum ada komentar</p>
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* 3. Scrollable Comments Section */}
+      <div className="flex-1 overflow-y-auto px-5 py-6 pb-32 space-y-5 bg-[#f0f7ff]">
+        <h3 className="text-[13px] font-bold text-slate-900 px-1">
+          Diskusi ({comments.length})
+        </h3>
+
+        {leadComment ? (
+          <div className="space-y-4">
+            {/* Lead Comment */}
+            <div className="rounded-[22px] border border-[#e4edff] bg-white p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <img
+                  src={leadComment.users?.avatar_url}
+                  className="h-9 w-9 rounded-full object-cover border border-slate-50 shadow-sm"
+                  alt={leadComment.users?.name || "Avatar"}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[13px] font-bold text-slate-900 truncate">
+                          {leadComment.users?.name}
+                        </span>
+                        <span className="text-[10px] font-medium text-slate-400">
+                          {formatTime(leadComment.created_at)}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-[13px] leading-relaxed text-slate-600">
+                        {leadComment.content}
+                      </p>
+                    </div>
+                    {currentUser?.id === leadComment.user_id && (
+                      <button
+                        onClick={() => handleDeleteComment(leadComment.id)}
+                        className="rounded-full p-1.5 text-slate-300 transition-colors hover:bg-slate-50 hover:text-rose-500"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Thread Comments */}
+            {threadComments.map((comment) => (
+              <div
+                key={comment.id}
+                className="ml-6 rounded-[22px] border border-slate-100 bg-white/70 p-4 shadow-sm relative"
+              >
+                <div className="absolute -left-3 top-[-16px] bottom-1/2 w-px bg-slate-200" />
+                <div className="absolute -left-3 top-1/2 h-px w-3 bg-slate-200" />
+
+                <div className="flex items-start gap-3">
+                  <img
+                    src={comment.users?.avatar_url}
+                    className="h-9 w-9 rounded-full object-cover border border-slate-50"
+                    alt={comment.users?.name || "Avatar"}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="text-[13px] font-bold text-slate-900 truncate">
+                            {comment.users?.name}
+                          </span>
+                          <span className="text-[10px] font-medium text-slate-400">
+                            {formatTime(comment.created_at)}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[13px] leading-relaxed text-slate-600">
+                          {comment.content}
+                        </p>
+                      </div>
+                      {currentUser?.id === comment.user_id && (
+                        <button
+                          onClick={() => handleDeleteComment(comment.id)}
+                          className="rounded-full p-1.5 text-slate-300 transition-colors hover:bg-slate-50 hover:text-rose-500"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-14 text-center bg-white/40 rounded-[32px] border border-dashed border-slate-200">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-50 text-slate-300">
+              <MessageSquare size={20} />
+            </div>
+            <p className="text-[12px] font-medium text-slate-400">
+              Belum ada diskusi
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Floating Comment Input */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100 z-50">
-        <div className="max-w-3xl mx-auto flex items-center gap-2">
-          <div className="flex-1 relative">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-lg border-t border-slate-100 z-50">
+        <div className="max-w-3xl mx-auto flex items-center gap-2.5">
+          <div className="flex-1 relative flex items-center gap-2.5 rounded-[24px] bg-[#f5f7ff] px-4 py-2.5 shadow-inner border border-slate-100/50">
             <input
               type="text"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSendComment()}
               placeholder="Tulis komentar..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-full px-5 py-3 text-sm focus:ring-2 focus:ring-[#4e73df]/20 outline-none transition-all"
+              className="w-full bg-transparent text-[13px] text-slate-700 outline-none placeholder:text-slate-400"
             />
           </div>
           <button
             onClick={handleSendComment}
             disabled={!newComment.trim() || sending}
-            className="w-11 h-11 rounded-full bg-[#4e73df] text-white flex items-center justify-center shadow-lg active:scale-90 transition-transform disabled:opacity-50"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#4e73df] text-white shadow-[0_8px_20px_rgba(78,115,223,0.3)] active:scale-95 transition-all disabled:opacity-50"
           >
             {sending ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              <Send size={18} />
+              <Send size={16} />
             )}
           </button>
         </div>

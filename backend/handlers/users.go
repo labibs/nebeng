@@ -67,6 +67,7 @@ func SyncUser(c *gin.Context) {
 	json.Unmarshal(checkData, &existingUsers)
 
 	payload := map[string]interface{}{
+		"id":         clerkID,
 		"clerk_id":   clerkID,
 		"name":       body.Name,
 		"avatar_url": body.AvatarURL,

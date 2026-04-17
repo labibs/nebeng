@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { supabase } from '../../lib/supabaseClient'; // sesuaikan path
-import QuickReplies from './QuickReplies';
-import DealMenu from './DealMenu';
-import NegoModal from './NegoModal';
-import LocationModal from './LocationModal';
-import TimeModal from './TimeModal';
-import ItemModal from './ItemModal';
-import DeliveryModal from './DeliveryModal';
+import { useState } from "react";
+import { supabase } from "../../lib/supabaseClient"; // sesuaikan path
+import QuickReplies from "./QuickReplies";
+import DealMenu from "./DealMenu";
+import NegoModal from "./NegoModal";
+import LocationModal from "./LocationModal";
+import TimeModal from "./TimeModal";
+import ItemModal from "./ItemModal";
+import DeliveryModal from "./DeliveryModal";
 
 export default function MessageInput({
   currentUserId,
@@ -17,10 +17,10 @@ export default function MessageInput({
   depositorId,
   setMessages,
 }) {
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [showDealMenu, setShowDealMenu] = useState(false);
   const [showNegoModal, setShowNegoModal] = useState(false);
-  const [negoInitialPrice, setNegoInitialPrice] = useState('');
+  const [negoInitialPrice, setNegoInitialPrice] = useState("");
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [showItemModal, setShowItemModal] = useState(false);
@@ -34,43 +34,81 @@ export default function MessageInput({
   const sendMessage = async (content = newMessage) => {
     if (!content.trim() || !currentUserId) return;
 
-    const message_type = extractMessageType(content) || 'text';
+    const message_type = extractMessageType(content) || "text";
+    const trimmedContent = content.trim();
+
+    // 1. Optimistic Update: Masukkan ke state lokal dulu agar instan
+    const tempId = "temp-" + Date.now();
+    const optimisticMsg = {
+      id: tempId,
+      conversation_id: conversationId,
+      sender_id: currentUserId,
+      content: trimmedContent,
+      message_type: message_type,
+      created_at: new Date().toISOString(),
+      is_read: false,
+      sending: true, // penanda sedang dikirim
+    };
+
+    setMessages((prev) => [...prev, optimisticMsg]);
+    setNewMessage("");
 
     const insertData = {
       conversation_id: conversationId,
       sender_id: currentUserId,
-      content: content.trim(),
+      content: trimmedContent,
     };
 
-    if (message_type.startsWith('deal_')) {
+    if (message_type.startsWith("deal_")) {
       insertData.message_type = message_type;
       if (conversationPostId) {
         insertData.post_id = conversationPostId;
       }
     }
 
-    const { error } = await supabase.from('messages').insert(insertData);
+    try {
+      const { data, error } = await supabase
+        .from("messages")
+        .insert(insertData)
+        .select()
+        .single();
 
-    if (error) {
-      console.error('Error kirim pesan:', error);
-      alert('Gagal mengirim pesan');
-    } else {
-      setNewMessage('');
+      if (error) throw error;
+
+      // 2. Ganti pesan optimistik dengan data asli dari server
+      setMessages((prev) => {
+        // Cek jika ID asli ini ternyata sudah masuk duluan lewat Realtime
+        const alreadyExists = prev.some((msg) => msg.id === data.id);
+        if (alreadyExists) {
+          // Jika sudah ada, hapus saja pesan sementaranya
+          return prev.filter((msg) => msg.id !== tempId);
+        }
+        // Jika belum ada, baru ganti ID sementaranya
+        return prev.map((msg) =>
+          msg.id === tempId ? { ...data, post: msg.post } : msg,
+        );
+      });
+    } catch (error) {
+      console.error("Error kirim pesan:", error);
+      // Jika gagal, hapus dari UI dan beri tahu user
+      setMessages((prev) => prev.filter((msg) => msg.id !== tempId));
+      alert("Gagal mengirim pesan: " + error.message);
+      setNewMessage(trimmedContent); // Kembalikan teks ke input
     }
   };
 
   const handleQuickReply = (text) => {
     setNewMessage(text);
-    document.getElementById('message-input')?.focus();
+    document.getElementById("message-input")?.focus();
   };
 
   const handleSelectDeal = (tag, title, template) => {
     setNewMessage(`[${tag}] ${title} ✅\n\n${template}`);
     setShowDealMenu(false);
-    document.getElementById('message-input')?.focus();
+    document.getElementById("message-input")?.focus();
   };
 
-  const handleOpenNego = (initial = '') => {
+  const handleOpenNego = (initial = "") => {
     setNegoInitialPrice(initial);
     setShowNegoModal(true);
     setShowDealMenu(false);
@@ -143,9 +181,18 @@ export default function MessageInput({
               disabled={true} // Sementara di-disable sesuai permintaan
               className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              <svg className="w-6 h-6 text-emerald-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              <svg
+                className="w-6 h-6 text-emerald-400/60"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                />
               </svg>
             </button>
           </div>
@@ -163,7 +210,7 @@ export default function MessageInput({
           <DealMenu
             onClose={() => setShowDealMenu(false)}
             onSelectDeal={handleSelectDeal}
-            onOpenNego={() => handleOpenNego('')}
+            onOpenNego={() => handleOpenNego("")}
             onOpenLocation={handleOpenLocation}
             onOpenTime={handleOpenTime}
             onOpenItem={handleOpenItem}

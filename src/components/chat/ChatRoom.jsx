@@ -761,7 +761,27 @@ export default function ChatRoom() {
             .single();
 
           if (newMessage) {
-            setMessages((prev) => [...prev, newMessage]);
+            setMessages((prev) => {
+              // 1. Cek jika ID sudah ada (sudah diproses oleh sendMessage)
+              if (prev.some((msg) => msg.id === newMessage.id)) return prev;
+
+              // 2. Jika ID belum ada, cek apakah ini pesan milik SAYA yang sedang dalam status 'sending'
+              // Bandingkan sender_id dan content (sebagai fallback sederhana)
+              if (newMessage.sender_id === currentUserId) {
+                const tempMsg = prev.find(
+                  (m) => m.sending && m.content === newMessage.content,
+                );
+                if (tempMsg) {
+                  // Ganti pesan sementara dengan pesan asli dari server
+                  return prev.map((m) =>
+                    m.id === tempMsg.id ? newMessage : m,
+                  );
+                }
+              }
+
+              // 3. Jika benar-benar baru, tambahkan ke list
+              return [...prev, newMessage];
+            });
             scrollToBottom();
           }
         },

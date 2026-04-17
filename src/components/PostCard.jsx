@@ -775,7 +775,9 @@ export default function PostCard({ post }) {
                       />
                     </svg>
                   </div>
-                  <span className="text-xs text-white/80">Komentar</span>
+                  <span className="text-xs text-white/80">
+                    {post.post_comments?.[0]?.count || 0} Komentar
+                  </span>
                 </button>
                 <button
                   onClick={(e) => {

@@ -107,7 +107,8 @@ export default function Home() {
           users (
             name,
             avatar_url
-          )
+          ),
+          post_comments(count)
         `,
         )
         .order("created_at", { ascending: false });
@@ -137,6 +138,7 @@ export default function Home() {
           .single();
 
         const userData = {
+          id: user.id,
           clerk_id: user.id,
           name:
             user.fullName ||

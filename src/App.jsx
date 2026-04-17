@@ -35,7 +35,7 @@ function App() {
       {/* 🔥 Sync user SETELAH login */}
       <SyncUser />
 
-      <div className="min-h-[100dvh] bg-[#f0f7ff]">
+      <div className="w-full">
         {/* ===================== */}
         {/* USER SUDAH LOGIN */}
         {/* ===================== */}

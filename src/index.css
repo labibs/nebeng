@@ -24,9 +24,9 @@ body,
 body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: #f0f7ff;
+    background: #000; /* Default to black to match PWA feed */
     color: #0f172a;
-    /* Remove padding-bottom to allow fullscreen content */
+    overscroll-behavior: none; /* Prevent bounce that shows background gap */
 }
 .min-h-screen[class*="bg-gradient-to-br"][class*="from-[#e8f5e9]"][class*="via-[#f0f8f1]"][class*="to-[#d9f0e0]"],
 .min-h-screen[class*="bg-gradient-to-br"][class*="from-green-100"][class*="to-emerald-200"],

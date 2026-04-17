@@ -274,7 +274,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="h-[100dvh] bg-gradient-to-br from-[#e8f5e9] via-[#f0f8f1] to-[#d9f0e0] dark:from-[#1e293b] dark:via-[#0f172a] dark:to-[#1e293b] text-base-content flex flex-col flex items-center">
+    <div className="absolute inset-0 bg-black text-base-content flex flex-col items-center overflow-hidden">
       {/* Fixed Top Header - Logo + Search + Profile */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-500 ease-out ${
@@ -478,7 +478,7 @@ export default function Home() {
         </div>
       </SearchModal>
 
-      <main className="h-[100dvh] w-full overflow-hidden bg-black">
+      <main className="absolute inset-0 w-full h-full overflow-hidden bg-black">
         {/* Content */}
         {loading ? (
           <div className="flex h-full items-center justify-center">

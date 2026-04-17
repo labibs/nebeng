@@ -8,9 +8,8 @@
 
 /* Reset minimal untuk PWA & mobile */
 html {
-    background: #f0f7ff; /* Match app background to hide black gaps */
+    background: #000; /* Match black for PWA feed to hide any gaps */
 }
-
 html,
 body,
 #root {

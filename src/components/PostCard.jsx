@@ -282,7 +282,7 @@ export default function PostCard({ post }) {
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black">
+    <div className="absolute inset-0 w-full h-full overflow-hidden bg-black">
       <div
         className="absolute inset-0 w-full h-full cursor-pointer"
         onClick={() => navigate(`/post/${post.id}`)}

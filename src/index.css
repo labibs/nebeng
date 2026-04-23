@@ -23,9 +23,8 @@ body,
 }
 
 #root {
-    padding-top: env(safe-area-inset-top);
+    /* Remove global padding-top to avoid color mismatch */
 }
-
 body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

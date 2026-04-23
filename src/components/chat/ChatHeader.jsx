@@ -7,7 +7,7 @@ export default function ChatHeader({ recipient, isLoading = false }) {
 
   if (isLoading) {
     return (
-      <div className="sticky top-0 z-40 bg-white shadow-sm">
+      <div className="sticky top-0 z-40 bg-white shadow-sm pt-[env(safe-area-inset-top)]">
         <div className="flex items-center gap-3 px-4 py-3">
           <button
             onClick={() => navigate(-1)}
@@ -41,7 +41,7 @@ export default function ChatHeader({ recipient, isLoading = false }) {
   }
 
   return (
-    <div className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-sm">
+    <div className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-sm pt-[env(safe-area-inset-top)]">
       <div className="flex items-center gap-3 px-4 py-3">
         <button
           onClick={() => navigate(-1)}

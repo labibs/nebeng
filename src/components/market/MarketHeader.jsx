@@ -21,7 +21,7 @@ export default function MarketHeader({
   }, []);
 
   return (
-    <div className="relative z-20 px-4 pb-5 pt-5">
+    <div className="relative z-20 px-4 pb-5 pt-[calc(env(safe-area-inset-top)+1.25rem)]">
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <OutletButton owner_avatar={owner_avatar} owner_name={owner_name} />

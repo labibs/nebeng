@@ -156,7 +156,7 @@ export default function MessageInput({
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 pb-safe">
+      <div className="fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 pb-[env(safe-area-inset-bottom)]">
         <QuickReplies onSelect={handleQuickReply} />
 
         <form

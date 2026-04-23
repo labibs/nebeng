@@ -5,7 +5,7 @@ export default function TransaksiHeader({ searchQuery, setSearchQuery }) {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
 
   return (
-    <div className="sticky top-0 z-30 px-4 pt-3 pb-3 bg-[#f0f7ff]">
+    <div className="sticky top-0 z-30 px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 bg-[#f0f7ff]">
       <div className="flex items-center justify-between mb-3">
         <h3 className="bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] bg-clip-text text-[26px] font-extrabold text-transparent tracking-tight">
           Transaksi

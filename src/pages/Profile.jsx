@@ -64,7 +64,7 @@ export default function Profile() {
       <div className="absolute -top-2 right-4 w-4 h-4 bg-white border-t border-l border-slate-200 rotate-45" />
 
       {/* Konten Profile */}
-      <div className="p-5 pb-6 space-y-5">
+      <div className="p-5 pb-6 space-y-5 pt-[env(safe-area-inset-top)]">
         {/* Header Profile */}
         <div className="flex items-center gap-4">
           <div className="relative">

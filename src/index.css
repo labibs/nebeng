@@ -9,7 +9,6 @@
 /* Reset minimal untuk PWA & mobile */
 html {
     background: #000; /* Match black for PWA feed to hide any gaps */
-    padding-top: env(safe-area-inset-top); /* Handle status bar space */
 }
 html,
 body,

@@ -1,76 +1,86 @@
-import { ArrowLeft, MapPin } from "lucide-react";
+import { X, MapPin } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function GoogleMapsEmbedViewer({
   open,
   setOpen,
-
   latitude,
   longitude,
   address,
-
   title = "Lokasi Outlet",
 }) {
   const embedUrl = `https://maps.google.com/maps?q=${latitude},${longitude}&z=16&output=embed`;
 
   return (
-    <div
-      className={`
-        fixed inset-0 z-[11000]
-        bg-gradient-to-br from-green-100 to-emerald-200
-        dark:from-slate-900 dark:to-slate-800
-        transition-transform duration-300 ease-out
-        ${open ? "translate-x-0" : "translate-x-full"}
-      `}
-    >
-      <div className="h-full flex flex-col pt-12 pb-20">
-        {/* HEADER */}
-        <div className="shrink-0">
-          <div className="flex items-start gap-3 mb-2 px-4 pb-2">
-            <button
-              onClick={() => setOpen(false)}
-              className="bg-white rounded-full p-3 shadow-lg text-black active:scale-95 transition-transform"
-            >
-              <ArrowLeft size={20} />
-            </button>
+    <AnimatePresence>
+      {open && (
+        <div className="fixed inset-0 z-[11000] flex items-center justify-center px-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
+          />
 
-            <div className="flex flex-col">
-              <h3 className="text-base font-semibold leading-tight">{title}</h3>
-
-              <p className="text-xs opacity-70">
-                {address || "Lokasi pada peta"}
-              </p>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="relative w-full max-w-lg rounded-[32px] bg-white overflow-hidden shadow-2xl flex flex-col"
+          >
+            {/* Header */}
+            <div className="p-5 flex items-center justify-between border-b border-slate-50 bg-white/80 backdrop-blur-md z-10">
+              <div>
+                <h3 className="font-bold text-lg text-slate-900">{title}</h3>
+                <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">
+                  Detail Lokasi
+                </p>
+              </div>
+              <button
+                onClick={() => setOpen(false)}
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 active:scale-90 transition-transform"
+              >
+                <X size={18} />
+              </button>
             </div>
-          </div>
-        </div>
 
-        {/* MAP EMBED */}
-        <div className="flex-1 bg-white border-y">
-          {!latitude ? (
-            <div className="h-full flex items-center justify-center text-sm opacity-60">
-              Lokasi belum tersedia
+            {/* MAP EMBED */}
+            <div className="h-[45vh] w-full bg-slate-50 border-y">
+              {!latitude ? (
+                <div className="h-full flex items-center justify-center text-sm opacity-60">
+                  Lokasi belum tersedia
+                </div>
+              ) : (
+                <iframe
+                  title="google-map"
+                  src={embedUrl}
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              )}
             </div>
-          ) : (
-            <iframe
-              title="google-map"
-              src={embedUrl}
-              className="w-full h-full border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          )}
-        </div>
 
-        {/* FOOTER INFO */}
-        <div className="shrink-0 p-3 bg-white/90 backdrop-blur-sm">
-          <div className="flex items-center gap-2 text-sm">
-            <MapPin size={14} className="opacity-70 text-[#4e73df]" />
-
-            <span className="opacity-80 font-mono text-xs">
-              {latitude}, {longitude}
-            </span>
-          </div>
+            {/* Info Footer */}
+            <div className="p-6 bg-slate-50/50 border-t border-slate-100">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#4e73df] flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-200">
+                  <MapPin size={20} />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="font-bold text-[14px] text-slate-900">
+                    Alamat Lengkap
+                  </h4>
+                  <p className="text-[12px] text-slate-500 mt-1 leading-relaxed line-clamp-2">
+                    {address || `${latitude}, ${longitude}`}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 }

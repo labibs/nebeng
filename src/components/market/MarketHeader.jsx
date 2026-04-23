@@ -8,6 +8,7 @@ export default function MarketHeader({
   onSearchChange,
   owner_avatar,
   owner_name,
+  onOpenFilter,
 }) {
   const [isSticky, setIsSticky] = useState(false);
 
@@ -67,6 +68,7 @@ export default function MarketHeader({
           </div>
           <button
             type="button"
+            onClick={onOpenFilter}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-100 bg-white text-slate-500 shadow-sm transition-transform active:scale-95"
           >
             <SlidersHorizontal size={18} />

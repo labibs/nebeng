@@ -200,7 +200,7 @@ export default function DetailPost() {
   return (
     <div className="min-h-screen bg-[#f0f7ff] flex flex-col overflow-hidden">
       {/* 1. Header (Static) */}
-      <div className="shrink-0 z-50 bg-white border-b border-slate-100 px-4 py-3 pt-[calc(env(safe-area-inset-top)+12px)] flex items-center gap-4">
+      <div className="shrink-0 z-50 bg-white border-b border-slate-100 px-4 py-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] flex items-center gap-4">
         <button
           onClick={() => navigate(-1)}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-white border border-slate-100 text-slate-600 shadow-sm active:scale-95 transition-all"

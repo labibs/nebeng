@@ -43,7 +43,7 @@ export default function OutletHeader({ outlet, isOwner }) {
   };
 
   return (
-    <div className="sticky top-0 z-40 shrink-0 bg-[#f0f7ff] pt-3 px-4 pb-0">
+    <div className="sticky top-0 z-40 shrink-0 bg-[#f0f7ff] pt-[calc(env(safe-area-inset-top)+0.75rem)] px-4 pb-0">
       <div className="flex items-start gap-3 mb-5">
         <button
           onClick={() => navigate(-1)}

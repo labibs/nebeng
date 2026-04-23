@@ -6,7 +6,7 @@ export default function DetailProductHeader({ title = "Detail Produk" }) {
   const navigate = useNavigate();
 
   return (
-    <div className="shrink-0 mb-0 pt-3 px-4 bottom-0 pb-[0.5px] pl-4 pr-4 bg-[#f0f7ff] sticky top-0 z-40">
+    <div className="shrink-0 mb-0 pt-[calc(env(safe-area-inset-top)+0.75rem)] px-4 bottom-0 pb-[0.5px] pl-4 pr-4 bg-[#f0f7ff] sticky top-0 z-40">
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-3">
           <button

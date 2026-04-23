@@ -11,7 +11,7 @@ export default function CartHeader({
   const [isSearchVisible, setIsSearchVisible] = useState(false);
 
   return (
-    <div className="sticky top-0 z-40 shrink-0 bg-[#f0f7ff] px-4 pt-3 pb-3 transition-all">
+    <div className="sticky top-0 z-40 shrink-0 bg-[#f0f7ff] px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 transition-all">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-3">
           <button

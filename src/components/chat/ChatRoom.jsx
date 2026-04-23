@@ -14,11 +14,12 @@ export default function ChatRoom() {
   const { supabaseUserId } = useSupabaseUserId();
 
   const currentUserId = user?.id;
-  const currentUserAvatar = user?.imageUrl || "/default-avatar.png";
+  const currentUserAvatar =
+    user?.imageUrl || "https://www.gravatar.com/avatar/0?d=mp";
 
   const [recipient, setRecipient] = useState({
     name: "Loading...",
-    imageUrl: "/default-avatar.png",
+    imageUrl: "https://www.gravatar.com/avatar/0?d=mp",
   });
   const [postInfo, setPostInfo] = useState(null);
   const [messages, setMessages] = useState([]);

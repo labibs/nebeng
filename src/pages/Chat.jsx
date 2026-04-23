@@ -168,7 +168,7 @@ export default function ChatInbox() {
     opponents?.forEach((o) => {
       opponentMap[o.clerk_id] = {
         name: o.name || "User",
-        avatar_url: o.avatar_url || "/default-avatar.png",
+        avatar_url: o.avatar_url || "https://www.gravatar.com/avatar/0?d=mp",
       };
     });
 
@@ -179,7 +179,7 @@ export default function ChatInbox() {
       )?.user_id;
       const opponent = opponentMap[opponentId] || {
         name: "Unknown",
-        avatar_url: "/default-avatar.png",
+        avatar_url: "https://www.gravatar.com/avatar/0?d=mp",
       };
 
       const lastMsg = lastMsgMap[convId];

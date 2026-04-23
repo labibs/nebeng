@@ -84,7 +84,10 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
         {/* Gambar Barang - Full Width */}
         <div className="w-full h-36 rounded-2xl overflow-hidden mb-4 bg-slate-50 border border-slate-100">
           <img
-            src={post.item_photo || "/default-item.jpg"}
+            src={
+              post.item_photo ||
+              "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=200&q=80"
+            }
             alt="Barang"
             className="w-full h-full object-cover"
           />

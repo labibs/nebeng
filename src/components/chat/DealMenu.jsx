@@ -293,7 +293,10 @@ export default function DealMenu({
             <div className="avatar flex-shrink-0">
               <div className="w-14 h-14 rounded-xl overflow-hidden ring-2 ring-emerald-500/20">
                 <img
-                  src={postInfo?.item_photo || "/default-item.jpg"}
+                  src={
+                    postInfo?.item_photo ||
+                    "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=200&q=80"
+                  }
                   alt="Barang"
                   className="w-full h-full object-cover"
                 />

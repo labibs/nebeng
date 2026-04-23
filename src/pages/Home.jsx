@@ -285,7 +285,7 @@ export default function Home() {
           {/* Logo */}
           <div className="flex-1">
             <img
-              src="./pwa-64x64.png"
+              src="/pwa-64x64.png"
               alt="Nebeng"
               className="w-11 h-11 object-cover mb-2"
             />

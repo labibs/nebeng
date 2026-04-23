@@ -783,7 +783,9 @@ export default function DealPage() {
   const deliveryLocationData = parseLocation(deal?.delivery_location);
   const itemPhotos = normalizeItemPhotos(deal?.item_photos);
   const headerItemPhoto =
-    itemPhotos[0] || deal?.post?.item_photo || "/default-item.jpg";
+    itemPhotos[0] ||
+    deal?.post?.item_photo ||
+    "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=200&q=80";
   const pickupCity =
     extractCityFromAddress(pickupLocationData?.address) ||
     deal?.post?.from_city ||

@@ -384,9 +384,9 @@ export default function TransaksiPage() {
                               src={
                                 trx.deal?.carrier_id === clerkId
                                   ? trx.deal?.depositor?.avatar_url ||
-                                    "/default-avatar.png"
+                                    "https://www.gravatar.com/avatar/0?d=mp"
                                   : trx.deal?.carrier?.avatar_url ||
-                                    "/default-avatar.png"
+                                    "https://www.gravatar.com/avatar/0?d=mp"
                               }
                               className="h-full w-full object-cover"
                               alt=""

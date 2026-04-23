@@ -50,11 +50,15 @@ function FitBounds({ points }) {
   const map = useMap();
 
   useEffect(() => {
-    if (points.length > 1) {
-      const bounds = L.latLngBounds(points);
-      map.fitBounds(bounds, { padding: [30, 30] });
+    if (map && points && points.length > 1) {
+      try {
+        const bounds = L.latLngBounds(points);
+        map.fitBounds(bounds, { padding: [30, 30] });
+      } catch (err) {
+        console.warn("FitBounds error:", err);
+      }
     }
-  }, [points]);
+  }, [points, map]);
 
   return null;
 }

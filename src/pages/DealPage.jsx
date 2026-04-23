@@ -302,36 +302,6 @@ export default function DealPage() {
     }
   }, [isLoaded, user]);
 
-  // ✅ Load Midtrans Snap script — SEKARANG DI DALAM COMPONENT
-  useEffect(() => {
-    // Cek apakah script sudah ada (hindari double load)
-    if (document.querySelector('script[src*="snap.js"]')) {
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
-    script.setAttribute(
-      "data-client-key",
-      import.meta.env.VITE_MIDTRANS_CLIENT_KEY || "SB-Mid-client-XXXX",
-    ); // ganti dengan client key sandbox kamu
-    script.async = true;
-
-    script.onload = () => {
-      // Script loaded successfully
-    };
-    script.onerror = () => console.error("Gagal load Midtrans Snap script");
-
-    document.body.appendChild(script);
-
-    return () => {
-      // Cleanup kalau component unmount
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
-  }, []);
-
   // Fetch deal
   useEffect(() => {
     if (!dealId) {

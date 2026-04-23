@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { supabase } from "../../lib/supabaseClient"; // sesuaikan path
+import { useState, useRef } from "react";
+import { supabase } from "../../lib/supabaseClient";
 import QuickReplies from "./QuickReplies";
 import DealMenu from "./DealMenu";
 import NegoModal from "./NegoModal";
@@ -7,6 +7,8 @@ import LocationModal from "./LocationModal";
 import TimeModal from "./TimeModal";
 import ItemModal from "./ItemModal";
 import DeliveryModal from "./DeliveryModal";
+import { Send, Image, Smile, Handshake, X } from "lucide-react";
+import { uploadPostImage } from "../../lib/uploadPostImage";
 
 export default function MessageInput({
   currentUserId,
@@ -25,19 +27,24 @@ export default function MessageInput({
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [showItemModal, setShowItemModal] = useState(false);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  const fileInputRef = useRef(null);
+
+  const emojis = ["😊", "😂", "👍", "🙏", "👌", "📦", "🛵", "🤝", "📍", "💰"];
 
   const extractMessageType = (content) => {
     const match = content.trim().match(/^\[([a-zA-Z0-9_]+)\]/);
     return match ? match[1] : null;
   };
 
-  const sendMessage = async (content = newMessage) => {
-    if (!content.trim() || !currentUserId) return;
+  const sendMessage = async (content = newMessage, type = null) => {
+    if (!content.trim() && !type) return;
 
-    const message_type = extractMessageType(content) || "text";
+    const message_type = type || extractMessageType(content) || "text";
     const trimmedContent = content.trim();
 
-    // 1. Optimistic Update: Masukkan ke state lokal dulu agar instan
     const tempId = "temp-" + Date.now();
     const optimisticMsg = {
       id: tempId,
@@ -47,7 +54,7 @@ export default function MessageInput({
       message_type: message_type,
       created_at: new Date().toISOString(),
       is_read: false,
-      sending: true, // penanda sedang dikirim
+      sending: true,
     };
 
     setMessages((prev) => [...prev, optimisticMsg]);
@@ -57,10 +64,10 @@ export default function MessageInput({
       conversation_id: conversationId,
       sender_id: currentUserId,
       content: trimmedContent,
+      message_type: message_type,
     };
 
     if (message_type.startsWith("deal_")) {
-      insertData.message_type = message_type;
       if (conversationPostId) {
         insertData.post_id = conversationPostId;
       }
@@ -75,26 +82,42 @@ export default function MessageInput({
 
       if (error) throw error;
 
-      // 2. Ganti pesan optimistik dengan data asli dari server
       setMessages((prev) => {
-        // Cek jika ID asli ini ternyata sudah masuk duluan lewat Realtime
         const alreadyExists = prev.some((msg) => msg.id === data.id);
         if (alreadyExists) {
-          // Jika sudah ada, hapus saja pesan sementaranya
           return prev.filter((msg) => msg.id !== tempId);
         }
-        // Jika belum ada, baru ganti ID sementaranya
         return prev.map((msg) =>
           msg.id === tempId ? { ...data, post: msg.post } : msg,
         );
       });
     } catch (error) {
       console.error("Error kirim pesan:", error);
-      // Jika gagal, hapus dari UI dan beri tahu user
       setMessages((prev) => prev.filter((msg) => msg.id !== tempId));
-      alert("Gagal mengirim pesan: " + error.message);
-      setNewMessage(trimmedContent); // Kembalikan teks ke input
+      alert("Gagal mengirim pesan");
+      setNewMessage(trimmedContent);
     }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const url = await uploadPostImage(file, { folder: "nebeng/chat" });
+      await sendMessage(url, "image");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal upload gambar");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const addEmoji = (emoji) => {
+    setNewMessage((prev) => prev + emoji);
+    setShowEmojiPicker(false);
   };
 
   const handleQuickReply = (text) => {
@@ -108,158 +131,155 @@ export default function MessageInput({
     document.getElementById("message-input")?.focus();
   };
 
-  const handleOpenNego = (initial = "") => {
-    setNegoInitialPrice(initial);
-    setShowNegoModal(true);
-    setShowDealMenu(false);
-  };
-
-  const handleSendNego = (message) => {
-    sendMessage(message);
-  };
-
-  const handleOpenLocation = () => {
-    setShowLocationModal(true);
-    setShowDealMenu(false);
-  };
-
-  const handleSendLocation = (message) => {
-    sendMessage(message);
-  };
-
-  const handleOpenTime = () => {
-    setShowTimeModal(true);
-    setShowDealMenu(false);
-  };
-
-  const handleSendTime = (message) => {
-    sendMessage(message);
-  };
-
-  const handleOpenItem = () => {
-    setShowItemModal(true);
-    setShowDealMenu(false);
-  };
-
-  const handleSendItem = (message) => {
-    sendMessage(message);
-  };
-
-  const handleOpenDelivery = () => {
-    setShowDeliveryModal(true);
-    setShowDealMenu(false);
-  };
-
-  const handleSendDelivery = (message) => {
-    sendMessage(message);
-  };
-
   return (
-    <>
-      <div className="fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 pb-[env(safe-area-inset-bottom)]">
-        <QuickReplies onSelect={handleQuickReply} />
+    <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-100 z-50 pb-[env(safe-area-inset-bottom)]">
+      <QuickReplies onSelect={handleQuickReply} />
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            sendMessage();
-          }}
-          className="px-4 pb-4 pt-2 flex items-center gap-2"
-        >
-          <div className="flex-1 flex items-center gap-2 bg-base-200 border border-base-300 rounded-2xl px-3 focus-within:ring-2 focus-within:ring-emerald-400/60">
+      <div className="max-w-3xl mx-auto px-4 py-3 flex flex-col gap-3">
+        {/* Emoji Picker Simple */}
+        {showEmojiPicker && (
+          <div className="flex flex-wrap gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in slide-in-from-bottom-2">
+            {emojis.map((emoji) => (
+              <button
+                key={emoji}
+                onClick={() => addEmoji(emoji)}
+                className="text-2xl hover:scale-125 transition-transform p-1"
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-2">
+          {/* Menu Handshake / Deal */}
+          <button
+            onClick={() => setShowDealMenu(!showDealMenu)}
+            className={`w-11 h-11 shrink-0 rounded-full flex items-center justify-center transition-all ${
+              showDealMenu
+                ? "bg-[#4e73df] text-white"
+                : "bg-slate-100 text-slate-500"
+            }`}
+          >
+            <Handshake size={22} />
+          </button>
+
+          {/* Input Area */}
+          <div className="flex-1 flex items-center gap-2.5 rounded-[24px] bg-[#f5f7ff] px-4 py-1.5 shadow-inner border border-slate-100/50">
+            <button
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className="text-slate-400 hover:text-[#4e73df] transition-colors"
+            >
+              <Smile size={20} />
+            </button>
+
             <input
               id="message-input"
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Tulis pesan atau pilih deal…"
-              className="input input-ghost focus:outline-none bg-transparent w-full text-sm py-4"
+              onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+              placeholder="Tulis pesan..."
+              className="w-full bg-transparent text-[14px] py-2.5 text-slate-700 outline-none placeholder:text-slate-400"
             />
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageUpload}
+              accept="image/*"
+              className="hidden"
+            />
+
             <button
-              type="button"
-              onClick={() => setShowDealMenu(!showDealMenu)}
-              disabled={true} // Sementara di-disable sesuai permintaan
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="text-slate-400 hover:text-[#4e73df] transition-colors disabled:opacity-50"
             >
-              <svg
-                className="w-6 h-6 text-emerald-400/60"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                />
-              </svg>
+              {uploading ? (
+                <div className="w-5 h-5 border-2 border-[#4e73df] border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Image size={20} />
+              )}
             </button>
           </div>
 
+          {/* Send Button */}
           <button
-            type="submit"
-            disabled={!newMessage.trim()}
-            className="btn bg-linear-to-r from-[#81c784] to-[#66bb6a] text-white rounded-2xl px-6 disabled:opacity-50"
+            onClick={() => sendMessage()}
+            disabled={!newMessage.trim() || uploading}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#4e73df] text-white shadow-[0_8px_20px_rgba(78,115,223,0.3)] active:scale-95 transition-all disabled:opacity-50"
           >
-            Kirim
+            <Send size={18} />
           </button>
-        </form>
-
-        {showDealMenu && (
-          <DealMenu
-            onClose={() => setShowDealMenu(false)}
-            onSelectDeal={handleSelectDeal}
-            onOpenNego={() => handleOpenNego("")}
-            onOpenLocation={handleOpenLocation}
-            onOpenTime={handleOpenTime}
-            onOpenItem={handleOpenItem}
-            onOpenDelivery={handleOpenDelivery}
-            postId={conversationPostId}
-            postInfo={postInfo} // pastikan ada clerk_user_id di dalamnya
-            currentUserId={currentUserId}
-            carrierId={carrierId}
-            depositorId={depositorId}
-            conversationId={conversationId}
-          />
-        )}
-
-        <NegoModal
-          isOpen={showNegoModal}
-          onClose={() => setShowNegoModal(false)}
-          onSend={handleSendNego}
-          initialPrice={negoInitialPrice}
-          postInfo={postInfo}
-        />
-
-        <LocationModal
-          isOpen={showLocationModal}
-          onClose={() => setShowLocationModal(false)}
-          onSend={handleSendLocation}
-          postInfo={postInfo}
-        />
-
-        <TimeModal
-          isOpen={showTimeModal}
-          onClose={() => setShowTimeModal(false)}
-          onSend={handleSendTime}
-          postInfo={postInfo}
-        />
-
-        <ItemModal
-          isOpen={showItemModal}
-          onClose={() => setShowItemModal(false)}
-          onSend={handleSendItem}
-          postInfo={postInfo}
-        />
-
-        <DeliveryModal
-          isOpen={showDeliveryModal}
-          onClose={() => setShowDeliveryModal(false)}
-          onSend={handleSendDelivery}
-          postInfo={postInfo}
-        />
+        </div>
       </div>
-    </>
+
+      {showDealMenu && (
+        <DealMenu
+          onClose={() => setShowDealMenu(false)}
+          onSelectDeal={handleSelectDeal}
+          onOpenNego={() => {
+            setShowNegoModal(true);
+            setShowDealMenu(false);
+          }}
+          onOpenLocation={() => {
+            setShowLocationModal(true);
+            setShowDealMenu(false);
+          }}
+          onOpenTime={() => {
+            setShowTimeModal(true);
+            setShowDealMenu(false);
+          }}
+          onOpenItem={() => {
+            setShowItemModal(true);
+            setShowDealMenu(false);
+          }}
+          onOpenDelivery={() => {
+            setShowDeliveryModal(true);
+            setShowDealMenu(false);
+          }}
+          postId={conversationPostId}
+          postInfo={postInfo}
+          currentUserId={currentUserId}
+          carrierId={carrierId}
+          depositorId={depositorId}
+          conversationId={conversationId}
+        />
+      )}
+
+      {/* Modals are kept as they were */}
+      <NegoModal
+        isOpen={showNegoModal}
+        onClose={() => setShowNegoModal(false)}
+        onSend={(msg) => sendMessage(msg)}
+        initialPrice={negoInitialPrice}
+        postInfo={postInfo}
+      />
+      <LocationModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        onSend={(msg) => sendMessage(msg)}
+        postInfo={postInfo}
+      />
+      <TimeModal
+        isOpen={showTimeModal}
+        onClose={() => setShowTimeModal(false)}
+        onSend={(msg) => sendMessage(msg)}
+        postInfo={postInfo}
+      />
+      <ItemModal
+        isOpen={showItemModal}
+        onClose={() => setShowItemModal(false)}
+        onSend={(msg) => sendMessage(msg)}
+        postInfo={postInfo}
+      />
+      <DeliveryModal
+        isOpen={showDeliveryModal}
+        onClose={() => setShowDeliveryModal(false)}
+        onSend={(msg) => sendMessage(msg)}
+        postInfo={postInfo}
+      />
+    </div>
   );
 }

@@ -277,7 +277,7 @@ export default function Home() {
     <div className="absolute inset-0 bg-black text-base-content flex flex-col items-center overflow-hidden">
       {/* Fixed Top Header - Logo + Search + Profile */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-500 ease-out ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-500 ease-out pt-[env(safe-area-inset-top)] ${
           isTopHeaderVisible ? "translate-y-0" : "-translate-y-full"
         }`}
       >

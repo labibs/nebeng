@@ -394,6 +394,50 @@ export default function MessageBubble({
     );
   }
 
+  // Pesan Gambar
+  if (msg.message_type === "image") {
+    return (
+      <div className={`chat ${isMine ? "chat-end" : "chat-start"}`}>
+        <div className="chat-image avatar">
+          <div className="w-10 rounded-full">
+            <img src={avatar} alt="avatar" />
+          </div>
+        </div>
+
+        <div className="chat-header">
+          <time className="text-xs opacity-70">
+            {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </time>
+        </div>
+
+        <div
+          className={`
+            relative max-w-[70vw] overflow-hidden rounded-2xl shadow-sm border border-slate-100
+            ${isMine ? "rounded-br-none" : "rounded-bl-none"}
+          `}
+        >
+          <img
+            src={msg.content}
+            alt="Chat Image"
+            className="w-full h-auto object-cover cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => window.open(msg.content, "_blank")}
+          />
+        </div>
+
+        {isMine && (
+          <div
+            className={`chat-footer text-xs mt-1 ${msg.is_read ? "text-blue-500" : "opacity-70"}`}
+          >
+            {msg.is_read ? "Terbaca ✓✓" : "Terkirim ✓"}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   // Pesan Teks Biasa
   return (
     <div className={`chat ${isMine ? "chat-end" : "chat-start"}`}>

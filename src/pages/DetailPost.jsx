@@ -13,6 +13,8 @@ import {
   Heart,
   ThumbsUp,
   Eye,
+  Smile,
+  Image,
 } from "lucide-react";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
@@ -27,6 +29,24 @@ export default function DetailPost() {
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const fileInputRef = useRef(null);
+  const emojis = [
+    "😊",
+    "😂",
+    "🥰",
+    "😎",
+    "👍",
+    "🙏",
+    "👌",
+    "📦",
+    "🛵",
+    "🤝",
+    "📍",
+    "💰",
+  ];
 
   const formatTime = (value) =>
     format(new Date(value), "HH:mm", {
@@ -71,8 +91,8 @@ export default function DetailPost() {
     fetchData();
   }, [postId]);
 
-  const handleSendComment = async () => {
-    if (!newComment.trim() || sending) return;
+  const handleSendComment = async (content = newComment, type = "text") => {
+    if (!content.trim() || sending) return;
     if (!currentUser) {
       alert("Silakan login untuk berkomentar");
       return;
@@ -85,7 +105,8 @@ export default function DetailPost() {
         .insert({
           post_id: postId,
           user_id: currentUser.id,
-          content: newComment.trim(),
+          content: content.trim(),
+          comment_type: type,
         })
         .select("*, users(*)")
         .single();
@@ -94,11 +115,28 @@ export default function DetailPost() {
 
       setComments([...comments, data]);
       setNewComment("");
+      setShowEmojiPicker(false);
     } catch (err) {
       console.error(err);
       alert("Gagal mengirim komentar.");
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const url = await uploadPostImage(file, { folder: "nebeng/comments" });
+      await handleSendComment(url, "image");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal upload gambar");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -133,6 +171,31 @@ export default function DetailPost() {
   const leadComment = comments[0] || null;
   const threadComments = comments.slice(1);
   const threadPreviewUsers = threadComments.slice(0, 4);
+
+  const CommentBody = ({ comment }) => {
+    const isImage =
+      comment.content.startsWith("http") &&
+      (comment.content.includes("cloudinary") ||
+        comment.content.match(/\.(jpeg|jpg|gif|png|webp)$/) != null);
+
+    if (isImage) {
+      return (
+        <div className="mt-2 rounded-xl overflow-hidden border border-slate-100 max-w-[200px] shadow-sm">
+          <img
+            src={comment.content}
+            alt="Comment Image"
+            className="w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => window.open(comment.content, "_blank")}
+          />
+        </div>
+      );
+    }
+    return (
+      <p className="mt-1 text-[13px] leading-relaxed text-slate-600">
+        {comment.content}
+      </p>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-[#f0f7ff] flex flex-col overflow-hidden">
@@ -255,10 +318,8 @@ export default function DetailPost() {
                           {formatTime(leadComment.created_at)}
                         </span>
                       </div>
-                      <p className="mt-1 text-[13px] leading-relaxed text-slate-600">
-                        {leadComment.content}
-                      </p>
-                    </div>
+                      <CommentBody comment={leadComment} />
+                    </div>{" "}
                     {currentUser?.id === leadComment.user_id && (
                       <button
                         onClick={() => handleDeleteComment(leadComment.id)}
@@ -298,10 +359,8 @@ export default function DetailPost() {
                             {formatTime(comment.created_at)}
                           </span>
                         </div>
-                        <p className="mt-1 text-[13px] leading-relaxed text-slate-600">
-                          {comment.content}
-                        </p>
-                      </div>
+                        <CommentBody comment={comment} />
+                      </div>{" "}
                       {currentUser?.id === comment.user_id && (
                         <button
                           onClick={() => handleDeleteComment(comment.id)}
@@ -329,29 +388,77 @@ export default function DetailPost() {
       </div>
 
       {/* Floating Comment Input */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-lg border-t border-slate-100 z-50">
-        <div className="max-w-3xl mx-auto flex items-center gap-2.5">
-          <div className="flex-1 relative flex items-center gap-2.5 rounded-[24px] bg-[#f5f7ff] px-4 py-2.5 shadow-inner border border-slate-100/50">
-            <input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSendComment()}
-              placeholder="Tulis komentar..."
-              className="w-full bg-transparent text-[13px] text-slate-700 outline-none placeholder:text-slate-400"
-            />
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-lg border-t border-slate-100 z-50 pb-[env(safe-area-inset-bottom)]">
+        <div className="max-w-3xl mx-auto flex flex-col gap-2.5">
+          {/* Emoji Picker Simple */}
+          {showEmojiPicker && (
+            <div className="max-h-40 overflow-y-auto flex flex-wrap gap-2 p-3 bg-white rounded-2xl border border-slate-100 shadow-xl animate-in fade-in slide-in-from-bottom-2">
+              {emojis.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => {
+                    setNewComment((prev) => prev + emoji);
+                    setShowEmojiPicker(false);
+                  }}
+                  className="text-2xl hover:scale-125 transition-transform p-1"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center gap-2.5">
+            <div className="flex-1 relative flex items-center gap-2.5 rounded-[24px] bg-[#f5f7ff] px-4 py-1.5 shadow-inner border border-slate-100/50">
+              <button
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="text-slate-400 hover:text-[#4e73df] transition-colors"
+              >
+                <Smile size={20} />
+              </button>
+
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleSendComment()}
+                placeholder="Tulis komentar..."
+                className="w-full bg-transparent text-[13px] py-2.5 text-slate-700 outline-none placeholder:text-slate-400"
+              />
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept="image/*"
+                className="hidden"
+              />
+
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="text-slate-400 hover:text-[#4e73df] transition-colors"
+              >
+                {uploading ? (
+                  <div className="w-5 h-5 border-2 border-[#4e73df] border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Image size={20} />
+                )}
+              </button>
+            </div>
+
+            <button
+              onClick={() => handleSendComment()}
+              disabled={!newComment.trim() || sending || uploading}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#4e73df] text-white shadow-[0_8px_20px_rgba(78,115,223,0.3)] active:scale-95 transition-all disabled:opacity-50"
+            >
+              {sending ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Send size={18} />
+              )}
+            </button>
           </div>
-          <button
-            onClick={handleSendComment}
-            disabled={!newComment.trim() || sending}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#4e73df] text-white shadow-[0_8px_20px_rgba(78,115,223,0.3)] active:scale-95 transition-all disabled:opacity-50"
-          >
-            {sending ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <Send size={16} />
-            )}
-          </button>
         </div>
       </div>
     </div>

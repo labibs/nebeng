@@ -440,11 +440,15 @@ export default function ChatInbox() {
               ) : (
                 <div className="space-y-1">
                   {userList
-                    .filter((u) =>
-                      u.name
+                    .filter((u) => {
+                      const hasChat = conversations.some(
+                        (conv) => conv.opponent?.clerk_id === u.clerk_id,
+                      );
+                      const matchesSearch = u.name
                         ?.toLowerCase()
-                        .includes(contactSearchQuery.toLowerCase()),
-                    )
+                        .includes(contactSearchQuery.toLowerCase());
+                      return hasChat && matchesSearch;
+                    })
                     .map((user) => (
                       <button
                         key={user.id}

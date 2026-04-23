@@ -32,7 +32,63 @@ export default function MessageInput({
 
   const fileInputRef = useRef(null);
 
-  const emojis = ["😊", "😂", "👍", "🙏", "👌", "📦", "🛵", "🤝", "📍", "💰"];
+  const emojis = [
+    // Ekspresi
+    "😊",
+    "😂",
+    "🥰",
+    "😎",
+    "🤔",
+    "😅",
+    "😱",
+    "🥳",
+    "🥺",
+    "😴",
+    // Jempol & Tangan
+    "👍",
+    "🙏",
+    "👌",
+    "👏",
+    "👋",
+    "🙌",
+    "🤝",
+    "💪",
+    "✨",
+    "🔥",
+    // Barang & Belanja
+    "📦",
+    "🛍️",
+    "🎁",
+    "🛒",
+    "💰",
+    "🧾",
+    "📱",
+    "💻",
+    "💼",
+    "🔑",
+    // Transportasi
+    "🛵",
+    "🚗",
+    "🚲",
+    "🚌",
+    "🚆",
+    "✈️",
+    "🚢",
+    "📍",
+    "🗺️",
+    "⛽",
+    // Makanan & Minuman
+    "🥤",
+    "☕",
+    "🍜",
+    "🍱",
+    "🍕",
+    "🍰",
+    "🍎",
+    "🍗",
+    "🍚",
+    "🍦",
+  ];
 
   const extractMessageType = (content) => {
     const match = content.trim().match(/^\[([a-zA-Z0-9_]+)\]/);
@@ -138,12 +194,12 @@ export default function MessageInput({
       <div className="max-w-3xl mx-auto px-4 py-3 flex flex-col gap-3">
         {/* Emoji Picker Simple */}
         {showEmojiPicker && (
-          <div className="flex flex-wrap gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in slide-in-from-bottom-2">
+          <div className="max-h-40 overflow-y-auto flex flex-wrap gap-2 p-3 bg-white rounded-2xl border border-slate-100 shadow-xl animate-in fade-in slide-in-from-bottom-2">
             {emojis.map((emoji) => (
               <button
                 key={emoji}
                 onClick={() => addEmoji(emoji)}
-                className="text-2xl hover:scale-125 transition-transform p-1"
+                className="text-2xl hover:scale-125 transition-transform p-1 active:bg-slate-100 rounded-lg"
               >
                 {emoji}
               </button>

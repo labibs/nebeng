@@ -131,14 +131,12 @@ func GetConversations(c *gin.Context) {
 		}
 
 		lastMsg := lastMsgMap[convID]
-		lastMessage := "Belum ada pesan"
-		lastTime := ""
-		if lastMsg != nil {
-			if content := getString(lastMsg, "content"); content != "" {
-				lastMessage = content
-			}
-			lastTime = getString(lastMsg, "created_at")
+		if lastMsg == nil {
+			continue // Sembunyikan obrolan yang belum pernah ada pesan
 		}
+
+		lastMessage := getString(lastMsg, "content")
+		lastTime := getString(lastMsg, "created_at")
 
 		// Apply search filter
 		if searchQuery != "" {

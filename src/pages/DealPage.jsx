@@ -873,7 +873,7 @@ export default function DealPage() {
     <>
       <div className="min-h-screen bg-[#f0f7ff] flex flex-col pb-24 text-slate-900">
         {/* Header */}
-        <div className="sticky top-0 z-10 navbar bg-white/90 backdrop-blur-xl border-b border-slate-100">
+        <div className="sticky top-0 z-10 navbar bg-white/90 backdrop-blur-xl border-b border-slate-100 pt-[env(safe-area-inset-top)]">
           <button
             onClick={() => navigate(-1)}
             className="btn btn-ghost btn-circle"

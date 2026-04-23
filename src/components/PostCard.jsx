@@ -20,6 +20,12 @@ import {
   MapPin,
   Heart,
   ArrowLeft,
+  MessageSquare,
+  MessageCircle,
+  Repeat2,
+  Bookmark,
+  Share2,
+  Handshake,
 } from "lucide-react";
 import {
   MapContainer,
@@ -75,6 +81,14 @@ export default function PostCard({ post }) {
   const userAvatar =
     poster.avatar_url ||
     "https://img.freepik.com/free-vector/user-circles-set_78370-4704.jpg";
+
+  const formatNumber = (num) => {
+    if (!num) return "0";
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1).replace(/\.0$/, "") + "k";
+    }
+    return num.toString();
+  };
 
   const postTypeConfig = {
     nitip_bawakan: {
@@ -731,164 +745,119 @@ export default function PostCard({ post }) {
 
             {/* Actions */}
             {post.type !== "content" && (
-              <div className="flex items-center justify-around pt-3 border-t border-white/20">
+              <div className="flex items-center justify-between pt-4 border-t border-white/10 px-1">
                 <button
-                  className="flex flex-col items-center gap-1.5"
+                  className="flex flex-col items-center gap-1 group"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-1.164 0-2.097.943-2.097 2.095v2.81M7 20H4a2 2 0 01-2-2v-9a2 2 0 012-2h3"
-                      />
-                    </svg>
+                  <div className="p-2.5 rounded-full hover:bg-white/10 transition-colors">
+                    <Heart
+                      size={20}
+                      className="text-white group-active:scale-125 transition-transform"
+                    />
                   </div>
-                  <span className="text-xs text-white/80">Like</span>
+                  <span className="text-[10px] font-bold text-white/60 tracking-tight">
+                    {formatNumber(1250)}
+                  </span>
                 </button>
+
                 <button
-                  className="flex flex-col items-center gap-1.5"
+                  className="flex flex-col items-center gap-1 group"
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/post/${post.id}`);
                   }}
                 >
-                  <div className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-                      />
-                    </svg>
+                  <div className="p-2.5 rounded-full hover:bg-white/10 transition-colors">
+                    <MessageSquare
+                      size={20}
+                      className="text-white group-active:scale-125 transition-transform"
+                    />
                   </div>
-                  <span className="text-xs text-white/80">
-                    {post.post_comments?.[0]?.count || 0} Komentar
+                  <span className="text-[10px] font-bold text-white/60 tracking-tight">
+                    {formatNumber(post.post_comments?.[0]?.count || 0)}
                   </span>
                 </button>
+
                 <button
+                  className="flex flex-col items-center gap-1 group"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleChatDeal();
                   }}
                   disabled={loadingChat}
-                  className="flex flex-col items-center gap-1.5"
                 >
-                  <div className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                      />
-                    </svg>
+                  <div className="p-2.5 rounded-full hover:bg-white/10 transition-colors">
+                    <MessageCircle
+                      size={20}
+                      className="text-white group-active:scale-125 transition-transform"
+                    />
                   </div>
-                  <span className="text-xs text-white/80">Chat</span>
+                  <span className="text-[10px] font-bold text-white/60 tracking-tight">
+                    Chat
+                  </span>
                 </button>
+
+                {/* CENTER PIECE: DEAL */}
                 <button
-                  className="flex flex-col items-center gap-1.5"
+                  className="flex flex-col items-center gap-1.5 -mt-2 group"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full shadow-lg">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                      />
-                    </svg>
+                  <div className="p-3.5 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-full shadow-[0_8px_20px_rgba(52,211,153,0.3)] group-active:scale-90 transition-transform">
+                    <Handshake
+                      size={24}
+                      strokeWidth={2.5}
+                      className="text-white"
+                    />
                   </div>
-                  <span className="text-xs font-semibold text-emerald-300">
+                  <span className="text-[11px] font-black text-emerald-400 tracking-wider uppercase">
                     Deal
                   </span>
                 </button>
+
                 <button
-                  className="flex flex-col items-center gap-1.5"
+                  className="flex flex-col items-center gap-1 group"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 1l4 4-4 4M3 11v-2a6 6 0 016-6h8M7 23l-4-4 4-4m14-2v2a6 6 0 01-6 6H7"
-                      />
-                    </svg>
+                  <div className="p-2.5 rounded-full hover:bg-white/10 transition-colors">
+                    <Repeat2
+                      size={20}
+                      className="text-white group-active:scale-125 transition-transform"
+                    />
                   </div>
-                  <span className="text-xs text-white/80">Repost</span>
+                  <span className="text-[10px] font-bold text-white/60 tracking-tight">
+                    {formatNumber(42)}
+                  </span>
                 </button>
+
                 <button
-                  className="flex flex-col items-center gap-1.5"
+                  className="flex flex-col items-center gap-1 group"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-4-7 4V5z"
-                      />
-                    </svg>
+                  <div className="p-2.5 rounded-full hover:bg-white/10 transition-colors">
+                    <Bookmark
+                      size={20}
+                      className="text-white group-active:scale-125 transition-transform"
+                    />
                   </div>
-                  <span className="text-xs text-white/80">Simpan</span>
+                  <span className="text-[10px] font-bold text-white/60 tracking-tight">
+                    {formatNumber(85)}
+                  </span>
                 </button>
+
                 <button
-                  className="flex flex-col items-center gap-1.5"
+                  className="flex flex-col items-center gap-1 group"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                      />
-                    </svg>
+                  <div className="p-2.5 rounded-full hover:bg-white/10 transition-colors">
+                    <Share2
+                      size={20}
+                      className="text-white group-active:scale-125 transition-transform"
+                    />
                   </div>
-                  <span className="text-xs text-white/80">Share</span>
+                  <span className="text-[10px] font-bold text-white/60 tracking-tight">
+                    {formatNumber(12)}
+                  </span>
                 </button>
               </div>
             )}

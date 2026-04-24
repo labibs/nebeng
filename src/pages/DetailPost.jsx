@@ -254,15 +254,24 @@ export default function DetailPost() {
                 </button>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50/50 border border-blue-100 px-3 py-1.5 text-[11px] font-semibold text-[#4e73df]">
-                  <MapPin size={11} />
-                  {post.to_city?.split(",")[0] || "Lokasi"}
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50/50 border border-amber-100 px-3 py-1.5 text-[11px] font-semibold text-amber-600">
-                  <DollarSign size={11} />
-                  Rp{post.fee?.toLocaleString("id-ID") || "0"}
-                </span>
+              <div className="mt-3 flex items-center gap-3 text-[11px] font-bold text-slate-500">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="truncate">
+                    {post.from_city?.split(",")[0] || "Asal"}
+                  </span>
+                  <ArrowLeft
+                    size={10}
+                    className="rotate-180 shrink-0 text-[#4e73df]"
+                  />
+                  <span className="truncate">
+                    {post.to_city?.split(",")[0] || "Tujuan"}
+                  </span>
+                </div>
+                <div className="h-3 w-px bg-slate-200 shrink-0" />
+                <div className="flex items-center gap-1 text-[#4e73df] shrink-0">
+                  <DollarSign size={11} strokeWidth={3} />
+                  <span>{post.fee?.toLocaleString("id-ID") || "0"}</span>
+                </div>
               </div>
 
               <div className="mt-4 flex items-center gap-2 border-t border-slate-50 pt-3">

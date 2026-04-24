@@ -527,78 +527,52 @@ export default function PostCard({ post }) {
                       </MapContainer>
                     </div>
                   ) : (
-                    <div className="relative z-10 flex gap-4 p-4">
-                      {/* Left Column: Main Details */}
-                      <div className="flex-1 flex flex-col justify-end min-w-0 pt-14">
-                        <div className="space-y-1 mb-3">
-                          {/* Title & Date */}
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <span className="text-base">{config.icon}</span>
-                              <h3 className="font-bold text-base truncate leading-tight">
-                                {config.label.charAt(0).toUpperCase() +
-                                  config.label.slice(1)}
-                              </h3>
-                            </div>
-                            <p className="text-xs font-medium text-white/80 leading-tight">
-                              Berangkat: {displayDate || "Waktu fleksibel"}
-                            </p>
-                          </div>
+                    <div className="relative z-10 flex flex-col gap-3 p-4">
+                      {/* Top Row: Route & Price (One Line) */}
+                      <div className="flex items-center justify-between gap-3 pt-14">
+                        <div className="flex items-center gap-2 text-[13px] font-bold min-w-0">
+                          <span className="truncate">
+                            {post.from_city?.split(",")[0] || "Asal"}
+                          </span>
+                          <ArrowLeft
+                            size={10}
+                            className="rotate-180 shrink-0 opacity-70"
+                          />
+                          <span className="truncate">
+                            {post.to_city?.split(",")[0] || "Tujuan"}
+                          </span>
                         </div>
 
-                        {/* Ongkos (Bottom of Left Column) */}
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-xs font-bold text-white/60">
-                            Ongkos
+                        <div className="flex items-baseline gap-0.5 text-emerald-400 shrink-0">
+                          <span className="text-[10px] font-bold">Rp</span>
+                          <span className="text-xl font-black">
+                            {post.fee?.toLocaleString("id-ID") || "0"}
                           </span>
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-sm font-bold">Rp</span>
-                            <span className="text-2xl font-black leading-none">
-                              {post.fee?.toLocaleString("id-ID") || "0"}
-                            </span>
-                          </div>
                         </div>
                       </div>
 
-                      {/* Right Column: Vertical Actions (Dari, Ke, Rute) */}
-                      <div className="flex flex-col gap-2 shrink-0 border-l border-white/10 pl-3">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setInlineMapMode("dari");
-                          }}
-                          className="w-12 h-12 bg-white/15 rounded-lg flex flex-col items-center justify-center hover:bg-white/25 transition border border-white/10 group shadow-sm"
-                        >
-                          <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
-                            Dari
-                          </span>
-                          <MapPin size={14} className="text-white" />
-                        </button>
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setInlineMapMode("ke");
-                          }}
-                          className="w-12 h-12 bg-white/15 rounded-lg flex flex-col items-center justify-center hover:bg-white/25 transition border border-white/10 group shadow-sm"
-                        >
-                          <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
-                            Ke
-                          </span>
-                          <MapPin size={14} className="text-white" />
-                        </button>
+                      {/* Bottom Row: Date & Action */}
+                      <div className="flex items-center justify-between border-t border-white/10 pt-3">
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="text-sm">{config.icon}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">
+                              {config.label}
+                            </span>
+                          </div>
+                          <p className="text-[11px] font-medium text-white/60">
+                            {displayDate || "Waktu fleksibel"}
+                          </p>
+                        </div>
 
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             setInlineMapMode("rute");
                           }}
-                          className="w-12 h-12 bg-white/20 rounded-lg flex flex-col items-center justify-center hover:bg-white/30 transition border border-white/10 group shadow-sm"
+                          className="px-4 py-1.5 bg-white/10 hover:bg-white/20 rounded-full border border-white/10 text-[11px] font-bold transition-all active:scale-95"
                         >
-                          <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
-                            Rute
-                          </span>
-                          <Navigation size={14} className="text-white" />
+                          Cek Rute
                         </button>
                       </div>
                     </div>

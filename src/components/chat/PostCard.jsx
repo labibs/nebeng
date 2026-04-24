@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Package, Bike, Truck, Car } from "lucide-react";
+import { Package, Bike, Truck, Car, ArrowRight } from "lucide-react";
 
 export default function PostCard({ msg, isMine, avatar, postInfo }) {
   const [showFullAddress, setShowFullAddress] = useState(false);
@@ -82,7 +82,7 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
         </div>
 
         {/* Gambar Barang - Full Width */}
-        <div className="w-full h-36 rounded-2xl overflow-hidden mb-4 bg-slate-50 border border-slate-100">
+        <div className="w-full h-36 rounded-2xl overflow-hidden mb-3 bg-slate-50 border border-slate-100">
           <img
             src={
               post.item_photo ||
@@ -93,47 +93,19 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
           />
         </div>
 
-        {/* Info Lokasi - Vertical Stacked */}
-        <div className="space-y-3 mb-4">
-          <div className="flex items-start gap-3">
-            <div className="w-6 h-6 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 mt-0.5 border border-emerald-100">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] text-slate-400 font-bold uppercase leading-none mb-1">
-                Dari
-              </p>
-              <p className="text-xs font-bold text-slate-700 truncate">
-                {fromCity}
-              </p>
-            </div>
+        {/* Info Lokasi - Simplified One Row */}
+        <div className="mb-3 px-1">
+          <div className="flex items-center gap-2 text-[12px] font-black text-slate-700">
+            <span className="truncate">{fromCity}</span>
+            <ArrowRight size={12} className="shrink-0 text-blue-500" />
+            <span className="truncate">{toCity}</span>
           </div>
 
-          <div className="flex items-start gap-3">
-            <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center shrink-0 mt-0.5 border border-blue-100">
-              <svg
-                className="w-3.5 h-3.5 text-blue-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={3}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] text-slate-400 font-bold uppercase leading-none mb-1">
-                Ke
-              </p>
-              <p className="text-xs font-bold text-slate-700 truncate">
-                {toCity}
-              </p>
-            </div>
-          </div>
+          {post.description && (
+            <p className="mt-2 text-[11px] text-slate-500 leading-relaxed line-clamp-2 italic">
+              "{post.description}"
+            </p>
+          )}
         </div>
 
         {/* Toggle Detail */}

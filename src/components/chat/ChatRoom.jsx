@@ -204,11 +204,13 @@ export default function ChatRoom() {
       return;
     }
 
+    const finalPostId = postId || conversationPostId;
+
     // 1️⃣ Cari deal terbaru berdasarkan kombinasi peserta
     const { data: existingDeals, error: fetchError } = await supabase
       .from("deals")
       .select("id")
-      .eq("post_id", postId)
+      .eq("post_id", finalPostId)
       .eq("carrier_id", carrierId)
       .eq("depositor_id", depositorId)
       .order("created_at", { ascending: false })
@@ -220,8 +222,10 @@ export default function ChatRoom() {
       return;
     }
 
+    let dealId;
+
     // ===============================
-    // 2️⃣ Jika BELUM ADA deal → INSERT (dipertahankan seperti logic milikmu)
+    // 2️⃣ Jika BELUM ADA deal → INSERT
     // ===============================
     if (!existingDeals || existingDeals.length === 0) {
       const { data: newDeal, error: insertError } = await supabase
@@ -233,7 +237,6 @@ export default function ChatRoom() {
           agreed_fee: agreedFee,
           status: "pending",
 
-          // default fields — dipertahankan 👍
           pickup_location: "TBD",
           delivery_location: "TBD",
           pickup_datetime:

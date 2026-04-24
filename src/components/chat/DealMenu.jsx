@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import LoadingLogo from "../LoadingLogo";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
-import { apiFetch } from "../../lib/apiClient";
 import SlideToUnlock from "./SlideToUnlock";
 
 import { X } from "lucide-react";
@@ -18,13 +17,13 @@ export default function DealMenu({
   postInfo,
   currentUserId,
   conversationId,
+  carrierId,
+  depositorId,
 }) {
-  const [approvedMessages, setApprovedMessages] = useState([]);
-  const [lastPendingMessage, setLastPendingMessage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dealData, setDealData] = useState(null);
-  const [localPostInfo, setLocalPostInfo] = useState(postInfo);
   const [allDone, setAllDone] = useState(false);
+  const navigate = useNavigate();
 
   const postTypeConfig = {
     nitip_bawakan: { label: "nitip bawain", icon: "🧳" },
@@ -37,9 +36,142 @@ export default function DealMenu({
     warung: { label: "outlet", icon: "🏪" },
   };
 
-  const config = postTypeConfig[localPostInfo?.type] || {
+  const config = postTypeConfig[postInfo?.type] || {
     label: "post",
     icon: "📝",
+  };
+
+  // Fetch existing deal data
+  useEffect(() => {
+    const fetchDeal = async () => {
+      if (!postId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("deals")
+          .select("*")
+          .eq("post_id", postId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error fetching deal:", error);
+        } else {
+          setDealData(data);
+        }
+      } catch (err) {
+        console.error("Error fetching deal:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDeal();
+  }, [postId]);
+
+  // Check if all deal steps are done
+  useEffect(() => {
+    if (!dealData) {
+      setAllDone(false);
+      return;
+    }
+
+    const hasFee = dealData.agreed_fee != null && dealData.agreed_fee > 0;
+    const hasPickup =
+      dealData.pickup_location && dealData.pickup_location !== "TBD";
+    const hasDelivery =
+      dealData.delivery_location && dealData.delivery_location !== "TBD";
+    const hasTime =
+      dealData.pickup_datetime && !dealData.pickup_datetime.includes("TBD");
+    const hasItem =
+      dealData.item_description && dealData.item_description !== "TBD";
+
+    setAllDone(hasFee && hasPickup && hasDelivery && hasTime && hasItem);
+  }, [dealData]);
+
+  const colorMap = {
+    ongkos: { bg: "bg-emerald-100", text: "text-emerald-600" },
+    lokasi: { bg: "bg-blue-100", text: "text-blue-600" },
+    waktu: { bg: "bg-purple-100", text: "text-purple-600" },
+    barang: { bg: "bg-orange-100", text: "text-orange-600" },
+    pengantaran: { bg: "bg-rose-100", text: "text-rose-600" },
+  };
+
+  const deals = [
+    {
+      tag: "ongkos",
+      title: "Ongkos Jastip",
+      icon: "💰",
+      ket: "Sepakati biaya jasa titip / belanja",
+      desc:
+        dealData?.agreed_fee && dealData.agreed_fee > 0
+          ? `Rp${Number(dealData.agreed_fee).toLocaleString("id-ID")}`
+          : "Belum disepakati",
+      isCompleted: dealData?.agreed_fee != null && dealData.agreed_fee > 0,
+      onOpen: onOpenNego,
+    },
+    {
+      tag: "lokasi",
+      title: "Lokasi Ketemuan",
+      icon: "📍",
+      ket: "Tentukan tempat serah terima",
+      desc:
+        dealData?.pickup_location && dealData.pickup_location !== "TBD"
+          ? dealData.pickup_location
+          : "Belum ditentukan",
+      isCompleted:
+        dealData?.pickup_location && dealData.pickup_location !== "TBD",
+      onOpen: onOpenLocation,
+    },
+    {
+      tag: "waktu",
+      title: "Waktu Ketemuan",
+      icon: "🕐",
+      ket: "Sepakati jam & hari bertemu",
+      desc:
+        dealData?.pickup_datetime && !dealData.pickup_datetime.includes("TBD")
+          ? new Date(dealData.pickup_datetime).toLocaleString("id-ID")
+          : "Belum ditentukan",
+      isCompleted:
+        dealData?.pickup_datetime && !dealData.pickup_datetime.includes("TBD"),
+      onOpen: onOpenTime,
+    },
+    {
+      tag: "barang",
+      title: "Barang Titipan",
+      icon: "📦",
+      ket: "Konfirmasi detail barang yang dititipkan",
+      desc:
+        dealData?.item_description && dealData.item_description !== "TBD"
+          ? dealData.item_description
+          : "Belum dikonfirmasi",
+      isCompleted:
+        dealData?.item_description && dealData.item_description !== "TBD",
+      onOpen: onOpenItem,
+    },
+    {
+      tag: "pengantaran",
+      title: "Lokasi Pengantaran",
+      icon: "🚚",
+      ket: "Tentukan lokasi tujuan pengantaran",
+      desc:
+        dealData?.delivery_location && dealData.delivery_location !== "TBD"
+          ? dealData.delivery_location
+          : "Belum ditentukan",
+      isCompleted:
+        dealData?.delivery_location && dealData.delivery_location !== "TBD",
+      onOpen: onOpenDelivery,
+    },
+  ];
+
+  const handleSelect = (dealItem) => {
+    if (dealItem.onOpen) {
+      dealItem.onOpen();
+    }
   };
 
   if (loading) {
@@ -52,140 +184,144 @@ export default function DealMenu({
 
   return (
     <>
-      <div className="fixed inset-0 z-[100] flex items-end justify-center p-4 pb-[env(safe-area-inset-bottom)]">
-        <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
-          onClick={onClose}
-        />
+      {/* Overlay */}
+      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
 
-        <div className="relative w-full max-w-md bg-white rounded-[32px] shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-300 border border-slate-100 flex flex-col">
-          {/* Header Rapi: Gambar + Kategori */}
-          <div className="p-5 flex items-center justify-between border-b border-slate-50 bg-white/80 backdrop-blur-md">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-100 shadow-sm">
-                <img
-                  src={
-                    localPostInfo?.item_photo ||
-                    "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=100&q=80"
-                  }
-                  className="w-full h-full object-cover"
-                  alt="item"
-                />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-sm">{config.icon}</span>
-                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight truncate">
-                    {config.label}
-                  </h3>
-                </div>
-                <p className="text-[11px] font-medium text-slate-400">
-                  Sepakati detail transaksi
-                </p>
-              </div>
+      {/* Bottom Sheet */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+        {/* Drag Handle */}
+        <div className="py-3 flex justify-center flex-shrink-0">
+          <div className="w-12 h-1.5 rounded-full bg-slate-300" />
+        </div>
+
+        {/* Header: Gambar + Kategori */}
+        <div className="px-4 pb-2 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-slate-100 shadow-sm">
+              <img
+                src={
+                  postInfo?.item_photo ||
+                  "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=100&q=80"
+                }
+                className="w-full h-full object-cover"
+                alt="item"
+              />
             </div>
-
-            <button
-              onClick={onClose}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 active:scale-90 transition-transform"
-            >
-              <X size={20} />
-            </button>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1 mb-0.5">
+                <span className="text-xs">{config.icon}</span>
+                <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight truncate">
+                  {config.label}
+                </h3>
+              </div>
+              <p className="text-[10px] font-medium text-slate-400">
+                Sepakati detail transaksi
+              </p>
+            </div>
           </div>
 
-          {/* List */}
-          <div className="max-h-86 overflow-y-auto">
-            {deals.map((dealItem, i) => {
-              const color = colorMap[dealItem.tag];
-              return (
-                <button
-                  key={dealItem.tag}
-                  onClick={() => handleSelect(dealItem)}
-                  disabled={dealItem.isCompleted}
-                  className={`w-full text-left px-5 py-4 flex items-center justify-between transition-colors ${
-                    i !== 0 ? "border-t border-base-300/50" : ""
-                  } ${dealItem.isCompleted ? "opacity-60 cursor-not-allowed" : "hover:bg-base-200"}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`w-12 h-12 rounded-xl flex items-center justify-center bg-${color}-100 text-${color}-600`}
-                    >
-                      {dealItem.icon}
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center h-9 w-9 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* List */}
+        <div className="flex-1 overflow-y-auto">
+          {deals.map((dealItem, i) => {
+            const color = colorMap[dealItem.tag];
+            return (
+              <button
+                key={dealItem.tag}
+                onClick={() => handleSelect(dealItem)}
+                disabled={dealItem.isCompleted}
+                className={`w-full text-left px-4 py-3 flex items-center justify-between transition-colors ${
+                  i !== 0 ? "border-t border-slate-100" : ""
+                } ${dealItem.isCompleted ? "opacity-60 cursor-not-allowed" : "hover:bg-slate-50"}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center text-base ${color.bg} ${color.text}`}
+                  >
+                    {dealItem.icon}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-sm">
+                      {dealItem.title}
                     </div>
-                    <div>
-                      <div className="font-semibold text-base">
-                        {dealItem.title}
-                      </div>
-                      <div className="text-xs opacity-70">{dealItem.ket}</div>
-                      <div className="text-xs opacity-70">{dealItem.desc}</div>
+                    <div className="text-[11px] opacity-70">{dealItem.ket}</div>
+                    <div className="text-[11px] opacity-70">
+                      {dealItem.desc}
                     </div>
                   </div>
-                  {dealItem.isCompleted && (
-                    <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
-                      <svg
-                        className="w-5 h-5 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={3}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Footer */}
-          <div className="p-3 bg-base-200 text-center border-t border-base-300/50">
-            {allDone ? (
-              <SlideToUnlock
-                onComplete={async () => {
-                  try {
-                    const { data: trx, error } = await supabase
-                      .from("transactions")
-                      .upsert(
-                        {
-                          deal_id: dealData?.id,
-                          gross_amount:
-                            Number(dealData?.agreed_fee || 0) +
-                            Number(dealData?.item_fee || 0),
-                          transaction_status: "ready_to_ship",
-                          payment_status: "pending",
-                        },
-                        {
-                          onConflict: "deal_id",
-                        },
-                      )
-                      .select()
-                      .single();
-
-                    if (error) throw error;
-
-                    navigate(`/deal?deal=${dealData?.id}&trx=${trx.id}`);
-                  } catch (err) {
-                    console.error(
-                      "Gagal membuat / update transaksi:",
-                      err.message,
-                    );
-                  }
-                }}
-              />
-            ) : (
-              <button
-                onClick={onClose}
-                className="text-sm font-medium text-base-content/70 hover:text-base-content"
-              >
-                Tutup
+                </div>
+                {dealItem.isCompleted && (
+                  <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
+                    <svg
+                      className="w-3.5 h-3.5 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={3}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                )}
               </button>
-            )}
-          </div>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-slate-200 flex-shrink-0 bg-white pb-8">
+          {allDone ? (
+            <SlideToUnlock
+              onComplete={async () => {
+                try {
+                  const { data: trx, error } = await supabase
+                    .from("transactions")
+                    .upsert(
+                      {
+                        deal_id: dealData?.id,
+                        gross_amount:
+                          Number(dealData?.agreed_fee || 0) +
+                          Number(dealData?.item_fee || 0),
+                        transaction_status: "ready_to_ship",
+                        payment_status: "pending",
+                      },
+                      {
+                        onConflict: "deal_id",
+                      },
+                    )
+                    .select()
+                    .single();
+
+                  if (error) throw error;
+
+                  navigate(`/deal?deal=${dealData?.id}&trx=${trx.id}`);
+                } catch (err) {
+                  console.error(
+                    "Gagal membuat / update transaksi:",
+                    err.message,
+                  );
+                }
+              }}
+            />
+          ) : (
+            <button
+              onClick={onClose}
+              className="w-full rounded-2xl bg-slate-100 text-slate-600 py-3 text-[13px] font-semibold hover:bg-slate-200 transition-colors"
+            >
+              Tutup
+            </button>
+          )}
         </div>
       </div>
     </>

@@ -12,7 +12,7 @@ import (
 
 func Setup(r *gin.Engine) {
 	// Allow local dev and production frontend
-	origins := []string{"http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:5174", "http://127.0.0.1:3000", "https://nebeng.vercel.app", "https://admin.nebeng.vercel.app"}
+	origins := []string{"http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:5174", "http://127.0.0.1:3000", "https://nebeng.vercel.app", "https://nebeng-admin.vercel.app"}
 	if config.Cfg.FrontendURL != "" {
 		base := strings.TrimSuffix(config.Cfg.FrontendURL, "/")
 		origins = append(origins, base, base+"/")

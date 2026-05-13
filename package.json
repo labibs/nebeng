@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:admin": "vite --config apps/admin/vite.config.js",
     "build": "vite build",
+    "build:admin": "vite build --config apps/admin/vite.config.js",
     "lint": "eslint .",
     "preview": "vite preview",
+    "preview:admin": "vite preview --config apps/admin/vite.config.js",
     "generate-pwa-assets": "npx @vite-pwa/assets-generator public/logo.svg --preset minimal"
   },
   "dependencies": {

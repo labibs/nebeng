@@ -14,6 +14,7 @@ type Config struct {
 	ClerkJWKSURL       string
 	Port               string
 	FrontendURL        string
+	AdminFrontendURL   string
 }
 
 var Cfg Config
@@ -30,6 +31,7 @@ func Load() {
 		ClerkJWKSURL:       getEnv("CLERK_JWKS_URL", ""),
 		Port:               getEnv("PORT", "8080"),
 		FrontendURL:        getEnv("FRONTEND_URL", "https://nebeng.vercel.app"),
+		AdminFrontendURL:   getEnv("ADMIN_FRONTEND_URL", "https://admin.nebeng.vercel.app"),
 	}
 
 	if Cfg.SupabaseURL == "" {

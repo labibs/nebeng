@@ -55,7 +55,14 @@ export default function Profile() {
       action: () => alert("Pengaturan segera hadir!"),
     },
     { label: "Outlet Saya", icon: Store, action: () => navigate("/outlet") },
-    { label: "Dashboard", icon: LayoutDashboard, action: () => navigate("/") },
+    {
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      action: () => {
+        window.location.href =
+          import.meta.env.VITE_ADMIN_URL || "https://admin.nebeng.vercel.app";
+      },
+    },
   ];
 
   return (

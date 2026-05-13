@@ -27,6 +27,7 @@ func main() {
 	log.Printf("📡 Supabase: %s", config.Cfg.SupabaseURL)
 	log.Printf("🔐 Clerk JWKS: %s", config.Cfg.ClerkJWKSURL)
 	log.Printf("🌐 Frontend URL: %s", config.Cfg.FrontendURL)
+	log.Printf("🌐 Admin Frontend URL: %s", config.Cfg.AdminFrontendURL)
 
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

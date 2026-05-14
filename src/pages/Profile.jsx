@@ -55,15 +55,19 @@ export default function Profile() {
       action: () => alert("Pengaturan segera hadir!"),
     },
     { label: "Outlet Saya", icon: Store, action: () => navigate("/outlet") },
-    {
-      label: "Dashboard",
+  ];
+
+  // Tambahkan shortcut Dashboard hanya jika role-nya admin
+  if (profile?.role === "admin") {
+    menuItems.push({
+      label: "Dashboard Admin",
       icon: LayoutDashboard,
       action: () => {
         window.location.href =
           import.meta.env.VITE_ADMIN_URL || "https://nebeng-admin.vercel.app";
       },
-    },
-  ];
+    });
+  }
 
   return (
     <>

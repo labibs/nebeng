@@ -1,114 +1,125 @@
-import { SignOutButton, UserButton } from "@clerk/clerk-react";
+import { SignOutButton, UserButton, useUser } from "@clerk/clerk-react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
+  LayoutGrid,
   BarChart3,
   Bell,
   LogOut,
-  MessageCircle,
+  Route,
   ReceiptText,
   Search,
   Settings,
   Store,
   Users,
+  Calendar,
+  MessageCircle,
+  Package,
 } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", path: "/dashboard", icon: BarChart3 },
-  { label: "Users", path: "/dashboard", icon: Users },
-  { label: "Outlets", path: "/dashboard", icon: Store },
-  { label: "Orders", path: "/dashboard", icon: ReceiptText },
-  { label: "Chat", path: "/dashboard", icon: MessageCircle },
+  { label: "Dashboard", path: "/dashboard", icon: LayoutGrid },
+  { label: "Pengguna", path: "/users", icon: Users },
+  { label: "Toko", path: "/outlets", icon: Store },
+  { label: "Produk", path: "/products", icon: Package },
+  { label: "Transaksi", path: "/transactions", icon: ReceiptText },
+  { label: "Postingan", path: "/posts", icon: Route },
 ];
 
 export default function AdminLayout() {
+  const { user } = useUser();
+
   return (
-    <div className="min-h-screen bg-[#f0f7ff] text-slate-900">
-      <div className="mx-auto min-h-screen max-w-[1480px] bg-[#eaf3ff] lg:m-8 lg:min-h-[calc(100vh-4rem)] lg:rounded-[28px]">
-        <aside className="fixed inset-y-6 left-6 z-20 hidden w-[78px] rounded-[26px] bg-white p-3 shadow-[0_24px_80px_rgba(42,79,150,0.14)] lg:flex lg:flex-col">
-          <div className="mb-7 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#4e73df] text-white">
-            <BarChart3 size={21} />
-          </div>
-
-          <nav className="flex flex-1 flex-col items-center gap-3">
-            {navItems.map((item, index) => (
-              <NavLink
-                key={`${item.label}-${index}`}
-                to={item.path}
-                className={({ isActive }) =>
-                  [
-                    "flex h-12 w-12 items-center justify-center rounded-2xl transition",
-                    isActive && index === 0
-                      ? "bg-slate-950 text-white shadow-lg shadow-slate-950/20"
-                      : "text-slate-500 hover:bg-[#edf3ff] hover:text-[#4e73df]",
-                  ].join(" ")
-                }
-                title={item.label}
-              >
-                <item.icon size={20} />
-              </NavLink>
-            ))}
-          </nav>
-
-          <div className="flex flex-col items-center gap-3">
-            <button
-              className="flex h-12 w-12 items-center justify-center rounded-2xl text-slate-500 hover:bg-[#edf3ff] hover:text-[#4e73df]"
-              title="Pengaturan"
-            >
-              <Settings size={20} />
-            </button>
-            <SignOutButton>
-              <button
-                className="flex h-12 w-12 items-center justify-center rounded-2xl text-slate-500 hover:bg-rose-50 hover:text-rose-600"
-                title="Keluar"
-              >
-                <LogOut size={20} />
-              </button>
-            </SignOutButton>
-          </div>
-        </aside>
-
-        <div className="lg:pl-[118px]">
-          <header className="flex flex-col gap-5 px-5 pb-4 pt-5 md:flex-row md:items-center md:justify-between lg:px-8 lg:pt-8">
-            <div>
-              <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-full border-[6px] border-[#4e73df]/20 bg-white">
-                  <span className="block h-2.5 w-2.5 rounded-full bg-[#4e73df]" />
-                </div>
-                <div>
-                  <p className="text-xs font-black uppercase tracking-[0.18em] text-[#4e73df]">
-                    Nebeng Admin
-                  </p>
-                  <h1 className="text-2xl font-black tracking-tight md:text-3xl">
-                    Dashboard Operasional
-                  </h1>
-                </div>
-              </div>
-              <p className="mt-2 text-sm font-medium text-slate-500">
-                Pantau user, outlet, transaksi, dan aktivitas marketplace.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <label className="hidden h-12 w-[320px] items-center rounded-full bg-white px-4 shadow-sm md:flex">
-                <input
-                  className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-slate-400"
-                  placeholder="Search..."
-                />
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-slate-950 text-white">
-                  <Search size={17} />
-                </span>
-              </label>
-              <button className="grid h-12 w-12 place-items-center rounded-full bg-white text-slate-700 shadow-sm">
-                <Bell size={19} />
-              </button>
-              <UserButton />
-            </div>
-          </header>
-
-          <main className="px-5 pb-6 lg:px-8 lg:pb-8">
-            <Outlet />
-          </main>
+    <div className="min-h-screen bg-[#f0f7ff] text-[#1e293b]">
+      {/* Sidebar */}
+      <aside className="fixed inset-y-4 left-4 z-20 flex w-[76px] flex-col rounded-[24px] bg-white p-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#e2e8f0]">
+        <div className="mb-8 flex justify-center py-2">
+          <img src="/logo.svg" alt="Nebeng" className="h-9 w-9" />
         </div>
+
+        <nav className="flex flex-1 flex-col items-center gap-4">
+          {navItems.map((item, index) => (
+            <NavLink
+              key={`${item.label}-${index}`}
+              to={item.path}
+              className={({ isActive }) =>
+                [
+                  "flex h-12 w-12 items-center justify-center rounded-[16px] transition-all duration-300",
+                  isActive
+                    ? "bg-[#4e73df] text-white shadow-[0_8px_20px_rgba(78,115,223,0.3)] scale-105"
+                    : "text-[#94a3b8] hover:bg-[#f0f7ff] hover:text-[#4e73df]",
+                ].join(" ")
+              }
+              title={item.label}
+            >
+              <item.icon size={22} strokeWidth={2.5} />
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="mt-auto flex flex-col items-center gap-4">
+          <button
+            className="flex h-12 w-12 items-center justify-center rounded-[16px] text-[#94a3b8] hover:bg-[#f0f7ff] hover:text-[#4e73df] transition-colors"
+            title="Pengaturan"
+          >
+            <Settings size={22} strokeWidth={2.5} />
+          </button>
+          <SignOutButton>
+            <button
+              className="flex h-12 w-12 items-center justify-center rounded-[16px] text-[#94a3b8] hover:bg-rose-50 hover:text-rose-600 transition-colors"
+              title="Keluar"
+            >
+              <LogOut size={22} strokeWidth={2.5} />
+            </button>
+          </SignOutButton>
+          <div className="pb-2">
+            <UserButton afterSignOutUrl="/login" />
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="pl-[112px] pr-8 pt-8">
+        <header className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-[32px] font-black tracking-tight text-[#0f172a]">
+              Halo, {user?.firstName || "Admin"}!
+            </h1>
+            <p className="text-sm font-semibold text-[#64748b]">
+              Pantau informasi dan aktivitas platform Anda
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <input
+                className="h-12 w-[400px] rounded-full bg-white border border-[#e2e8f0] pl-6 pr-12 text-sm font-semibold shadow-sm outline-none placeholder:text-[#94a3b8] focus:border-[#4e73df] focus:ring-4 focus:ring-[#4e73df]/10 transition-all"
+                placeholder="Cari apapun..."
+              />
+              <button className="absolute right-1.5 top-1.5 grid h-9 w-9 place-items-center rounded-full bg-[#4e73df] text-white shadow-lg shadow-[#4e73df]/20 hover:scale-105 transition-transform">
+                <Search size={16} strokeWidth={3} />
+              </button>
+            </div>
+
+            <button
+              className="relative grid h-12 w-12 place-items-center rounded-full bg-white border border-[#e2e8f0] text-[#0f172a] shadow-sm hover:bg-[#f8fafc] transition-colors"
+              title="Pesan"
+            >
+              <MessageCircle size={22} strokeWidth={2} />
+              <span className="absolute right-3.5 top-3.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-rose-500 shadow-sm" />
+            </button>
+
+            <button
+              className="grid h-12 w-12 place-items-center rounded-full bg-white border border-[#e2e8f0] text-[#0f172a] shadow-sm hover:bg-[#f8fafc] transition-colors"
+              title="Notifikasi"
+            >
+              <Bell size={22} strokeWidth={2} />
+            </button>
+          </div>
+        </header>
+
+        <main>
+          <Outlet />
+        </main>
       </div>
     </div>
   );

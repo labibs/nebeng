@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { SignOutButton, useUser } from "@clerk/clerk-react";
 import { ShieldAlert } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
+import LoadingLogo from "./LoadingLogo";
 
 function hasAdminAccess(user, profile) {
   return (
@@ -55,8 +56,8 @@ export default function AdminGuard({ children }) {
 
   if (!isLoaded || loadingProfile) {
     return (
-      <div className="grid min-h-screen place-items-center bg-slate-950 text-white">
-        <div className="text-sm font-semibold">Memeriksa akses admin...</div>
+      <div className="grid min-h-screen place-items-center bg-[#f0f7ff]">
+        <LoadingLogo />
       </div>
     );
   }

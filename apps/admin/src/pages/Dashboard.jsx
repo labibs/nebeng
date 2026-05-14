@@ -10,6 +10,7 @@ import {
   ReceiptText,
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
+import LoadingLogo from "../components/LoadingLogo";
 
 // Helper for formatting
 const formatIDR = (val) =>
@@ -82,8 +83,8 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <span className="loading loading-spinner loading-lg text-[#4e73df]"></span>
+      <div className="flex h-[70vh] items-center justify-center">
+        <LoadingLogo />
       </div>
     );
   }

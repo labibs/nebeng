@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import LoadingLogo from "../components/LoadingLogo";
 import {
   Search,
   Filter,
@@ -83,8 +84,8 @@ export default function Transactions() {
 
   if (loading) {
     return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <span className="loading loading-spinner loading-lg text-[#4e73df]"></span>
+      <div className="flex h-[70vh] items-center justify-center">
+        <LoadingLogo />
       </div>
     );
   }

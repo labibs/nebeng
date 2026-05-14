@@ -57,12 +57,12 @@ export default function AdminLayout() {
         </nav>
 
         <div className="mt-auto flex flex-col items-center gap-4">
-          <button
+          {/* <button
             className="flex h-12 w-12 items-center justify-center rounded-[16px] text-[#94a3b8] hover:bg-[#f0f7ff] hover:text-[#4e73df] transition-colors"
             title="Pengaturan"
           >
             <Settings size={22} strokeWidth={2.5} />
-          </button>
+          </button>*/}
           <SignOutButton>
             <button
               className="flex h-12 w-12 items-center justify-center rounded-[16px] text-[#94a3b8] hover:bg-rose-50 hover:text-rose-600 transition-colors"

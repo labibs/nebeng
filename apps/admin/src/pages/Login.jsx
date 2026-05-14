@@ -21,7 +21,7 @@ export default function Login() {
             <img src="/logo.svg" alt="" className="h-7 w-7" />
           </div>
           <span className="text-2xl font-black tracking-tight text-[#0f172a]">
-            Nebeng<span className="text-[#4e73df]">Admin</span>
+            Nebeng<span className="text-[#4e73df]"> Admin</span>
           </span>
         </div>
         <div className="flex items-center gap-6">
@@ -47,7 +47,7 @@ export default function Login() {
 
             <h2 className="text-[44px] font-black leading-[1.1] text-[#0f172a] tracking-tight mb-4">
               Selamat Datang di <br />
-              <span className="text-[#4e73df]">Konsol Nebeng</span>
+              <span className="text-[#4e73df]">Dashboard Nebeng</span>
             </h2>
 
             <p className="text-lg font-medium text-[#64748b] mb-12">
@@ -59,7 +59,7 @@ export default function Login() {
               <SignInButton mode="modal" forceRedirectUrl="/dashboard">
                 <button className="group relative w-full h-[72px] bg-[#4e73df] rounded-[24px] flex items-center justify-center gap-3 text-white shadow-[0_20px_40px_rgba(78,115,223,0.25)] hover:shadow-[0_25px_50px_rgba(78,115,223,0.35)] hover:-translate-y-1 transition-all active:scale-95">
                   <span className="text-lg font-black tracking-tight">
-                    Masuk ke Panel Admin
+                    Masuk ke Dashboard Admin
                   </span>
                   <ArrowRight
                     size={22}

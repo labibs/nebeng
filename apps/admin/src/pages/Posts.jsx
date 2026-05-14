@@ -5,11 +5,7 @@ import {
   Search,
   Filter,
   MoreVertical,
-  LayoutGrid,
-  MapPin,
   Calendar,
-  CreditCard,
-  User,
   ArrowRight,
 } from "lucide-react";
 
@@ -17,6 +13,7 @@ export default function Posts() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [expandedRoutes, setExpandedRoutes] = useState(new Set());
 
   useEffect(() => {
     async function fetchPosts() {
@@ -44,10 +41,51 @@ export default function Posts() {
       maximumFractionDigits: 0,
     }).format(val || 0);
 
+  const formatPostType = (type) => {
+    if (!type) return "N/A";
+    return type
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
+  const getPostTypeBadgeClass = (type) => {
+    const typeClasses = {
+      titip: "bg-blue-50 text-blue-600 border-blue-100",
+      bawa: "bg-emerald-50 text-emerald-600 border-emerald-100",
+      jual: "bg-orange-50 text-orange-600 border-orange-100",
+      nitip_bawakan: "bg-sky-50 text-sky-600 border-sky-100",
+      nitip_belikan: "bg-violet-50 text-violet-600 border-violet-100",
+      cari_boncengan: "bg-lime-50 text-lime-700 border-lime-100",
+      tukang: "bg-amber-50 text-amber-700 border-amber-100",
+      perjalanan: "bg-teal-50 text-teal-600 border-teal-100",
+      keliling: "bg-yellow-50 text-yellow-700 border-yellow-100",
+      content: "bg-rose-50 text-rose-600 border-rose-100",
+      warung: "bg-indigo-50 text-indigo-600 border-indigo-100",
+    };
+
+    return typeClasses[type] || "bg-slate-50 text-slate-600 border-slate-100";
+  };
+
+  const isLongRoute = (post) =>
+    `${post.from_city || ""} ${post.to_city || ""}`.length > 32;
+
+  const toggleRoute = (postId) => {
+    setExpandedRoutes((current) => {
+      const next = new Set(current);
+      if (next.has(postId)) {
+        next.delete(postId);
+      } else {
+        next.add(postId);
+      }
+      return next;
+    });
+  };
+
   const filteredPosts = posts.filter(
     (post) =>
       post.from_city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       post.to_city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      post.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       post.users?.name?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
@@ -142,14 +180,36 @@ export default function Posts() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-[#0f172a]">
-                        {post.from_city}
-                      </span>
-                      <ArrowRight size={12} className="text-[#94a3b8]" />
-                      <span className="text-xs font-bold text-[#0f172a]">
-                        {post.to_city}
-                      </span>
+                    <div className="max-w-[260px]">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-xs font-bold text-[#0f172a] ${expandedRoutes.has(post.id) ? "" : "max-w-[96px] truncate"}`}
+                          title={post.from_city || ""}
+                        >
+                          {post.from_city || "Asal"}
+                        </span>
+                        <ArrowRight
+                          size={12}
+                          className="shrink-0 text-[#94a3b8]"
+                        />
+                        <span
+                          className={`text-xs font-bold text-[#0f172a] ${expandedRoutes.has(post.id) ? "" : "max-w-[96px] truncate"}`}
+                          title={post.to_city || ""}
+                        >
+                          {post.to_city || "Tujuan"}
+                        </span>
+                      </div>
+                      {isLongRoute(post) && (
+                        <button
+                          type="button"
+                          className="mt-1 text-[10px] font-black uppercase tracking-wider text-[#4e73df] hover:text-[#2447c6]"
+                          onClick={() => toggleRoute(post.id)}
+                        >
+                          {expandedRoutes.has(post.id)
+                            ? "Tampilkan ringkas"
+                            : "Selengkapnya"}
+                        </button>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -169,13 +229,9 @@ export default function Posts() {
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                        post.type === "titip"
-                          ? "bg-blue-50 text-blue-600 border border-blue-100"
-                          : "bg-orange-50 text-orange-600 border border-orange-100"
-                      }`}
+                      className={`px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-wider ${getPostTypeBadgeClass(post.type)}`}
                     >
-                      {post.type === "titip" ? "Titip" : "Jual"}
+                      {formatPostType(post.type)}
                     </span>
                   </td>
                   <td className="px-6 py-4">

@@ -37,8 +37,31 @@ export default function Users() {
   const filteredUsers = users.filter(
     (user) =>
       user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.clerk_id?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
+
+  const formatRole = (role) => {
+    if (!role) return "Pengguna";
+    return role
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
+  const getRoleBadgeClass = (role) => {
+    const roleClasses = {
+      admin: "bg-purple-50 text-purple-600 border-purple-100",
+      kurir: "bg-sky-50 text-sky-600 border-sky-100",
+      carrier: "bg-sky-50 text-sky-600 border-sky-100",
+      pemilik: "bg-amber-50 text-amber-700 border-amber-100",
+      owner: "bg-amber-50 text-amber-700 border-amber-100",
+      pembeli: "bg-emerald-50 text-emerald-600 border-emerald-100",
+      buyer: "bg-emerald-50 text-emerald-600 border-emerald-100",
+      user: "bg-slate-50 text-slate-600 border-slate-100",
+    };
+
+    return roleClasses[role?.toLowerCase()] || "bg-zinc-50 text-zinc-600 border-zinc-100";
+  };
 
   if (loading) {
     return (
@@ -149,13 +172,9 @@ export default function Users() {
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                        user.role === "admin"
-                          ? "bg-purple-50 text-purple-600 border border-purple-100"
-                          : "bg-emerald-50 text-emerald-600 border border-emerald-100"
-                      }`}
+                      className={`px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-wider ${getRoleBadgeClass(user.role)}`}
                     >
-                      {user.role || "Pengguna"}
+                      {formatRole(user.role)}
                     </span>
                   </td>
                   <td className="px-6 py-4">

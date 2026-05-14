@@ -19,8 +19,7 @@ import {
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutGrid },
   { label: "Pengguna", path: "/users", icon: Users },
-  { label: "Toko", path: "/outlets", icon: Store },
-  { label: "Produk", path: "/products", icon: Package },
+  { label: "Toko & Produk", path: "/outlets", icon: Store },
   { label: "Transaksi", path: "/transactions", icon: ReceiptText },
   { label: "Postingan", path: "/posts", icon: Route },
 ];

@@ -8,6 +8,8 @@ import {
   Route,
   Handshake,
   ReceiptText,
+  Store,
+  Package,
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import LoadingLogo from "../components/LoadingLogo";
@@ -22,6 +24,20 @@ const formatIDR = (val) =>
 
 const formatNumber = (val) => new Intl.NumberFormat("id-ID").format(val || 0);
 
+const getDealStatusBadgeClass = (status) => {
+  const classes = {
+    pending: "bg-amber-50 text-amber-600 border border-amber-100",
+    accepted: "bg-sky-50 text-sky-600 border border-sky-100",
+    on_going: "bg-cyan-50 text-cyan-600 border border-cyan-100",
+    completed: "bg-blue-50 text-blue-600 border border-blue-100",
+    cancelled: "bg-rose-50 text-rose-600 border border-rose-100",
+    canceled: "bg-rose-50 text-rose-600 border border-rose-100",
+    draft: "bg-slate-50 text-slate-600 border border-slate-100",
+  };
+
+  return classes[status?.toLowerCase()] || "bg-zinc-50 text-zinc-600 border border-zinc-100";
+};
+
 export default function Dashboard() {
   const [data, setData] = useState({
     users: 0,
@@ -29,7 +45,12 @@ export default function Dashboard() {
     transactionsCount: 0,
     revenue: 0,
     dealsCount: 0,
+    outletsCount: 0,
+    productsCount: 0,
+    ownersCount: 0,
     recentTransfers: [],
+    recentOwners: [],
+    recentDeals: [],
   });
   const [loading, setLoading] = useState(true);
 
@@ -37,40 +58,77 @@ export default function Dashboard() {
     async function fetchData() {
       try {
         const [
-          { count: users, error: errUsers },
-          { count: posts, error: errPosts },
-          { data: transData, error: errTrans },
-          { count: deals, error: errDeals },
-          { data: recentTrans, error: errRecent },
+          { count: users },
+          { count: posts },
+          { data: transData },
+          { count: dealsCount },
+          { data: outletsData },
+          { count: products },
+          { data: recentTrans },
+          { data: recentDealsData },
         ] = await Promise.all([
           supabase.from("users").select("*", { count: "exact", head: true }),
           supabase.from("posts").select("*", { count: "exact", head: true }),
           supabase.from("transactions").select("gross_amount"),
           supabase.from("deals").select("*", { count: "exact", head: true }),
+          supabase.from("warungs").select("*, owner:users(name, avatar_url)"),
+          supabase
+            .from("warung_products")
+            .select("*", { count: "exact", head: true }),
           supabase
             .from("transactions")
-            .select("*, deals(depositor:users(name))")
+            .select(
+              `
+              *,
+              deals (
+                id,
+                depositor:users!fk_deals_depositor (
+                  name,
+                  avatar_url
+                )
+              )
+            `,
+            )
             .order("created_at", { ascending: false })
-            .limit(3),
+            .limit(5),
+          supabase
+            .from("deals")
+            .select(
+              "*, post:posts(item_photo), depositor:users!fk_deals_depositor(name)",
+            )
+            .order("created_at", { ascending: false })
+            .limit(5),
         ]);
-
-        if (errUsers) console.error("Error users:", errUsers);
-        if (errPosts) console.error("Error posts:", errPosts);
-        if (errTrans) console.error("Error trans:", errTrans);
-        if (errDeals) console.error("Error deals:", errDeals);
-        if (errRecent) console.error("Error recent:", errRecent);
 
         const totalRevenue =
           transData?.reduce((acc, curr) => acc + (curr.gross_amount || 0), 0) ||
           0;
+
+        const uniqueOwnersMap = new Map();
+        outletsData?.forEach((w) => {
+          if (w.owner) {
+            uniqueOwnersMap.set(w.owner.name, w.owner.avatar_url);
+          }
+        });
+
+        const ownersCount = uniqueOwnersMap.size;
+        const recentOwnersAvatars = Array.from(uniqueOwnersMap.values()).slice(
+          0,
+          5,
+        );
 
         setData({
           users: users || 0,
           posts: posts || 0,
           transactionsCount: transData?.length || 0,
           revenue: totalRevenue,
-          dealsCount: deals || 0,
+          dealsCount: dealsCount || 0,
+          outletsCount: outletsData?.length || 0,
+          productsCount: products || 0,
+          ownersCount: ownersCount,
           recentTransfers: recentTrans || [],
+          recentOwners: recentOwnersAvatars,
+          recentDeals: recentDealsData || [],
         });
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
@@ -120,7 +178,7 @@ export default function Dashboard() {
       </div>
       <div className="col-span-12 lg:col-span-3">
         <MetricCardSmall
-          label="Total Kesepakatan"
+          label="Total Deal"
           value={formatNumber(data.dealsCount)}
           visual="line-white"
           dark={true}
@@ -146,13 +204,18 @@ export default function Dashboard() {
 
       {/* BOTTOM ROW */}
       <div className="col-span-12 lg:col-span-5">
-        <WalletCard />
+        <InventoryChartCard
+          outlets={data.outletsCount}
+          products={data.productsCount}
+          ownersCount={data.ownersCount}
+          owners={data.recentOwners}
+        />
       </div>
       <div className="col-span-12 lg:col-span-4">
         <TransfersCard transfers={data.recentTransfers} />
       </div>
       <div className="col-span-12 lg:col-span-3">
-        <SecurityCard />
+        <RecentDealsCard deals={data.recentDeals} />
       </div>
     </div>
   );
@@ -372,57 +435,154 @@ function EarningsProgressCard({ revenue, deals, transactions }) {
           </div>
         </div>
         <p className="mt-4 text-[11px] font-semibold text-[#64748b] text-center px-4">
-          {percentage}% dari kesepakatan telah berhasil dikonversi menjadi
-          transaksi berbayar.
+          {percentage}% dari Deal telah berhasil dikonversi menjadi transaksi
+          berbayar.
         </p>
       </div>
     </div>
   );
 }
 
-function WalletCard() {
+function InventoryChartCard({ outlets, products, ownersCount, owners }) {
+  // Simple logic to calculate relative percentages for visualization
+  const pOutlet = Math.min(100, Math.round((outlets / 50) * 100)) || 64;
+  const pProduct = Math.min(100, Math.round((products / 150) * 100)) || 73;
+  const pOwner = Math.min(100, Math.round((ownersCount / 30) * 100)) || 48;
+
+  const RadialRing = ({ percentage, color, radius, stroke = 12 }) => {
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (percentage / 100) * circumference;
+    return (
+      <circle
+        r={radius}
+        cx="100"
+        cy="100"
+        fill="transparent"
+        stroke={color}
+        strokeWidth={stroke}
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        className="transition-all duration-1000 ease-out"
+      />
+    );
+  };
+
   return (
     <div className="h-full rounded-[28px] bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#e2e8f0]">
-      <div className="flex flex-col gap-8 lg:flex-row">
-        <div className="flex-1">
-          <h2 className="text-xl font-black text-[#0f172a] leading-tight">
-            Dompet Bisnis Nebeng
-          </h2>
-          <p className="mt-4 text-sm font-semibold leading-relaxed text-[#64748b]">
-            Kelola likuiditas platform dan penyelesaian merchant dengan sistem
-            escrow kami yang aman.
-          </p>
-          <button className="mt-8 flex items-center gap-3 rounded-2xl bg-[#0f172a] px-6 py-3.5 text-sm font-black text-white shadow-xl shadow-slate-900/20 transition-all hover:scale-105 active:scale-95">
-            <CreditCard size={18} />
-            Kelola Pencairan
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-lg font-black text-[#0f172a]">
+          Persentase Inventaris
+        </h2>
+        <div className="flex bg-[#f8fafc] p-1 rounded-xl border border-[#e2e8f0]">
+          <button className="px-3 py-1 text-[10px] font-bold text-[#64748b]">
+            Harian
+          </button>
+          <button className="px-3 py-1 text-[10px] font-bold text-[#64748b]">
+            Mingguan
+          </button>
+          <button className="px-3 py-1 text-[10px] font-bold bg-white text-[#4e73df] rounded-lg shadow-sm">
+            Bulanan
           </button>
         </div>
-        <div className="relative h-44 w-full lg:w-64">
-          <div className="absolute right-0 top-6 h-36 w-56 rotate-[-12deg] rounded-3xl bg-[#4e73df] p-6 shadow-2xl">
-            <div className="flex justify-between">
-              <div className="h-8 w-12 rounded-lg bg-white/20" />
-              <div className="h-6 w-10 rounded bg-amber-400/40" />
-            </div>
-            <p className="mt-14 text-xs font-black tracking-[0.2em] text-white/90 uppercase">
-              Escrow Admin
+      </div>
+
+      <div className="bg-[#f8fafc] rounded-2xl p-5 flex items-center justify-between mb-10 border border-[#f1f5f9]">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 bg-[#0d6e5c] rounded-xl flex items-center justify-center text-white shadow-lg shadow-[#0d6e5c]/20">
+            <Store size={22} />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-wider">
+              Total Toko
+            </p>
+            <p className="text-2xl font-black text-[#0f172a]">
+              {formatNumber(outlets)}
             </p>
           </div>
-          <div className="absolute right-6 top-0 h-36 w-56 rotate-[-4deg] rounded-3xl bg-[#0f172a] p-6 shadow-2xl border border-white/10">
-            <div className="flex justify-between">
-              <img src="/logo.svg" className="h-8 w-8 brightness-200" alt="" />
-              <div className="h-6 w-10 rounded bg-amber-400/80" />
-            </div>
-            <p className="mt-14 text-sm font-black tracking-[0.15em] text-white">
-              **** 8829
-            </p>
-            <div className="mt-2 flex justify-between items-center">
-              <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">
-                Nebeng Corp
+        </div>
+        <div className="flex -space-x-3">
+          {owners.map((url, i) => (
+            <img
+              key={i}
+              src={url}
+              className="h-9 w-9 rounded-full border-4 border-white object-cover shadow-sm"
+              alt=""
+            />
+          ))}
+          <div className="h-9 w-9 rounded-full border-4 border-white bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400">
+            +{Math.max(0, ownersCount - owners.length)}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-12 items-center">
+        <div className="col-span-7 relative h-48 w-48">
+          <svg viewBox="0 0 200 200" className="w-full h-full -rotate-90">
+            {/* Background Rings */}
+            <circle
+              r="80"
+              cx="100"
+              cy="100"
+              fill="transparent"
+              stroke="#f1f5f9"
+              strokeWidth="12"
+            />
+            <circle
+              r="60"
+              cx="100"
+              cy="100"
+              fill="transparent"
+              stroke="#f1f5f9"
+              strokeWidth="12"
+            />
+            <circle
+              r="40"
+              cx="100"
+              cy="100"
+              fill="transparent"
+              stroke="#f1f5f9"
+              strokeWidth="12"
+            />
+
+            {/* Data Rings */}
+            <RadialRing percentage={pOutlet} color="#b49352" radius="80" />
+            <RadialRing percentage={pProduct} color="#0d6e5c" radius="60" />
+            <RadialRing percentage={pOwner} color="#1e293b" radius="40" />
+          </svg>
+        </div>
+        <div className="col-span-5 space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-1.5 h-6 bg-[#b49352] rounded-full" />
+            <div className="flex-1">
+              <p className="text-xl font-black text-[#0f172a]">
+                {formatNumber(outlets)}
               </p>
-              <div className="flex -space-x-3">
-                <div className="h-5 w-5 rounded-full bg-rose-500/90" />
-                <div className="h-5 w-5 rounded-full bg-amber-500/90" />
-              </div>
+              <p className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-tighter">
+                Total Toko
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-1.5 h-6 bg-[#0d6e5c] rounded-full" />
+            <div className="flex-1">
+              <p className="text-xl font-black text-[#0f172a]">
+                {formatNumber(products)}
+              </p>
+              <p className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-tighter">
+                Total Produk
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-1.5 h-6 bg-[#1e293b] rounded-full" />
+            <div className="flex-1">
+              <p className="text-xl font-black text-[#0f172a]">
+                {formatNumber(ownersCount)}
+              </p>
+              <p className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-tighter">
+                Pemilik Toko
+              </p>
             </div>
           </div>
         </div>
@@ -434,21 +594,36 @@ function WalletCard() {
 function TransfersCard({ transfers }) {
   return (
     <div className="h-full rounded-[28px] bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#e2e8f0]">
-      <h2 className="text-xl font-black text-[#0f172a]">Aktivitas Terbaru</h2>
+      <h2 className="text-xl font-black text-[#0f172a]">Transaksi Terbaru</h2>
       <div className="mt-8 space-y-6">
         {transfers.length > 0 ? (
           transfers.map((t, i) => (
             <div key={i} className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-[#f0f7ff] flex items-center justify-center text-[#4e73df] font-black uppercase text-lg">
-                  {(t.deals?.depositor?.name || "U").charAt(0)}
+                <div className="h-12 w-12 rounded-2xl bg-[#f0f7ff] overflow-hidden border border-[#e2e8f0] flex items-center justify-center">
+                  {t.deals?.depositor?.avatar_url ? (
+                    <img
+                      src={t.deals.depositor.avatar_url}
+                      className="h-full w-full object-cover"
+                      alt=""
+                    />
+                  ) : (
+                    <div className="text-[#4e73df] font-black uppercase text-lg">
+                      {(t.deals?.depositor?.name || "U").charAt(0)}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <p className="text-[15px] font-black text-[#0f172a]">
                     {t.deals?.depositor?.name || "Pengguna Tidak Dikenal"}
                   </p>
-                  <p className="text-xs font-bold text-[#94a3b8]">
-                    {new Date(t.created_at).toLocaleTimeString([], {
+                  <p className="text-[10px] font-bold text-[#94a3b8]">
+                    {new Date(t.created_at).toLocaleDateString("id-ID", {
+                      day: "2-digit",
+                      month: "short",
+                    })}{" "}
+                    •{" "}
+                    {new Date(t.created_at).toLocaleTimeString("id-ID", {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
@@ -470,20 +645,61 @@ function TransfersCard({ transfers }) {
   );
 }
 
-function SecurityCard() {
+function RecentDealsCard({ deals }) {
   return (
-    <div className="flex h-full flex-col items-center justify-center rounded-[28px] bg-white p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#e2e8f0]">
-      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-[24px] bg-[#f0f7ff] text-[#4e73df] shadow-lg shadow-[#4e73df]/10">
-        <Fingerprint size={36} strokeWidth={2.5} />
+    <div className="h-full rounded-[28px] bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#e2e8f0]">
+      <h2 className="text-xl font-black text-[#0f172a]">Deal Terbaru</h2>
+      <div className="mt-8 space-y-5">
+        {deals.length > 0 ? (
+          deals.map((d, i) => (
+            <div key={i} className="flex items-center gap-4 group">
+              <div className="h-12 w-12 rounded-xl bg-slate-50 overflow-hidden border border-slate-100 flex items-center justify-center shadow-sm">
+                {d.post?.item_photo ? (
+                  <img
+                    src={d.post.item_photo}
+                    className="h-full w-full object-cover group-hover:scale-110 transition-transform"
+                    alt=""
+                  />
+                ) : (
+                  <div className="h-full w-full bg-[#f0f7ff] flex items-center justify-center text-[#4e73df]">
+                    <Handshake size={20} />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-black text-[#0f172a] truncate group-hover:text-[#4e73df] transition-colors">
+                  {d.item_description || "Jasa Titip / Barang"}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[10px] font-bold text-[#94a3b8] uppercase truncate max-w-[80px]">
+                    {d.depositor?.name || "User"}
+                  </span>
+                  <span className="text-[10px] font-bold text-[#bcbebc] whitespace-nowrap">
+                    {new Date(d.created_at).toLocaleDateString("id-ID", {
+                      day: "2-digit",
+                      month: "short",
+                    })}{" "}
+                    •{" "}
+                    {new Date(d.created_at).toLocaleTimeString("id-ID", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                  <span
+                    className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase ${getDealStatusBadgeClass(d.status)}`}
+                  >
+                    {d.status || "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-sm font-bold text-[#94a3b8] py-4 text-center">
+            Belum ada Deal
+          </p>
+        )}
       </div>
-      <h2 className="text-xl font-black text-[#0f172a]">Keamanan Sistem</h2>
-      <p className="mt-3 text-sm font-semibold text-[#64748b]">
-        Jaga integritas operasional dengan memperbarui kredensial admin secara
-        berkala.
-      </p>
-      <button className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl bg-[#4e73df] py-4 text-sm font-black text-white shadow-xl shadow-[#4e73df]/20 transition-all hover:bg-[#3b59bd] hover:scale-[1.02] active:scale-95">
-        Pengaturan Keamanan
-      </button>
     </div>
   );
 }

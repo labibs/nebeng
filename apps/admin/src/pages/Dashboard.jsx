@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { createElement, useEffect, useState } from "react";
 import {
   TrendingUp,
   MoreHorizontal,
@@ -35,8 +35,31 @@ const getDealStatusBadgeClass = (status) => {
     draft: "bg-slate-50 text-slate-600 border border-slate-100",
   };
 
-  return classes[status?.toLowerCase()] || "bg-zinc-50 text-zinc-600 border border-zinc-100";
+  return (
+    classes[status?.toLowerCase()] ||
+    "bg-zinc-50 text-zinc-600 border border-zinc-100"
+  );
 };
+
+function RadialRing({ percentage, color, radius, stroke = 12 }) {
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <circle
+      r={radius}
+      cx="100"
+      cy="100"
+      fill="transparent"
+      stroke={color}
+      strokeWidth={stroke}
+      strokeDasharray={circumference}
+      strokeDashoffset={offset}
+      strokeLinecap="round"
+      className="transition-all duration-1000 ease-out"
+    />
+  );
+}
 
 export default function Dashboard() {
   const [data, setData] = useState({
@@ -196,10 +219,67 @@ export default function Dashboard() {
       </div>
       <div className="col-span-12 lg:col-span-4">
         <EarningsProgressCard
-          revenue={data.revenue}
           deals={data.dealsCount}
           transactions={data.transactionsCount}
         />
+      </div>
+
+      {/* PLATFORM ANALYTICS SECTION */}
+      <div className="col-span-12">
+        <div className="bg-white rounded-[28px] p-8 border border-[#e2e8f0] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-black text-[#0f172a]">
+                Kesehatan Platform
+              </h2>
+              <p className="text-sm font-semibold text-[#64748b]">
+                Metrik operasional dan performa sistem
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="p-5 rounded-2xl bg-[#f8fafc] border border-[#f1f5f9]">
+              <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider mb-1">
+                Rata-rata Transaksi
+              </p>
+              <h3 className="text-2xl font-black text-[#0f172a]">
+                {formatIDR(
+                  data.transactionsCount > 0
+                    ? data.revenue / data.transactionsCount
+                    : 0,
+                )}
+              </h3>
+            </div>
+            <div className="p-5 rounded-2xl bg-[#f8fafc] border border-[#f1f5f9]">
+              <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider mb-1">
+                Konversi Post
+              </p>
+              <h3 className="text-2xl font-black text-[#0f172a]">
+                {data.posts > 0
+                  ? Math.round((data.dealsCount / data.posts) * 100)
+                  : 0}
+                %
+              </h3>
+            </div>
+            <div className="p-5 rounded-2xl bg-[#f8fafc] border border-[#f1f5f9]">
+              <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider mb-1">
+                User Aktif
+              </p>
+              <h3 className="text-2xl font-black text-[#0f172a]">
+                {formatNumber(data.users)}
+              </h3>
+            </div>
+            <div className="p-5 rounded-2xl bg-[#f8fafc] border border-[#f1f5f9]">
+              <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider mb-1">
+                Pertumbuhan
+              </p>
+              <div className="flex items-center gap-2">
+                <h3 className="text-2xl font-black text-emerald-600">+12%</h3>
+                <TrendingUp size={18} className="text-emerald-500" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* BOTTOM ROW */}
@@ -243,7 +323,7 @@ function MetricCardSmall({ label, value, visual, points, dark, icon: Icon }) {
             dark ? "bg-white/20" : "bg-[#f0f7ff] text-[#4e73df]"
           }`}
         >
-          <Icon size={20} strokeWidth={2.5} />
+          {createElement(Icon, { size: 20, strokeWidth: 2.5 })}
         </div>
       </div>
       <div className="mt-4 flex items-center justify-between gap-2">
@@ -375,7 +455,7 @@ function BalanceCard({ revenue, transactions }) {
   );
 }
 
-function EarningsProgressCard({ revenue, deals, transactions }) {
+function EarningsProgressCard({ deals, transactions }) {
   const rate = deals > 0 ? Math.round((transactions / deals) * 100) : 0;
   const percentage = Math.min(100, rate);
   const dash = `${(percentage / 100) * 251} 251`;
@@ -448,25 +528,6 @@ function InventoryChartCard({ outlets, products, ownersCount, owners }) {
   const pOutlet = Math.min(100, Math.round((outlets / 50) * 100)) || 64;
   const pProduct = Math.min(100, Math.round((products / 150) * 100)) || 73;
   const pOwner = Math.min(100, Math.round((ownersCount / 30) * 100)) || 48;
-
-  const RadialRing = ({ percentage, color, radius, stroke = 12 }) => {
-    const circumference = 2 * Math.PI * radius;
-    const offset = circumference - (percentage / 100) * circumference;
-    return (
-      <circle
-        r={radius}
-        cx="100"
-        cy="100"
-        fill="transparent"
-        stroke={color}
-        strokeWidth={stroke}
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
-        className="transition-all duration-1000 ease-out"
-      />
-    );
-  };
 
   return (
     <div className="h-full rounded-[28px] bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#e2e8f0]">

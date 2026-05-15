@@ -1,5 +1,5 @@
 import { SignOutButton, UserButton, useUser } from "@clerk/clerk-react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutGrid,
   BarChart3,
@@ -26,6 +26,18 @@ const navItems = [
 
 export default function AdminLayout() {
   const { user } = useUser();
+  const location = useLocation();
+  const isDashboard =
+    location.pathname === "/dashboard" || location.pathname === "/";
+
+  const pageTitles = {
+    "/users": "Manajemen Pengguna",
+    "/outlets": "Toko & Produk",
+    "/transactions": "Riwayat Aktivitas",
+    "/posts": "Manajemen Postingan",
+  };
+
+  const currentPageTitle = pageTitles[location.pathname] || "Admin Panel";
 
   return (
     <div className="min-h-screen bg-[#f0f7ff] text-[#1e293b]">
@@ -80,12 +92,25 @@ export default function AdminLayout() {
       <div className="pl-[112px] pr-8 pt-8">
         <header className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-[32px] font-black tracking-tight text-[#0f172a]">
-              Halo, {user?.firstName || "Admin"}!
-            </h1>
-            <p className="text-sm font-semibold text-[#64748b]">
-              Pantau informasi dan aktivitas platform Anda
-            </p>
+            {isDashboard ? (
+              <>
+                <h1 className="text-[32px] font-black tracking-tight text-[#0f172a]">
+                  Halo, {user?.firstName || "Admin"}!
+                </h1>
+                <p className="text-sm font-semibold text-[#64748b]">
+                  Pantau informasi dan aktivitas platform Anda
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="text-[32px] font-black tracking-tight text-[#0f172a]">
+                  {currentPageTitle}
+                </h1>
+                <p className="text-sm font-semibold text-[#64748b]">
+                  Kelola dan pantau data platform Anda secara detail
+                </p>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-4">

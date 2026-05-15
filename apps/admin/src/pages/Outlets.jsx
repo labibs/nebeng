@@ -16,6 +16,10 @@ import {
   Package,
   Image as ImageIcon,
   ArrowRight,
+  Eye,
+  Edit2,
+  Trash2,
+  Trash,
 } from "lucide-react";
 
 export default function Outlets() {
@@ -23,6 +27,43 @@ export default function Outlets() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedRows, setExpandedRows] = useState(new Set());
+  const [activeMenu, setActiveMenu] = useState(null);
+  const [selectedOutlets, setSelectedOutlets] = useState(new Set());
+
+  const toggleSelectAll = () => {
+    if (selectedOutlets.size === filteredOutlets.length) {
+      setSelectedOutlets(new Set());
+    } else {
+      setSelectedOutlets(new Set(filteredOutlets.map((o) => o.id)));
+    }
+  };
+
+  const toggleSelectOutlet = (id) => {
+    const next = new Set(selectedOutlets);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setSelectedOutlets(next);
+  };
+
+  const handleBulkAction = (action) => {
+    alert(`Aksi massal "${action}" untuk ${selectedOutlets.size} toko`);
+    setSelectedOutlets(new Set());
+  };
+
+  useEffect(() => {
+    const handleClickOutside = () => setActiveMenu(null);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  const handleAction = (type, outlet) => {
+    setActiveMenu(null);
+    console.log(`Action ${type} for outlet:`, outlet);
+    alert(`Fitur ${type} untuk toko ${outlet.name} sedang dikembangkan`);
+  };
 
   useEffect(() => {
     async function fetchOutletsAndProducts() {
@@ -64,6 +105,8 @@ export default function Outlets() {
 
   const formatRole = (role) => {
     if (!role) return "Pemilik";
+    const r = role.toLowerCase();
+    if (r === "buyer" || r === "pembeli" || r === "user") return "User";
     return role
       .replace(/_/g, " ")
       .replace(/\b\w/g, (char) => char.toUpperCase());
@@ -78,10 +121,13 @@ export default function Outlets() {
       owner: "bg-amber-50 text-amber-700 border-amber-100",
       pembeli: "bg-emerald-50 text-emerald-600 border-emerald-100",
       buyer: "bg-emerald-50 text-emerald-600 border-emerald-100",
-      user: "bg-slate-50 text-slate-600 border-slate-100",
+      user: "bg-emerald-50 text-emerald-600 border-emerald-100",
     };
 
-    return roleClasses[role?.toLowerCase()] || "bg-zinc-50 text-zinc-600 border-zinc-100";
+    return (
+      roleClasses[role?.toLowerCase()] ||
+      "bg-zinc-50 text-zinc-600 border-zinc-100"
+    );
   };
 
   const filteredOutlets = outlets.filter(
@@ -121,7 +167,7 @@ export default function Outlets() {
       return (
         <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100">
           <CheckCircle2 size={12} />
-          {status}
+          User
         </span>
       );
     }
@@ -176,13 +222,32 @@ export default function Outlets() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-[#0f172a]">
-            Manajemen Toko & Produk
-          </h1>
-          <p className="text-sm font-semibold text-[#64748b]">
-            Kelola toko dan inventaris produk mereka dalam satu tempat
-          </p>
+        <div className="flex items-center gap-4">
+          {selectedOutlets.size > 0 ? (
+            <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4 duration-300">
+              <span className="text-sm font-black text-[#4e73df] bg-[#4e73df]/10 px-4 py-2 rounded-xl border border-[#4e73df]/20">
+                {selectedOutlets.size} Terpilih
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleBulkAction("delete")}
+                  className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-xs font-black hover:bg-rose-100 transition-colors"
+                >
+                  <Trash size={14} />
+                  Hapus
+                </button>
+                <button
+                  onClick={() => handleBulkAction("change_status")}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-[#e2e8f0] rounded-xl text-xs font-black text-[#475569] hover:bg-[#f8fafc] transition-colors"
+                >
+                  Ubah Status
+                  <ChevronDown size={14} />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="h-10" />
+          )}
         </div>
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -209,6 +274,17 @@ export default function Outlets() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#f8fafc] border-bottom border-[#e2e8f0]">
+                <th className="w-12 px-6 py-4">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-[#e2e8f0] text-[#4e73df] focus:ring-[#4e73df]/20 cursor-pointer"
+                    checked={
+                      filteredOutlets.length > 0 &&
+                      selectedOutlets.size === filteredOutlets.length
+                    }
+                    onChange={toggleSelectAll}
+                  />
+                </th>
                 <th className="w-10 px-6 py-4"></th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8]">
                   Toko
@@ -231,9 +307,20 @@ export default function Outlets() {
               {filteredOutlets.map((outlet) => (
                 <React.Fragment key={outlet.id}>
                   <tr
-                    className={`group cursor-pointer transition-colors ${expandedRows.has(outlet.id) ? "bg-[#f0f7ff]/50" : "hover:bg-[#f0f7ff]/30"}`}
+                    className={`group cursor-pointer transition-colors ${selectedOutlets.has(outlet.id) ? "bg-[#f0f7ff]/50" : expandedRows.has(outlet.id) ? "bg-[#f0f7ff]/50" : "hover:bg-[#f0f7ff]/30"}`}
                     onClick={() => toggleRow(outlet.id)}
                   >
+                    <td
+                      className="px-6 py-4"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-[#e2e8f0] text-[#4e73df] focus:ring-[#4e73df]/20 cursor-pointer"
+                        checked={selectedOutlets.has(outlet.id)}
+                        onChange={() => toggleSelectOutlet(outlet.id)}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div
                         className={`p-1.5 rounded-lg transition-all ${expandedRows.has(outlet.id) ? "bg-[#4e73df] text-white" : "bg-slate-100 text-[#94a3b8]"}`}
@@ -302,20 +389,52 @@ export default function Outlets() {
                     <td className="px-6 py-4">
                       {getStatusBadge(outlet.status)}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 relative">
                       <button
-                        className="p-2 text-[#94a3b8] hover:text-[#0f172a] transition-colors rounded-lg hover:bg-[#f1f5f9]"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenu(
+                            activeMenu === outlet.id ? null : outlet.id,
+                          );
+                        }}
+                        className={`p-2 transition-colors rounded-lg hover:bg-[#f1f5f9] ${activeMenu === outlet.id ? "text-[#0f172a] bg-[#f1f5f9]" : "text-[#94a3b8]"}`}
                       >
                         <MoreVertical size={18} />
                       </button>
+
+                      {activeMenu === outlet.id && (
+                        <div className="absolute right-0 top-full mt-2 z-20 w-48 bg-white rounded-2xl shadow-xl border border-[#e2e8f0] py-2">
+                          <button
+                            onClick={() => handleAction("view", outlet)}
+                            className="w-full px-4 py-2.5 text-left text-xs font-bold text-[#475569] hover:bg-[#f8fafc] hover:text-[#4e73df] transition-colors flex items-center gap-2"
+                          >
+                            <Eye size={14} />
+                            Lihat Toko
+                          </button>
+                          <button
+                            onClick={() => handleAction("edit", outlet)}
+                            className="w-full px-4 py-2.5 text-left text-xs font-bold text-[#475569] hover:bg-[#f8fafc] hover:text-[#4e73df] transition-colors flex items-center gap-2"
+                          >
+                            <Edit2 size={14} />
+                            Edit Toko
+                          </button>
+                          <div className="h-px bg-[#e2e8f0] my-1 mx-2" />
+                          <button
+                            onClick={() => handleAction("delete", outlet)}
+                            className="w-full px-4 py-2.5 text-left text-xs font-black text-rose-500 hover:bg-rose-50 transition-colors flex items-center gap-2"
+                          >
+                            <Trash2 size={14} />
+                            Hapus Toko
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
 
                   {/* Expanded Product Content */}
                   {expandedRows.has(outlet.id) && (
                     <tr>
-                      <td colSpan="6" className="p-0 bg-[#f8fafc]">
+                      <td colSpan="7" className="p-0 bg-[#f8fafc]">
                         <div className="px-20 py-8 border-l-4 border-[#4e73df] animate-slide-down">
                           <div className="mb-6 flex items-center justify-between">
                             <h3 className="text-sm font-black text-[#0f172a] flex items-center gap-2">
@@ -388,7 +507,7 @@ export default function Outlets() {
               {filteredOutlets.length === 0 && (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan="7"
                     className="px-6 py-12 text-center text-sm font-semibold text-[#94a3b8]"
                   >
                     Tidak ada toko ditemukan.

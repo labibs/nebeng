@@ -13,7 +13,46 @@ import {
   Handshake,
   User,
   ArrowRight,
+  Eye,
+  Printer,
+  Phone,
+  MessageCircle,
 } from "lucide-react";
+
+function parseLocationAddress(location) {
+  if (!location || typeof location !== "string") return "";
+  const parts = location.split(",");
+  if (parts.length < 3) return location.trim();
+  return parts.slice(2).join(",").trim();
+}
+
+function normalizeItemPhotos(itemPhotos) {
+  if (Array.isArray(itemPhotos)) {
+    return itemPhotos.filter(
+      (photo) => typeof photo === "string" && photo.trim(),
+    );
+  }
+  if (typeof itemPhotos === "string") {
+    const trimmed = itemPhotos.trim();
+    if (!trimmed) return [];
+    if (trimmed.startsWith("[")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return Array.isArray(parsed)
+          ? parsed.filter((photo) => typeof photo === "string" && photo.trim())
+          : [];
+      } catch {
+        return [];
+      }
+    }
+    return [trimmed];
+  }
+  return [];
+}
+
+function getRouteLabel(location, fallback) {
+  return parseLocationAddress(location) || fallback || "-";
+}
 
 export default function Transactions() {
   const [activeTab, setActiveTab] = useState("transactions");
@@ -23,6 +62,29 @@ export default function Transactions() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedDealRoutes, setExpandedDealRoutes] = useState(new Set());
+  const [activeMenu, setActiveMenu] = useState(null);
+  const [selectedItems, setSelectedItems] = useState(new Set());
+
+  const handleBulkAction = (action) => {
+    alert(`Aksi massal "${action}" untuk ${selectedItems.size} ${activeTab}`);
+    setSelectedItems(new Set());
+  };
+
+  useEffect(() => {
+    setSelectedItems(new Set()); // Reset selection when tab changes
+  }, [activeTab]);
+
+  useEffect(() => {
+    const handleClickOutside = () => setActiveMenu(null);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  const handleAction = (type, item) => {
+    setActiveMenu(null);
+    console.log(`Action ${type} for:`, item);
+    alert(`Fitur ${type} sedang disiapkan`);
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -97,8 +159,32 @@ export default function Transactions() {
       d.carrier?.name?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const isLongDealRoute = (deal) =>
-    `${deal.post?.from_city || ""} ${deal.post?.to_city || ""}`.length > 32;
+  const currentList =
+    activeTab === "transactions" ? filteredTransactions : filteredDeals;
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === currentList.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(currentList.map((item) => item.id)));
+    }
+  };
+
+  const toggleSelectItem = (id) => {
+    const next = new Set(selectedItems);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setSelectedItems(next);
+  };
+
+  const isLongDealRoute = (deal) => {
+    const from = getRouteLabel(deal.pickup_location, deal.post?.from_city);
+    const to = getRouteLabel(deal.delivery_location, deal.post?.to_city);
+    return `${from} ${to}`.length > 32;
+  };
 
   const toggleDealRoute = (dealId) => {
     setExpandedDealRoutes((current) => {
@@ -243,14 +329,50 @@ export default function Transactions() {
 
   return (
     <div className="space-y-6">
+      {/* Tabs */}
+      <div className="flex gap-2 p-1 bg-[#f1f5f9] rounded-2xl w-fit">
+        <button
+          onClick={() => setActiveTab("transactions")}
+          className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all ${
+            activeTab === "transactions"
+              ? "bg-white text-[#4e73df] shadow-sm"
+              : "text-[#64748b] hover:text-[#0f172a]"
+          }`}
+        >
+          Riwayat Transaksi
+        </button>
+        <button
+          onClick={() => setActiveTab("deals")}
+          className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all ${
+            activeTab === "deals"
+              ? "bg-white text-[#4e73df] shadow-sm"
+              : "text-[#64748b] hover:text-[#0f172a]"
+          }`}
+        >
+          Riwayat Deal
+        </button>
+      </div>
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-[#0f172a]">
-            Riwayat Aktivitas
-          </h1>
-          <p className="text-sm font-semibold text-[#64748b]">
-            Pantau transaksi dan kesepakatan platform
-          </p>
+        <div className="flex items-center gap-4">
+          {selectedItems.size > 0 ? (
+            <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4 duration-300">
+              <span className="text-sm font-black text-[#4e73df] bg-[#4e73df]/10 px-4 py-2 rounded-xl border border-[#4e73df]/20">
+                {selectedItems.size} Terpilih
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleBulkAction("export")}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-[#e2e8f0] rounded-xl text-xs font-black text-[#475569] hover:bg-[#f8fafc] transition-colors"
+                >
+                  <Printer size={14} />
+                  Ekspor PDF
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="h-10" />
+          )}
         </div>
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -276,30 +398,6 @@ export default function Transactions() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 p-1 bg-[#f1f5f9] rounded-2xl w-fit">
-        <button
-          onClick={() => setActiveTab("transactions")}
-          className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all ${
-            activeTab === "transactions"
-              ? "bg-white text-[#4e73df] shadow-sm"
-              : "text-[#64748b] hover:text-[#0f172a]"
-          }`}
-        >
-          Riwayat Transaksi
-        </button>
-        <button
-          onClick={() => setActiveTab("deals")}
-          className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all ${
-            activeTab === "deals"
-              ? "bg-white text-[#4e73df] shadow-sm"
-              : "text-[#64748b] hover:text-[#0f172a]"
-          }`}
-        >
-          Riwayat Deal
-        </button>
-      </div>
-
       {error && (
         <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2">
           <AlertCircle size={18} />
@@ -313,6 +411,17 @@ export default function Transactions() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#f8fafc] border-bottom border-[#e2e8f0]">
+                  <th className="w-12 px-6 py-4">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-[#e2e8f0] text-[#4e73df] focus:ring-[#4e73df]/20 cursor-pointer"
+                      checked={
+                        currentList.length > 0 &&
+                        selectedItems.size === currentList.length
+                      }
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
                   <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8]">
                     ID Pesanan
                   </th>
@@ -331,14 +440,25 @@ export default function Transactions() {
                   <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8]">
                     Tanggal
                   </th>
+                  <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8]">
+                    Aksi
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e2e8f0]">
                 {filteredTransactions.map((tx) => (
                   <tr
                     key={tx.id}
-                    className="hover:bg-[#f0f7ff]/30 transition-colors"
+                    className={`transition-colors ${selectedItems.has(tx.id) ? "bg-[#f0f7ff]/50" : "hover:bg-[#f0f7ff]/30"}`}
                   >
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-[#e2e8f0] text-[#4e73df] focus:ring-[#4e73df]/20 cursor-pointer"
+                        checked={selectedItems.has(tx.id)}
+                        onChange={() => toggleSelectItem(tx.id)}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-xl bg-[#f8fafc] flex items-center justify-center text-[#64748b] border border-[#e2e8f0]">
@@ -389,12 +509,50 @@ export default function Transactions() {
                         })}
                       </div>
                     </td>
+                    <td className="px-6 py-4 relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenu(activeMenu === tx.id ? null : tx.id);
+                        }}
+                        className={`p-2 transition-colors rounded-lg hover:bg-[#f1f5f9] ${activeMenu === tx.id ? "text-[#0f172a] bg-[#f1f5f9]" : "text-[#94a3b8]"}`}
+                      >
+                        <MoreVertical size={18} />
+                      </button>
+
+                      {activeMenu === tx.id && (
+                        <div className="absolute right-0 top-full mt-2 z-20 w-48 bg-white rounded-2xl shadow-xl border border-[#e2e8f0] py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                          <button
+                            onClick={() => handleAction("detail", tx)}
+                            className="w-full px-4 py-2.5 text-left text-xs font-bold text-[#475569] hover:bg-[#f8fafc] hover:text-[#4e73df] transition-colors flex items-center gap-2"
+                          >
+                            <Eye size={14} />
+                            Detail Transaksi
+                          </button>
+                          <button
+                            onClick={() => handleAction("invoice", tx)}
+                            className="w-full px-4 py-2.5 text-left text-xs font-bold text-[#475569] hover:bg-[#f8fafc] hover:text-[#4e73df] transition-colors flex items-center gap-2"
+                          >
+                            <Printer size={14} />
+                            Cetak Invoice
+                          </button>
+                          <div className="h-px bg-[#e2e8f0] my-1 mx-2" />
+                          <button
+                            onClick={() => handleAction("contact", tx)}
+                            className="w-full px-4 py-2.5 text-left text-xs font-bold text-[#475569] hover:bg-[#f8fafc] hover:text-[#4e73df] transition-colors flex items-center gap-2"
+                          >
+                            <MessageCircle size={14} />
+                            Hubungi Pembeli
+                          </button>
+                        </div>
+                      )}
+                    </td>
                   </tr>
                 ))}
                 {filteredTransactions.length === 0 && (
                   <tr>
                     <td
-                      colSpan="6"
+                      colSpan="8"
                       className="px-6 py-12 text-center text-sm font-semibold text-[#94a3b8]"
                     >
                       Tidak ada transaksi ditemukan.
@@ -407,6 +565,17 @@ export default function Transactions() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#f8fafc] border-bottom border-[#e2e8f0]">
+                  <th className="w-12 px-6 py-4">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-[#e2e8f0] text-[#4e73df] focus:ring-[#4e73df]/20 cursor-pointer"
+                      checked={
+                        currentList.length > 0 &&
+                        selectedItems.size === currentList.length
+                      }
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
                   <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8]">
                     Barang
                   </th>
@@ -425,20 +594,35 @@ export default function Transactions() {
                   <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8]">
                     Tanggal
                   </th>
+                  <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8]">
+                    Aksi
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e2e8f0]">
                 {filteredDeals.map((deal) => (
                   <tr
                     key={deal.id}
-                    className="hover:bg-[#f0f7ff]/30 transition-colors"
+                    className={`transition-colors ${selectedItems.has(deal.id) ? "bg-[#f0f7ff]/50" : "hover:bg-[#f0f7ff]/30"}`}
                   >
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-[#e2e8f0] text-[#4e73df] focus:ring-[#4e73df]/20 cursor-pointer"
+                        checked={selectedItems.has(deal.id)}
+                        onChange={() => toggleSelectItem(deal.id)}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="h-12 w-12 rounded-xl bg-slate-100 overflow-hidden border border-[#e2e8f0] flex items-center justify-center">
-                          {deal.post?.item_photo ? (
+                          {normalizeItemPhotos(deal.item_photos)[0] ||
+                          deal.post?.item_photo ? (
                             <img
-                              src={deal.post.item_photo}
+                              src={
+                                normalizeItemPhotos(deal.item_photos)[0] ||
+                                deal.post.item_photo
+                              }
                               alt=""
                               className="h-full w-full object-cover"
                             />
@@ -456,37 +640,37 @@ export default function Transactions() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 rounded-full bg-[#f0f7ff] flex items-center justify-center text-[10px] text-[#4e73df] font-black border border-[#4e73df]/20">
-                            {deal.depositor?.avatar_url ? (
-                              <img
-                                src={deal.depositor.avatar_url}
-                                className="h-full w-full rounded-full object-cover"
-                              />
-                            ) : (
-                              "D"
-                            )}
-                          </div>
-                          <span className="text-xs font-black text-[#475569]">
-                            {deal.depositor?.name || "Penyewa"}
-                          </span>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex -space-x-4 items-center justify-center">
+                        {/* Depositor Avatar */}
+                        <div
+                          className="h-9 w-9 rounded-full bg-[#f0f7ff] flex items-center justify-center text-[12px] text-[#4e73df] font-black border-2 border-white shadow-sm overflow-hidden relative cursor-help"
+                          title={`Penyewa: ${deal.depositor?.name || "Tidak Diketahui"}`}
+                        >
+                          {deal.depositor?.avatar_url ? (
+                            <img
+                              src={deal.depositor.avatar_url}
+                              className="h-full w-full object-cover"
+                              alt=""
+                            />
+                          ) : (
+                            "D"
+                          )}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 font-black border border-slate-200">
-                            {deal.carrier?.avatar_url ? (
-                              <img
-                                src={deal.carrier.avatar_url}
-                                className="h-full w-full rounded-full object-cover"
-                              />
-                            ) : (
-                              "C"
-                            )}
-                          </div>
-                          <span className="text-xs font-bold text-[#64748b]">
-                            {deal.carrier?.name || "Kurir"}
-                          </span>
+                        {/* Carrier Avatar */}
+                        <div
+                          className="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center text-[12px] text-slate-500 font-black border-2 border-white shadow-sm overflow-hidden relative cursor-help"
+                          title={`Kurir: ${deal.carrier?.name || "Tidak Diketahui"}`}
+                        >
+                          {deal.carrier?.avatar_url ? (
+                            <img
+                              src={deal.carrier.avatar_url}
+                              className="h-full w-full object-cover"
+                              alt=""
+                            />
+                          ) : (
+                            "C"
+                          )}
                         </div>
                       </div>
                     </td>
@@ -495,9 +679,16 @@ export default function Transactions() {
                         <div className="flex items-center gap-2 text-xs font-black text-[#0f172a]">
                           <span
                             className={`${expandedDealRoutes.has(deal.id) ? "" : "max-w-[96px] truncate"}`}
-                            title={deal.post?.from_city || ""}
+                            title={
+                              parseLocationAddress(deal.pickup_location) ||
+                              deal.post?.from_city ||
+                              ""
+                            }
                           >
-                            {deal.post?.from_city || "Asal"}
+                            {getRouteLabel(
+                              deal.pickup_location,
+                              deal.post?.from_city,
+                            )}
                           </span>
                           <ArrowRight
                             size={12}
@@ -505,9 +696,16 @@ export default function Transactions() {
                           />
                           <span
                             className={`${expandedDealRoutes.has(deal.id) ? "" : "max-w-[96px] truncate"}`}
-                            title={deal.post?.to_city || ""}
+                            title={
+                              parseLocationAddress(deal.delivery_location) ||
+                              deal.post?.to_city ||
+                              ""
+                            }
                           >
-                            {deal.post?.to_city || "Tujuan"}
+                            {getRouteLabel(
+                              deal.delivery_location,
+                              deal.post?.to_city,
+                            )}
                           </span>
                         </div>
                         {isLongDealRoute(deal) && (
@@ -524,7 +722,7 @@ export default function Transactions() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm font-black text-[#0f172a]">
-                      {formatIDR(deal.total_price)}
+                      {formatIDR(deal.item_fee || deal.total_price)}
                     </td>
                     <td className="px-6 py-4">{getStatusBadge(deal.status)}</td>
                     <td className="px-6 py-4">
@@ -537,12 +735,55 @@ export default function Transactions() {
                         })}
                       </div>
                     </td>
+                    <td className="px-6 py-4 relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenu(
+                            activeMenu === deal.id ? null : deal.id,
+                          );
+                        }}
+                        className={`p-2 transition-colors rounded-lg hover:bg-[#f1f5f9] ${activeMenu === deal.id ? "text-[#0f172a] bg-[#f1f5f9]" : "text-[#94a3b8]"}`}
+                      >
+                        <MoreVertical size={18} />
+                      </button>
+
+                      {activeMenu === deal.id && (
+                        <div className="absolute right-0 top-full mt-2 z-20 w-48 bg-white rounded-2xl shadow-xl border border-[#e2e8f0] py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                          <button
+                            onClick={() => handleAction("detail", deal)}
+                            className="w-full px-4 py-2.5 text-left text-xs font-bold text-[#475569] hover:bg-[#f8fafc] hover:text-[#4e73df] transition-colors flex items-center gap-2"
+                          >
+                            <Eye size={14} />
+                            Detail Deal
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleAction("contact_depositor", deal)
+                            }
+                            className="w-full px-4 py-2.5 text-left text-xs font-bold text-[#475569] hover:bg-[#f8fafc] hover:text-[#4e73df] transition-colors flex items-center gap-2"
+                          >
+                            <User size={14} />
+                            Hubungi Depositor
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleAction("contact_carrier", deal)
+                            }
+                            className="w-full px-4 py-2.5 text-left text-xs font-bold text-[#475569] hover:bg-[#f8fafc] hover:text-[#4e73df] transition-colors flex items-center gap-2"
+                          >
+                            <Handshake size={14} />
+                            Hubungi Carrier
+                          </button>
+                        </div>
+                      )}
+                    </td>
                   </tr>
                 ))}
                 {filteredDeals.length === 0 && (
                   <tr>
                     <td
-                      colSpan="6"
+                      colSpan="8"
                       className="px-6 py-12 text-center text-sm font-semibold text-[#94a3b8]"
                     >
                       Tidak ada kesepakatan ditemukan.

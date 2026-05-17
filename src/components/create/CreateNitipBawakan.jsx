@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { supabase } from "../../lib/supabaseClient";
 import { uploadPostImage } from "../../lib/uploadPostImage";
@@ -6,24 +6,26 @@ import LocationPicker from "./LocationPicker";
 import { ArrowLeft } from "lucide-react";
 import SlideToPosting from "./SlideToPosting";
 
-export default function CreateNitipBawakan({ onBack }) {
+export default function CreateNitipBawakan({ onBack, initialData }) {
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
 
   const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [preview, setPreview] = useState(initialData?.photoUrl || null);
   const fileRef = useRef(null);
 
   const [form, setForm] = useState({
-    item_description: "",
+    item_description: initialData?.item_description || "",
     description: "",
-    price: "",
+    price: initialData?.price || "",
     fee: "",
     travel_date: "",
     armada: "motor",
   });
 
-  const [fromLocation, setFromLocation] = useState(null);
+  const [fromLocation, setFromLocation] = useState(
+    initialData?.fromLocation || null,
+  );
   const [toLocation, setToLocation] = useState(null);
 
   const handleImage = (e) => {
@@ -47,7 +49,7 @@ export default function CreateNitipBawakan({ onBack }) {
 
     setLoading(true);
 
-    let photoUrl = null;
+    let photoUrl = initialData?.photoUrl || null;
     if (file) {
       photoUrl = await uploadPostImage(file, {
         format: "webp",
@@ -248,7 +250,7 @@ export default function CreateNitipBawakan({ onBack }) {
               <p className="text-xs opacity-60 mb-1">Mau dijemput kapan?</p>
 
               <input
-                type="date"
+                type="datetime-local"
                 value={form.travel_date}
                 onChange={(e) =>
                   setForm({ ...form, travel_date: e.target.value })

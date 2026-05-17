@@ -73,10 +73,10 @@ export default function CreatePerjalanan({ onBack }) {
       clerk_user_id: user.id,
       type: "perjalanan",
       from_city: fromLocation.address,
-        from_lat: fromLocation.lat,
-        from_lng: fromLocation.lng,
-        to_lat: toLocation.lat,
-        to_lng: toLocation.lng,
+      from_lat: fromLocation.lat,
+      from_lng: fromLocation.lng,
+      to_lat: toLocation.lat,
+      to_lng: toLocation.lng,
       to_city: toLocation.address,
       travel_date: form.travel_date,
       armada: form.armada,
@@ -247,10 +247,10 @@ export default function CreatePerjalanan({ onBack }) {
           <div className="grid grid-cols-2 gap-3">
             {/* Tanggal jemput */}
             <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
-              <p className="text-xs opacity-60 mb-1">Kapan kamu berangkat ?</p>
+              <p className="text-xs opacity-60 mb-1">Berangkat kapan?</p>
 
               <input
-                type="date"
+                type="datetime-local"
                 value={form.travel_date}
                 onChange={(e) =>
                   setForm({ ...form, travel_date: e.target.value })

@@ -197,20 +197,20 @@ export default function Posts() {
                     onChange={toggleSelectAll}
                   />
                 </th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8]">
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8] whitespace-nowrap">
                   Kurir
                 </th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8]">
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8] whitespace-nowrap">
                   Rute
                 </th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8]">
-                  Tanggal Perjalanan
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8] whitespace-nowrap">
+                  Jadwal Berangkat
                 </th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8]">
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8] whitespace-nowrap">
                   Tipe
                 </th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8]">
-                  Biaya/Harga
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8] whitespace-nowrap">
+                  Ongkos
                 </th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-[#94a3b8]">
                   Aksi
@@ -284,9 +284,9 @@ export default function Posts() {
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2 text-xs font-semibold text-[#64748b]">
-                      <Calendar size={14} />
+                      <Calendar size={14} className="shrink-0" />
                       {post.travel_date
                         ? new Date(post.travel_date).toLocaleDateString(
                             "id-ID",
@@ -294,6 +294,8 @@ export default function Posts() {
                               day: "numeric",
                               month: "short",
                               year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
                             },
                           )
                         : "N/A"}
@@ -308,9 +310,7 @@ export default function Posts() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm font-black text-[#0f172a]">
-                      {post.type === "titip"
-                        ? formatIDR(post.fee)
-                        : formatIDR(post.price)}
+                      {formatIDR(post.fee)}
                     </div>
                   </td>
                   <td className="px-6 py-4 relative">

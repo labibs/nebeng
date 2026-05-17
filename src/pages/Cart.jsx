@@ -240,6 +240,10 @@ export default function Cart() {
   };
 
   const selectedItems = items.filter((item) => selectedIds.has(item.id));
+  const isMilikSelection =
+    selectedItems.length > 0 &&
+    selectedItems.every((i) => i.warung?.status === "milik");
+
   const totalPrice = selectedItems.reduce(
     (sum, i) => sum + Number(i.estimated_price || 0) * i.quantity,
     0,
@@ -248,6 +252,33 @@ export default function Cart() {
     selectedItems.map((i) => `${i.warung?.id}-${i.user_id}`),
   );
   const multipleOwnersSelected = selectedPairs.size > 1;
+
+  const handleRequestCourier = () => {
+    if (selectedItems.length === 0 || multipleOwnersSelected) return;
+
+    const firstItem = selectedItems[0];
+    const itemDescription = selectedItems
+      .map((i) => i.product?.name || i.notes)
+      .join(", ");
+
+    navigate("/create", {
+      state: {
+        requestCourier: true,
+        actionType: "nitip_belikan",
+        initialData: {
+          item_description: itemDescription,
+          price: totalPrice,
+          photoUrl:
+            firstItem.product?.image_url || firstItem.warung?.item_photo,
+          fromLocation: {
+            address: firstItem.warung?.address,
+            lat: firstItem.warung?.latitude,
+            lng: firstItem.warung?.longitude,
+          },
+        },
+      },
+    });
+  };
 
   const handleDealSelected = async () => {
     if (selectedItems.length === 0 || multipleOwnersSelected || isProcessing)
@@ -723,21 +754,31 @@ export default function Cart() {
                   Rp {totalPrice.toLocaleString("id-ID")}
                 </p>
               </div>
-              <button
-                onClick={handleDealSelected}
-                disabled={multipleOwnersSelected || isProcessing}
-                className="h-12 px-6 rounded-2xl bg-[#4e73df] text-white text-sm font-semibold hover:bg-[#3d64c7] transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {isProcessing ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : multipleOwnersSelected ? (
-                  "Pilih 1 Toko"
-                ) : (
-                  <>
-                    Ajukan Deal <CheckSquare size={16} />
-                  </>
-                )}
-              </button>
+              {isMilikSelection ? (
+                <button
+                  onClick={handleRequestCourier}
+                  disabled={multipleOwnersSelected}
+                  className="h-12 px-6 rounded-2xl bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 transition-colors disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-amber-500/20"
+                >
+                  Cari Kurir <Bike size={18} />
+                </button>
+              ) : (
+                <button
+                  onClick={handleDealSelected}
+                  disabled={multipleOwnersSelected || isProcessing}
+                  className="h-12 px-6 rounded-2xl bg-[#4e73df] text-white text-sm font-semibold hover:bg-[#3d64c7] transition-colors disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                >
+                  {isProcessing ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : multipleOwnersSelected ? (
+                    "Pilih 1 Toko"
+                  ) : (
+                    <>
+                      Ajukan Deal <CheckSquare size={16} />
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>

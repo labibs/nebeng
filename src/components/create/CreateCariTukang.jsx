@@ -78,10 +78,10 @@ export default function CreateCariTukang({ onBack }) {
       clerk_user_id: user.id,
       type: "tukang",
       from_city: fromLocation.address,
-        from_lat: fromLocation.lat,
-        from_lng: fromLocation.lng,
-        to_lat: toLocation.lat,
-        to_lng: toLocation.lng,
+      from_lat: fromLocation.lat,
+      from_lng: fromLocation.lng,
+      to_lat: toLocation.lat,
+      to_lng: toLocation.lng,
       to_city: toLocation.address,
       travel_date: form.travel_date,
       armada: form.armada,
@@ -228,7 +228,7 @@ export default function CreateCariTukang({ onBack }) {
             <div className="rounded-2xl border bg-white/70 px-4 py-3 dark:bg-white/5">
               <p className="mb-1 text-xs opacity-60">Butuh kapan?</p>
               <input
-                type="date"
+                type="datetime-local"
                 value={form.travel_date}
                 onChange={(e) =>
                   setForm({ ...form, travel_date: e.target.value })

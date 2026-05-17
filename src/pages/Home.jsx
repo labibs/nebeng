@@ -435,7 +435,7 @@ export default function Home() {
 
             <div className="flex items-center gap-2 mt-1">
               <input
-                type="date"
+                type="datetime-local"
                 value={customDate}
                 onChange={(e) => {
                   setCustomDate(e.target.value);

@@ -7,26 +7,28 @@ import { ArrowLeft } from "lucide-react";
 import SlideToPosting from "./SlideToPosting";
 import MarketPicker from "./MarketPicker";
 
-export default function CreateNitipBelikan({ onBack }) {
+export default function CreateNitipBelikan({ onBack, initialData }) {
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState("manual"); // manual | market
   const [marketItem, setMarketItem] = useState(null);
   const [showMarket, setShowMarket] = useState(false);
   const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [preview, setPreview] = useState(initialData?.photoUrl || null);
   const fileRef = useRef(null);
 
   const [form, setForm] = useState({
-    item_description: "",
+    item_description: initialData?.item_description || "",
     description: "",
-    price: "",
+    price: initialData?.price || "",
     fee: "",
     travel_date: "",
     armada: "motor",
   });
 
-  const [fromLocation, setFromLocation] = useState(null);
+  const [fromLocation, setFromLocation] = useState(
+    initialData?.fromLocation || null,
+  );
   const [toLocation, setToLocation] = useState(null);
 
   const handleImage = (e) => {
@@ -50,7 +52,7 @@ export default function CreateNitipBelikan({ onBack }) {
 
     setLoading(true);
 
-    let photoUrl = null;
+    let photoUrl = initialData?.photoUrl || null;
     if (file) {
       photoUrl = await uploadPostImage(file, {
         format: "webp",
@@ -301,7 +303,7 @@ export default function CreateNitipBelikan({ onBack }) {
               <p className="text-xs opacity-60 mb-1">Mau dianter kapan?</p>
 
               <input
-                type="date"
+                type="datetime-local"
                 value={form.travel_date}
                 onChange={(e) =>
                   setForm({ ...form, travel_date: e.target.value })

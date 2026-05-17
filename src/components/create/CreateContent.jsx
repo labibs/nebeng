@@ -126,7 +126,6 @@ export default function CreateContent({ onBack }) {
 
   return (
     <div className="fixed inset-0 flex flex-col mb-2 pt-6 px-4 pb-2">
-
       {/* HEADER */}
       <div className="shrink-0">
         <div className="pointer-events-auto flex items-start gap-3 mb-5">
@@ -151,7 +150,6 @@ export default function CreateContent({ onBack }) {
 
       {/* CONTENT */}
       <div className="flex-1 overflow-y-auto space-y-4 pb-20">
-
         {/* UPLOAD VIDEO */}
         <div
           className="rounded-2xl border-dashed border-2
@@ -180,9 +178,7 @@ export default function CreateContent({ onBack }) {
           <textarea
             placeholder="Tulis caption utama..."
             value={form.caption}
-            onChange={(e) =>
-              setForm({ ...form, caption: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, caption: e.target.value })}
             rows={2}
             className="w-full bg-transparent resize-none
                        px-4 py-3 text-sm font-semibold
@@ -200,16 +196,12 @@ export default function CreateContent({ onBack }) {
 
         {/* DESKRIPSI */}
         <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
-          <p className="text-xs opacity-60 mb-1">
-            Cerita lengkap (opsional)
-          </p>
+          <p className="text-xs opacity-60 mb-1">Cerita lengkap (opsional)</p>
 
           <textarea
             placeholder="Jelasin lebih detail di sini..."
             value={form.description}
-            onChange={(e) =>
-              setForm({ ...form, description: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
             className="w-full bg-transparent resize-none
                        text-sm focus:outline-none"
             rows={3}
@@ -225,23 +217,18 @@ export default function CreateContent({ onBack }) {
 
         {/* TANGGAL */}
         <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
-          <p className="text-xs opacity-60 mb-1">
-            Tanggal kejadian (opsional)
-          </p>
+          <p className="text-xs opacity-60 mb-1">Tanggal kejadian (opsional)</p>
 
           <input
-            type="date"
+            type="datetime-local"
             value={form.event_date}
-            onChange={(e) =>
-              setForm({ ...form, event_date: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, event_date: e.target.value })}
             className="w-full bg-transparent text-sm font-semibold focus:outline-none"
           />
         </div>
 
         {/* ACTION */}
         <SlideToPosting onComplete={submit} />
-
       </div>
     </div>
   );

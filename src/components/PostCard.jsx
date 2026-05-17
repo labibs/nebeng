@@ -15,6 +15,7 @@ import {
   Car,
   Bus,
   Train,
+  CalendarClock,
   X,
   Navigation,
   MapPin,
@@ -160,7 +161,8 @@ export default function PostCard({ post }) {
   const formatDate = (dateString) => {
     if (!dateString) return "";
     try {
-      return format(new Date(dateString), "EEEE, d MMM yyyy", {
+      const date = new Date(dateString);
+      return format(date, "EEEE, d MMM yyyy • HH:mm", {
         locale: localeId,
       });
     } catch {
@@ -540,9 +542,12 @@ export default function PostCard({ post }) {
                                   config.label.slice(1)}
                               </h3>
                             </div>
-                            <p className="text-xs font-medium text-white/80 leading-tight">
-                              Berangkat: {displayDate || "Waktu fleksibel"}
-                            </p>
+                            <div className="flex items-center gap-1.5 text-white/80">
+                              <CalendarClock size={12} className="shrink-0" />
+                              <p className="text-xs font-medium leading-tight">
+                                {displayDate || "Waktu fleksibel"}
+                              </p>
+                            </div>
                           </div>
                         </div>
 

@@ -1,5 +1,9 @@
 import { SignOutButton, UserButton, useUser } from "@clerk/clerk-react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabaseClient";
+import AdminChatSupport from "../components/AdminChatSupport";
+import AdminNotification from "../components/AdminNotification";
 import {
   LayoutGrid,
   BarChart3,
@@ -26,9 +30,58 @@ const navItems = [
 
 export default function AdminLayout() {
   const { user } = useUser();
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
   const location = useLocation();
   const isDashboard =
     location.pathname === "/dashboard" || location.pathname === "/";
+
+  // Fetch total unread chat count
+  const fetchUnreadCount = async () => {
+    if (!user) return;
+
+    // 1. Get my conversation IDs
+    const { data: participants } = await supabase
+      .from("conversation_participants")
+      .select("conversation_id")
+      .eq("user_id", user.id);
+
+    const convIds = (participants || []).map((p) => p.conversation_id);
+    if (!convIds.length) {
+      setUnreadChatCount(0);
+      return;
+    }
+
+    // 2. Count unread messages in those conversations
+    const { count, error } = await supabase
+      .from("messages")
+      .select("*", { count: "exact", head: true })
+      .in("conversation_id", convIds)
+      .neq("sender_id", user.id)
+      .eq("is_read", false);
+
+    if (!error) {
+      setUnreadChatCount(count || 0);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchUnreadCount();
+
+      // Subscribe to all message changes
+      const channel = supabase
+        .channel("global-unread-count")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "messages" },
+          () => fetchUnreadCount(),
+        )
+        .subscribe();
+
+      return () => supabase.removeChannel(channel);
+    }
+  }, [user]);
 
   const pageTitles = {
     "/users": "Manajemen Pengguna",
@@ -125,19 +178,23 @@ export default function AdminLayout() {
             </div>
 
             <button
-              className="relative grid h-12 w-12 place-items-center rounded-full bg-white border border-[#e2e8f0] text-[#0f172a] shadow-sm hover:bg-[#f8fafc] transition-colors"
-              title="Pesan"
+              onClick={() => setIsChatOpen(!isChatOpen)}
+              className={`relative grid h-12 w-12 place-items-center rounded-full border shadow-sm transition-all ${
+                isChatOpen
+                  ? "bg-[#4e73df] border-[#4e73df] text-white"
+                  : "bg-white border-[#e2e8f0] text-[#0f172a] hover:bg-[#f8fafc]"
+              }`}
+              title="Pesan Bantuan"
             >
               <MessageCircle size={22} strokeWidth={2} />
-              <span className="absolute right-3.5 top-3.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-rose-500 shadow-sm" />
+              {unreadChatCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-rose-500 text-[10px] font-bold text-white shadow-sm animate-in zoom-in duration-300">
+                  {unreadChatCount > 9 ? "9+" : unreadChatCount}
+                </span>
+              )}
             </button>
 
-            <button
-              className="grid h-12 w-12 place-items-center rounded-full bg-white border border-[#e2e8f0] text-[#0f172a] shadow-sm hover:bg-[#f8fafc] transition-colors"
-              title="Notifikasi"
-            >
-              <Bell size={22} strokeWidth={2} />
-            </button>
+            <AdminNotification />
           </div>
         </header>
 
@@ -145,6 +202,12 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Admin Chat Support Modal */}
+      <AdminChatSupport
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+      />
     </div>
   );
 }

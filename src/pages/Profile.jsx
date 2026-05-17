@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useUser, useClerk } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
+import { apiFetch } from "../lib/apiClient";
+import { openChat } from "../lib/chatHelper";
 import {
   LogOut,
   User,
@@ -9,6 +11,7 @@ import {
   Settings,
   Store,
   LayoutDashboard,
+  HelpCircle,
 } from "lucide-react";
 
 export default function Profile() {
@@ -48,6 +51,47 @@ export default function Profile() {
     return <div className="p-6 text-center">Profile tidak ditemukan</div>;
   }
 
+  const handleHelp = async () => {
+    try {
+      // 1. Cari user dengan role admin
+      const { data: admins, error } = await supabase
+        .from("users")
+        .select("clerk_id, name, avatar_url")
+        .eq("role", "admin")
+        .limit(1);
+
+      if (error || !admins || admins.length === 0) {
+        alert("Maaf, layanan bantuan sedang tidak tersedia.");
+        return;
+      }
+
+      const admin = admins[0];
+
+      // 2. Buat atau ambil conversation_id
+      const result = await apiFetch("/api/conversations", {
+        method: "POST",
+        body: JSON.stringify({ opponent_id: admin.clerk_id }),
+      });
+
+      if (!result.conversation_id) {
+        throw new Error("Gagal membuat percakapan");
+      }
+
+      // 3. Buka halaman chat
+      openChat(
+        result.conversation_id,
+        {
+          name: admin.name,
+          avatar_url: admin.avatar_url,
+        },
+        navigate,
+      );
+    } catch (err) {
+      console.error("Error opening help chat:", err);
+      alert("Terjadi kesalahan saat menghubungi bantuan.");
+    }
+  };
+
   const menuItems = [
     {
       label: "Pengaturan",
@@ -55,6 +99,11 @@ export default function Profile() {
       action: () => alert("Pengaturan segera hadir!"),
     },
     { label: "Outlet Saya", icon: Store, action: () => navigate("/outlet") },
+    {
+      label: "Bantuan",
+      icon: HelpCircle,
+      action: handleHelp,
+    },
   ];
 
   // Tambahkan shortcut Dashboard hanya jika role-nya admin

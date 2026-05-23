@@ -36,7 +36,7 @@ export default function AddProductBottomSheet({
       // 1️⃣ upload image jika ada
       if (imageFile) {
         imageUrl = await uploadPostImage(imageFile, {
-          folder: "nebeng/products",
+          folder: "numpak/products",
         });
       }
 

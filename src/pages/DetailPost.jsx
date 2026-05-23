@@ -130,7 +130,7 @@ export default function DetailPost() {
 
     setUploading(true);
     try {
-      const url = await uploadPostImage(file, { folder: "nebeng/comments" });
+      const url = await uploadPostImage(file, { folder: "numpak/comments" });
       await handleSendComment(url, "image");
     } catch (err) {
       console.error(err);

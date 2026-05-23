@@ -1,6 +1,6 @@
-# Nebeng Backend (Go)
+# Numpak Backend (Go)
 
-REST API backend untuk aplikasi Nebeng, menghubungkan React frontend dengan Supabase.
+REST API backend untuk aplikasi Numpak, menghubungkan React frontend dengan Supabase.
 
 ## Tech Stack
 

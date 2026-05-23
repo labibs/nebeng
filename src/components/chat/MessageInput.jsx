@@ -161,7 +161,7 @@ export default function MessageInput({
 
     setUploading(true);
     try {
-      const url = await uploadPostImage(file, { folder: "nebeng/chat" });
+      const url = await uploadPostImage(file, { folder: "numpak/chat" });
       await sendMessage(url, "image");
     } catch (err) {
       console.error(err);

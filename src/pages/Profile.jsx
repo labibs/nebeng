@@ -113,7 +113,7 @@ export default function Profile() {
       icon: LayoutDashboard,
       action: () => {
         window.location.href =
-          import.meta.env.VITE_ADMIN_URL || "https://nebeng-admin.vercel.app";
+          import.meta.env.VITE_ADMIN_URL || "https://numpak-admin.vercel.app";
       },
     });
   }

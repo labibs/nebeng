@@ -41,7 +41,7 @@ export default function Landing() {
     },
     {
       title: "Hemat Hingga 70% Biaya Kirim",
-      desc: "Lebih murah dari ekspedisi biasa,\nkarena nebeng bagasi orang yang searah ke tujuanmu.",
+      desc: "Lebih murah dari ekspedisi biasa,\nkarena numpak bagasi orang yang searah ke tujuanmu.",
       emoji: "💸",
       gradient: "from-[#0f172a]/80 via-[#0f172a]/40 to-transparent",
       img: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1600&q=80",
@@ -61,7 +61,7 @@ export default function Landing() {
       img: "https://images.unsplash.com/photo-1573855619003-97b4799dcd8b?w=1600&q=80",
     },
     {
-      title: "Nebeng Searah Lebih Asyik",
+      title: "Numpak Searah Lebih Asyik",
       desc: "Cari boncengan atau beri tumpangan kemanapun tujuanmu.\nHemat bensin, kurangi polusi, dan tambah teman di jalan.",
       emoji: "🛵",
       gradient: "from-green-900/80 via-green-900/40 to-transparent",
@@ -122,8 +122,8 @@ export default function Landing() {
           {/* Brand Name */}
           <div className="relative mb-2 flex flex-col items-center z-10">
             <img
-              src="./nebengv2.png"
-              alt="Nebeng"
+              src="./numpakv2.png"
+              alt="Numpak"
               className="w-32 h-32 object-contain drop-shadow-sm"
             />
           </div>

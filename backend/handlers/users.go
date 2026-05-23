@@ -6,9 +6,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nebeng/backend/middleware"
-	"github.com/nebeng/backend/models"
-	sb "github.com/nebeng/backend/supabase"
+	"github.com/numpak/backend/middleware"
+	"github.com/numpak/backend/models"
+	sb "github.com/numpak/backend/supabase"
 )
 
 // GetCurrentUser returns the authenticated user's profile

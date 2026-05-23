@@ -14,8 +14,8 @@ export default defineConfig({
       },
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "*.svg"], // Assets yang dicache
       manifest: {
-        name: "Nebeng.id",
-        short_name: "Nebeng",
+        name: "Numpak.id",
+        short_name: "Numpak",
         description: "Titip barang aman via orang yang searah & ekspedisi",
         theme_color: "#4e73df",
         background_color: "#f0f7ff",

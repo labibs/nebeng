@@ -49,7 +49,7 @@
 netstat -ano | findstr :5173
 
 # Jika tidak running, start it:
-cd "c:\Users\Labib Suturi\Desktop\nebeng"
+cd "c:\Users\Labib Suturi\Desktop\numpak"
 npm run dev
 ```
 

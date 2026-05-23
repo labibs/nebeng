@@ -5,14 +5,14 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/nebeng/backend/config"
-	"github.com/nebeng/backend/handlers"
-	"github.com/nebeng/backend/middleware"
+	"github.com/numpak/backend/config"
+	"github.com/numpak/backend/handlers"
+	"github.com/numpak/backend/middleware"
 )
 
 func Setup(r *gin.Engine) {
 	// Allow local dev and production frontend
-	origins := []string{"http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:5174", "http://127.0.0.1:3000", "https://nebeng.vercel.app", "https://nebeng-admin.vercel.app"}
+	origins := []string{"http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:5174", "http://127.0.0.1:3000", "https://numpak.vercel.app", "https://numpak-admin.vercel.app"}
 	if config.Cfg.FrontendURL != "" {
 		base := strings.TrimSuffix(config.Cfg.FrontendURL, "/")
 		origins = append(origins, base, base+"/")
@@ -32,7 +32,7 @@ func Setup(r *gin.Engine) {
 
 	// Health check
 	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "ok", "service": "nebeng-backend"})
+		c.JSON(200, gin.H{"status": "ok", "service": "numpak-backend"})
 	})
 
 	api := r.Group("/api")

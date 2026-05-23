@@ -115,7 +115,7 @@ export default function CreatePerjalanan({ onBack }) {
               </h3>
               <p className="text-xs opacity-70">
                 Cantumkan tujuanmu, agar yang searah bisa titip barang, ikut
-                nebeng, atau minta dibeliin sekalian.
+                numpak, atau minta dibeliin sekalian.
               </p>
             </div>
           </div>
@@ -180,7 +180,7 @@ export default function CreatePerjalanan({ onBack }) {
           {/* Bawain apa */}
           <div className="rounded-2xl border bg-white/70 dark:bg-white/5 px-4 py-3">
             <p className="text-xs opacity-60 mb-1">
-              Infoin barang / orang yang mau kamu kasih tebengan ?
+              Infoin barang / orang yang mau kamu kasih tumpakan ?
             </p>
             <textarea
               placeholder="Contoh: Berangkat kerja/sekolah, atau bawa barang maksimal 10 kg"

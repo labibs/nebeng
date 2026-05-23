@@ -20,13 +20,13 @@ Buat dua project Vercel dari repo yang sama.
 
 - Build Command: `npm run build`
 - Output Directory: `dist`
-- Domain: `nebeng.vercel.app`
+- Domain: `numpak.vercel.app`
 
 ### Admin App
 
 - Build Command: `npm run build:admin`
 - Output Directory: `apps/admin/dist`
-- Domain: `nebeng-admin.vercel.app`
+- Domain: `numpak-admin.vercel.app`
 
 Environment variables admin memakai Supabase dan Clerk yang sama:
 
@@ -39,13 +39,13 @@ VITE_SUPABASE_ANON_KEY=
 Untuk link dari user app ke admin:
 
 ```bash
-VITE_ADMIN_URL=https://nebeng-admin.vercel.app
+VITE_ADMIN_URL=https://numpak-admin.vercel.app
 ```
 
 Untuk backend CORS:
 
 ```bash
-ADMIN_FRONTEND_URL=https://nebeng-admin.vercel.app
+ADMIN_FRONTEND_URL=https://numpak-admin.vercel.app
 ```
 
 ## Admin Role

@@ -1135,7 +1135,7 @@ export default function DealPage() {
 
           {!isCarrierLogin && (
             <div className="rounded-2xl bg-white shadow-sm p-4 border border-slate-100 space-y-3">
-              <p className="text-xs text-slate-400">Total Biaya Nebeng</p>
+              <p className="text-xs text-slate-400">Total Biaya Numpak</p>
               <p className="text-2xl font-bold text-[#4e73df]">
                 {totalTransactionAmount
                   ? totalTransactionAmount.toLocaleString("id-ID", {

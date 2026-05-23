@@ -15,7 +15,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/nebeng/backend/config"
+	"github.com/numpak/backend/config"
 )
 
 // JWKS represents the JSON Web Key Set from Clerk

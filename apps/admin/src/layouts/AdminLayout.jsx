@@ -97,7 +97,7 @@ export default function AdminLayout() {
       {/* Sidebar */}
       <aside className="fixed inset-y-4 left-4 z-20 flex w-[76px] flex-col rounded-[24px] bg-white p-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#e2e8f0]">
         <div className="mb-8 flex justify-center py-2">
-          <img src="/logo.svg" alt="Nebeng" className="h-9 w-9" />
+          <img src="/logo.svg" alt="Numpak" className="h-9 w-9" />
         </div>
 
         <nav className="flex flex-1 flex-col items-center gap-4">

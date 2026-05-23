@@ -1,4 +1,4 @@
-module github.com/nebeng/backend
+module github.com/numpak/backend
 
 go 1.21
 

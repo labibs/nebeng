@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/nebeng/backend/config"
+	"github.com/numpak/backend/config"
 )
 
 // Client is a simple Supabase REST client using the service role key

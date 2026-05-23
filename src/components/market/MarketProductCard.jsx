@@ -41,7 +41,7 @@ export default function MarketProductCard({ product }) {
         </div>
         <div className="space-y-0.5">
           <p className="truncate text-[10px] font-medium text-[#4e73df] opacity-80">
-            {product.warung_name || "Outlet Nebeng"}
+            {product.warung_name || "Outlet Numpak"}
           </p>
 
           <h3 className="line-clamp-2 text-[13px] font-semibold leading-tight text-slate-900">

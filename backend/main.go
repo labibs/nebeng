@@ -4,9 +4,9 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nebeng/backend/config"
-	"github.com/nebeng/backend/routes"
-	sb "github.com/nebeng/backend/supabase"
+	"github.com/numpak/backend/config"
+	"github.com/numpak/backend/routes"
+	sb "github.com/numpak/backend/supabase"
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 	routes.Setup(r)
 
 	port := config.Cfg.Port
-	log.Printf("🚀 Nebeng backend running on port %s", port)
+	log.Printf("🚀 Numpak backend running on port %s", port)
 	log.Printf("📡 Supabase: %s", config.Cfg.SupabaseURL)
 	log.Printf("🔐 Clerk JWKS: %s", config.Cfg.ClerkJWKSURL)
 	log.Printf("🌐 Frontend URL: %s", config.Cfg.FrontendURL)

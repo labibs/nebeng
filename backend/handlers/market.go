@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	sb "github.com/nebeng/backend/supabase"
+	sb "github.com/numpak/backend/supabase"
 )
 
 // GetMarketProducts returns products with optional filters

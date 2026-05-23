@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nebeng/backend/middleware"
-	sb "github.com/nebeng/backend/supabase"
+	"github.com/numpak/backend/middleware"
+	sb "github.com/numpak/backend/supabase"
 )
 
 // GetConversations returns the list of conversations for the current user

@@ -3,7 +3,7 @@ export async function uploadPostImage(
   {
     maxWidth = 1024,
     quality = 0.75,
-    folder = "nebeng/images",
+    folder = "numpak/images",
   } = {}
 ) {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;

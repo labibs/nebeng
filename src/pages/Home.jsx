@@ -286,7 +286,7 @@ export default function Home() {
           <div className="flex-1">
             <img
               src="/pwa-64x64.png"
-              alt="Nebeng"
+              alt="Numpak"
               className="w-11 h-11 object-cover mb-2"
             />
           </div>

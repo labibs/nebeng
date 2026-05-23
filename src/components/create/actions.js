@@ -18,7 +18,7 @@ export const actions = [
     key: "cari_boncengan",
     icon: "🛵",
     title: "Nyari Boncengan",
-    desc: "Nebeng searah",
+    desc: "Numpak searah",
     mode: "request"
   },
   {

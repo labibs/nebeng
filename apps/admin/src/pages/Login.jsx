@@ -21,7 +21,7 @@ export default function Login() {
             <img src="/logo.svg" alt="" className="h-7 w-7" />
           </div>
           <span className="text-2xl font-black tracking-tight text-[#0f172a]">
-            Nebeng<span className="text-[#4e73df]"> Admin</span>
+            Numpak<span className="text-[#4e73df]"> Admin</span>
           </span>
         </div>
         <div className="flex items-center gap-6">
@@ -47,7 +47,7 @@ export default function Login() {
 
             <h2 className="text-[44px] font-black leading-[1.1] text-[#0f172a] tracking-tight mb-4">
               Selamat Datang di <br />
-              <span className="text-[#4e73df]">Dashboard Nebeng</span>
+              <span className="text-[#4e73df]">Dashboard Numpak</span>
             </h2>
 
             <p className="text-lg font-medium text-[#64748b] mb-12">
@@ -203,10 +203,10 @@ export default function Login() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex flex-col items-center md:items-start gap-2">
             <p className="text-sm font-black text-[#0f172a]">
-              Panel Admin Nebeng
+              Panel Admin Numpak
             </p>
             <p className="text-xs font-bold text-[#94a3b8]">
-              © 2026 Nebeng. Hak cipta dilindungi.
+              © 2026 Numpak. Hak cipta dilindungi.
             </p>
           </div>
           <div className="flex gap-8">

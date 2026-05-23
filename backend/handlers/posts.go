@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nebeng/backend/middleware"
-	sb "github.com/nebeng/backend/supabase"
+	"github.com/numpak/backend/middleware"
+	sb "github.com/numpak/backend/supabase"
 )
 
 // GetPosts returns posts with optional filters

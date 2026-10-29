@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { SignOutButton, useUser } from "@clerk/clerk-react";
 import { ShieldAlert } from "lucide-react";
-import { supabase } from "../lib/supabaseClient";
+import { apiFetch } from "../lib/apiClient";
 import LoadingLogo from "./LoadingLogo";
 
 function hasAdminAccess(user, profile) {
@@ -28,11 +28,13 @@ export default function AdminGuard({ children }) {
       setLoadingProfile(true);
       setError("");
 
-      const { data, error: profileError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("clerk_id", user.id)
-        .maybeSingle();
+      let data = null;
+      let profileError = null;
+      try {
+        data = await apiFetch(`/users/${encodeURIComponent(user.id)}`, { clerkId: user.id });
+      } catch (error) {
+        profileError = error;
+      }
 
       if (!active) return;
 

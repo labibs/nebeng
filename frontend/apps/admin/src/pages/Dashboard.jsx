@@ -1,4 +1,5 @@
 import { createElement, useEffect, useState } from "react";
+import { useUser } from "@clerk/clerk-react";
 import {
   TrendingUp,
   MoreHorizontal,
@@ -11,7 +12,7 @@ import {
   Store,
   Package,
 } from "lucide-react";
-import { supabase } from "../lib/supabaseClient";
+import { apiFetch } from "../lib/apiClient";
 import LoadingLogo from "../components/LoadingLogo";
 
 // Helper for formatting
@@ -62,6 +63,7 @@ function RadialRing({ percentage, color, radius, stroke = 12 }) {
 }
 
 export default function Dashboard() {
+  const { user } = useUser();
   const [data, setData] = useState({
     users: 0,
     posts: 0,
@@ -78,81 +80,11 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) return;
     async function fetchData() {
       try {
-        const [
-          { count: users },
-          { count: posts },
-          { data: transData },
-          { count: dealsCount },
-          { data: outletsData },
-          { count: products },
-          { data: recentTrans },
-          { data: recentDealsData },
-        ] = await Promise.all([
-          supabase.from("users").select("*", { count: "exact", head: true }),
-          supabase.from("posts").select("*", { count: "exact", head: true }),
-          supabase.from("transactions").select("gross_amount"),
-          supabase.from("deals").select("*", { count: "exact", head: true }),
-          supabase.from("warungs").select("*, owner:users(name, avatar_url)"),
-          supabase
-            .from("warung_products")
-            .select("*", { count: "exact", head: true }),
-          supabase
-            .from("transactions")
-            .select(
-              `
-              *,
-              deals (
-                id,
-                depositor:users!fk_deals_depositor (
-                  name,
-                  avatar_url
-                )
-              )
-            `,
-            )
-            .order("created_at", { ascending: false })
-            .limit(5),
-          supabase
-            .from("deals")
-            .select(
-              "*, post:posts(item_photo), depositor:users!fk_deals_depositor(name)",
-            )
-            .order("created_at", { ascending: false })
-            .limit(5),
-        ]);
-
-        const totalRevenue =
-          transData?.reduce((acc, curr) => acc + (curr.gross_amount || 0), 0) ||
-          0;
-
-        const uniqueOwnersMap = new Map();
-        outletsData?.forEach((w) => {
-          if (w.owner) {
-            uniqueOwnersMap.set(w.owner.name, w.owner.avatar_url);
-          }
-        });
-
-        const ownersCount = uniqueOwnersMap.size;
-        const recentOwnersAvatars = Array.from(uniqueOwnersMap.values()).slice(
-          0,
-          5,
-        );
-
-        setData({
-          users: users || 0,
-          posts: posts || 0,
-          transactionsCount: transData?.length || 0,
-          revenue: totalRevenue,
-          dealsCount: dealsCount || 0,
-          outletsCount: outletsData?.length || 0,
-          productsCount: products || 0,
-          ownersCount: ownersCount,
-          recentTransfers: recentTrans || [],
-          recentOwners: recentOwnersAvatars,
-          recentDeals: recentDealsData || [],
-        });
+        const result = await apiFetch("/admin/dashboard", { clerkId: user.id });
+        setData(result);
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
       } finally {
@@ -160,7 +92,7 @@ export default function Dashboard() {
       }
     }
     fetchData();
-  }, []);
+  }, [user]);
 
   if (loading) {
     return (

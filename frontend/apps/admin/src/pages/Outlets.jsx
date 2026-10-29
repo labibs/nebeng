@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { useUser } from "@clerk/clerk-react";
+import { apiFetch } from "../lib/apiClient";
 import LoadingLogo from "../components/LoadingLogo";
 import {
   Search,
@@ -23,6 +24,7 @@ import {
 } from "lucide-react";
 
 export default function Outlets() {
+  const { user } = useUser();
   const [outlets, setOutlets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -66,16 +68,10 @@ export default function Outlets() {
   };
 
   useEffect(() => {
+    if (!user) return;
     async function fetchOutletsAndProducts() {
       try {
-        const { data, error } = await supabase
-          .from("warungs")
-          .select(
-            "*, owner:users(name, avatar_url, role), products:warung_products(*)",
-          )
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
+        const data = await apiFetch("/admin/warungs", { clerkId: user.id });
         setOutlets(data || []);
       } catch (err) {
         console.error("Error fetching outlets:", err);
@@ -84,7 +80,7 @@ export default function Outlets() {
       }
     }
     fetchOutletsAndProducts();
-  }, []);
+  }, [user]);
 
   const formatIDR = (val) =>
     new Intl.NumberFormat("id-ID", {

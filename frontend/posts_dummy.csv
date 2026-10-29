@@ -1,0 +1,7 @@
+type,from_city,to_city,travel_date,item_description,price,fee,description
+titip,Jakarta,Bandung,2025-12-16,"Baju Zara & H&M size M",800000,60000,"Mau titip belanja di mall Jakarta, barang baru original. Siapa yang ke Bandung besok?"
+bawa,Surabaya,Bali,2025-12-20,"Makanan ringan / oleh-oleh max 5kg",0,75000,"Pesawat pagi ke Bali, bagasi masih kosong banyak. Bisa bawa titipan aman!"
+titip,Singapore,Jakarta,2025-12-18,"Kosmetik Sephora & skincare",2000000,100000,"Jastip dari Changi Airport, barang authentic. Fee negotiable kalau banyak."
+bawa,Bogor,Jakarta,2025-12-15,"Dokumen / paket kecil",0,25000,"Tiap pagi ke Jakarta pusat, bisa numpak paket atau dokumen penting."
+titip,Yogyakarta,Semarang,2025-12-22,"Batik handmade",500000,40000,"Titip beli batik asli Jogja, motif parang atau kawung."
+bawa,Medan,Jakarta,2025-12-25,"Buah durian max 10kg",0,120000,"Penerbangan malam ke Jakarta, bisa bawa durian segar dari Medan."

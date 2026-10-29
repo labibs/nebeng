@@ -1,0 +1,50 @@
+{
+  "name": "numpak",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:admin": "vite --config apps/admin/vite.config.js",
+    "build": "vite build",
+    "build:admin": "vite build --config apps/admin/vite.config.js",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "preview:admin": "vite preview --config apps/admin/vite.config.js",
+    "generate-pwa-assets": "npx @vite-pwa/assets-generator public/logo.svg --preset minimal"
+  },
+  "dependencies": {
+    "@clerk/clerk-react": "^5.59.0",
+    "daisyui": "^5.5.14",
+    "date-fns": "^4.1.0",
+    "dotenv": "^17.3.1",
+    "framer-motion": "^12.26.2",
+    "leaflet": "^1.9.4",
+    "leaflet-geosearch": "^4.2.2",
+    "lucide-react": "^0.561.0",
+    "rc-slider": "^11.1.9",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-leaflet": "^5.0.0",
+    "react-router-dom": "^7.10.1",
+    "sharp": "^0.34.5",
+    "svix": "^1.82.0",
+    "sweetalert2": "^11.26.17",
+    "swiper": "^12.0.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@tailwindcss/vite": "^4.1.18",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vite-pwa/assets-generator": "^1.0.2",
+    "@vitejs/plugin-react": "^4.7.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "tailwindcss": "^4.1.18",
+    "vite": "^6.4.1",
+    "vite-plugin-pwa": "^1.2.0"
+  }
+}

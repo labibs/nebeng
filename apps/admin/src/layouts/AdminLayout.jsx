@@ -1,7 +1,7 @@
 import { SignOutButton, UserButton, useUser } from "@clerk/clerk-react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { apiFetch } from "../lib/apiClient";
 import AdminChatSupport from "../components/AdminChatSupport";
 import AdminNotification from "../components/AdminNotification";
 import {
@@ -40,28 +40,11 @@ export default function AdminLayout() {
   const fetchUnreadCount = async () => {
     if (!user) return;
 
-    // 1. Get my conversation IDs
-    const { data: participants } = await supabase
-      .from("conversation_participants")
-      .select("conversation_id")
-      .eq("user_id", user.id);
-
-    const convIds = (participants || []).map((p) => p.conversation_id);
-    if (!convIds.length) {
-      setUnreadChatCount(0);
-      return;
-    }
-
-    // 2. Count unread messages in those conversations
-    const { count, error } = await supabase
-      .from("messages")
-      .select("*", { count: "exact", head: true })
-      .in("conversation_id", convIds)
-      .neq("sender_id", user.id)
-      .eq("is_read", false);
-
-    if (!error) {
-      setUnreadChatCount(count || 0);
+    try {
+      const result = await apiFetch("/admin/unread-count", { clerkId: user.id });
+      setUnreadChatCount(result?.count || 0);
+    } catch (error) {
+      console.error("Gagal mengambil jumlah chat belum dibaca:", error);
     }
   };
 
@@ -69,17 +52,8 @@ export default function AdminLayout() {
     if (user) {
       fetchUnreadCount();
 
-      // Subscribe to all message changes
-      const channel = supabase
-        .channel("global-unread-count")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "messages" },
-          () => fetchUnreadCount(),
-        )
-        .subscribe();
-
-      return () => supabase.removeChannel(channel);
+      const timer = window.setInterval(fetchUnreadCount, 15000);
+      return () => window.clearInterval(timer);
     }
   }, [user]);
 

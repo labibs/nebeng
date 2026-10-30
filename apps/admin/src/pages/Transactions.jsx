@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { useUser } from "@clerk/clerk-react";
+import { apiFetch } from "../lib/apiClient";
 import LoadingLogo from "../components/LoadingLogo";
 import {
   Search,
@@ -55,6 +56,7 @@ function getRouteLabel(location, fallback) {
 }
 
 export default function Transactions() {
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState("transactions");
   const [transactions, setTransactions] = useState([]);
   const [deals, setDeals] = useState([]);
@@ -87,45 +89,15 @@ export default function Transactions() {
   };
 
   useEffect(() => {
+    if (!user) return;
     async function fetchData() {
       try {
         setLoading(true);
         setError(null);
 
-        const [txRes, dealsRes] = await Promise.all([
-          supabase
-            .from("transactions")
-            .select(
-              `
-              *,
-              deals (
-                id,
-                depositor:users!fk_deals_depositor (
-                  name,
-                  avatar_url
-                )
-              )
-            `,
-            )
-            .order("created_at", { ascending: false }),
-          supabase
-            .from("deals")
-            .select(
-              `
-              *,
-              post:posts(item_photo, from_city, to_city),
-              depositor:users!fk_deals_depositor(name, avatar_url),
-              carrier:users!deals_carrier_id_fkey(name, avatar_url)
-            `,
-            )
-            .order("created_at", { ascending: false }),
-        ]);
-
-        if (txRes.error) console.error("Tx Error:", txRes.error);
-        if (dealsRes.error) console.error("Deals Error:", dealsRes.error);
-
-        setTransactions(txRes.data || []);
-        setDeals(dealsRes.data || []);
+        const result = await apiFetch("/admin/transactions", { clerkId: user.id });
+        setTransactions(result?.transactions || []);
+        setDeals(result?.deals || []);
       } catch (err) {
         console.error("Error fetching data:", err);
         setError(err.message);
@@ -134,7 +106,7 @@ export default function Transactions() {
       }
     }
     fetchData();
-  }, []);
+  }, [user]);
 
   const formatIDR = (val) =>
     new Intl.NumberFormat("id-ID", {

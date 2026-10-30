@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { useUser } from "@clerk/clerk-react";
+import { apiFetch } from "../lib/apiClient";
 import LoadingLogo from "../components/LoadingLogo";
 import {
   Search,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 
 export default function Users() {
+  const { user } = useUser();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,14 +65,10 @@ export default function Users() {
   };
 
   useEffect(() => {
+    if (!user) return;
     async function fetchUsers() {
       try {
-        const { data, error } = await supabase
-          .from("users")
-          .select("*")
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
+        const data = await apiFetch("/admin/users", { clerkId: user.id });
         setUsers(data || []);
       } catch (err) {
         console.error("Error fetching users:", err);
@@ -79,7 +77,7 @@ export default function Users() {
       }
     }
     fetchUsers();
-  }, []);
+  }, [user]);
 
   const filteredUsers = users.filter(
     (user) =>

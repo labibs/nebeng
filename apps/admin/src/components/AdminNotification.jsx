@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { useUser } from "@clerk/clerk-react";
+import { apiFetch } from "../lib/apiClient";
 import {
   Bell,
   X,
@@ -12,10 +13,12 @@ import { formatDistanceToNow } from "date-fns";
 import { id as localeId } from "date-fns/locale/id";
 
 export default function AdminNotification() {
+  const { user } = useUser();
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef(null);
+  const cursorRef = useRef(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -29,84 +32,36 @@ export default function AdminNotification() {
   }, []);
 
   useEffect(() => {
-    // 1. Listen for new Deals
-    const dealsChannel = supabase
-      .channel("admin-deals")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "deals" },
-        async (payload) => {
-          // Fetch user info for better notification
-          const { data: user } = await supabase
-            .from("users")
-            .select("name")
-            .eq("clerk_id", payload.new.depositor_id)
-            .single();
+    if (!user) return;
+    let active = true;
+    cursorRef.current = new Date().toISOString();
 
-          const newNotif = {
-            id: `deal-${payload.new.id}`,
-            type: "deal",
-            title: "Deal Baru",
-            message: `${user?.name || "Seseorang"} baru saja membuat deal: ${payload.new.item_description}`,
-            time: payload.new.created_at,
-            icon: Package,
-            color: "text-blue-500",
-            bgColor: "bg-blue-50",
-          };
-          addNotification(newNotif);
-        },
-      )
-      .subscribe();
-
-    // 2. Listen for new Transactions
-    const transactionsChannel = supabase
-      .channel("admin-transactions")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "transactions" },
-        async (payload) => {
-          const newNotif = {
-            id: `trx-${payload.new.id}`,
-            type: "transaction",
-            title: "Transaksi Baru",
-            message: `Pembayaran baru masuk sebesar Rp${payload.new.gross_amount.toLocaleString("id-ID")}`,
-            time: payload.new.created_at,
-            icon: CreditCard,
-            color: "text-emerald-500",
-            bgColor: "bg-emerald-50",
-          };
-          addNotification(newNotif);
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "transactions",
-          filter: "transaction_status=eq.settlement",
-        },
-        (payload) => {
-          const newNotif = {
-            id: `transfer-${payload.new.id}`,
-            type: "transfer",
-            title: "Transfer Berhasil",
-            message: `Dana sebesar Rp${payload.new.gross_amount.toLocaleString("id-ID")} telah berhasil diselesaikan`,
-            time: payload.new.updated_at || new Date().toISOString(),
-            icon: ArrowRightLeft,
-            color: "text-purple-500",
-            bgColor: "bg-purple-50",
-          };
-          addNotification(newNotif);
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(dealsChannel);
-      supabase.removeChannel(transactionsChannel);
+    const poll = async () => {
+      try {
+        const result = await apiFetch(`/admin/notifications?after=${encodeURIComponent(cursorRef.current)}`, { clerkId: user.id });
+        if (!active) return;
+        cursorRef.current = result?.cursor || new Date().toISOString();
+        for (const event of result?.events || []) {
+          const isDeal = event.type === "deal";
+          const isTransfer = event.type === "transfer";
+          addNotification({
+            ...event,
+            icon: isDeal ? Package : isTransfer ? ArrowRightLeft : CreditCard,
+            color: isDeal ? "text-blue-500" : isTransfer ? "text-purple-500" : "text-emerald-500",
+            bgColor: isDeal ? "bg-blue-50" : isTransfer ? "bg-purple-50" : "bg-emerald-50",
+          });
+        }
+      } catch (error) {
+        console.error("Gagal mengambil notifikasi admin:", error);
+      }
     };
-  }, []);
+
+    const timer = window.setInterval(poll, 15000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [user]);
 
   const addNotification = (notif) => {
     setNotifications((prev) => [notif, ...prev].slice(0, 20));

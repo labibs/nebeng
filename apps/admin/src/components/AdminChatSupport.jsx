@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { supabase } from "../lib/supabaseClient";
+import { apiFetch } from "../lib/apiClient";
 import {
   MessageCircle,
   X,
@@ -11,77 +11,6 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { id as localeId } from "date-fns/locale/id";
-
-// Helper to fetch data (copied/adapted from main app logic if needed,
-// or just use supabase directly for simplicity in admin)
-const apiFetch = async (path, options = {}) => {
-  // Simple implementation for admin if full apiClient isn't shared
-  const method = (options.method || 'GET').toUpperCase();
-  const body = options.body ? JSON.parse(options.body) : null;
-
-  if (path === '/api/conversations' && method === 'GET') {
-    // List conversations for current admin
-    const clerkId = options.clerkId;
-    const { data: participants, error: pError } = await supabase
-      .from('conversation_participants')
-      .select('conversation_id')
-      .eq('user_id', clerkId);
-
-    if (pError) throw pError;
-    const convIds = (participants || []).map(p => p.conversation_id);
-    if (!convIds.length) return [];
-
-    const { data: messages, error: mError } = await supabase
-      .from('messages')
-      .select('id, conversation_id, content, created_at, sender_id, is_read')
-      .in('conversation_id', convIds)
-      .order('created_at', { ascending: false });
-
-    if (mError) throw mError;
-
-    // Get opponents
-    const { data: allParticipants, error: apError } = await supabase
-      .from('conversation_participants')
-      .select('conversation_id, user_id')
-      .in('conversation_id', convIds);
-
-    if (apError) throw apError;
-    const opponentIds = allParticipants.filter(p => p.user_id !== clerkId).map(p => p.user_id);
-
-    const { data: opponents, error: oError } = await supabase
-      .from('users')
-      .select('clerk_id, name, avatar_url')
-      .in('clerk_id', opponentIds);
-
-    if (oError) throw oError;
-    const opponentMap = new Map(opponents.map(o => [o.clerk_id, o]));
-
-    const lastMsgMap = new Map();
-    const unreadMap = new Map();
-    messages.forEach(msg => {
-      if (!lastMsgMap.has(msg.conversation_id)) lastMsgMap.set(msg.conversation_id, msg);
-      if (msg.sender_id !== clerkId && !msg.is_read) {
-        unreadMap.set(msg.conversation_id, (unreadMap.get(msg.conversation_id) || 0) + 1);
-      }
-    });
-
-    const results = convIds.map(id => {
-      const oppId = allParticipants.find(p => p.conversation_id === id && p.user_id !== clerkId)?.user_id;
-      const opponent = opponentMap.get(oppId) || { name: 'Unknown', avatar_url: null };
-      const lastMsg = lastMsgMap.get(id);
-      return {
-        conversationId: id,
-        opponent,
-        lastMessage: lastMsg?.content || 'Belum ada pesan',
-        lastTime: lastMsg?.created_at || '',
-        unreadCount: unreadMap.get(id) || 0
-      };
-    });
-
-    return results.sort((a, b) => b.lastTime.localeCompare(a.lastTime));
-  }
-  return [];
-};
 
 export default function AdminChatSupport({ isOpen, onClose }) {
   const { user } = useUser();
@@ -101,7 +30,7 @@ export default function AdminChatSupport({ isOpen, onClose }) {
   const fetchConversations = async () => {
     try {
       setLoading(true);
-      const data = await apiFetch('/api/conversations', { clerkId: user.id });
+      const data = await apiFetch("/admin/conversations", { clerkId: user.id });
       setConversations(data);
     } catch (err) {
       console.error("Failed to fetch conversations:", err);
@@ -111,50 +40,16 @@ export default function AdminChatSupport({ isOpen, onClose }) {
   };
 
   const fetchMessages = async (convId) => {
-    const { data, error } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("conversation_id", convId)
-      .order("created_at", { ascending: true });
-
-    if (!error) {
-      setMessages(data);
-      scrollToBottom();
-    }
-
-    // Mark as read
-    await supabase
-      .from("messages")
-      .update({ is_read: true })
-      .eq("conversation_id", convId)
-      .neq("sender_id", user.id)
-      .eq("is_read", false);
+    const data = await apiFetch(`/admin/conversations/${encodeURIComponent(convId)}/messages`, { clerkId: user.id });
+    setMessages(data || []);
+    scrollToBottom();
   };
 
   useEffect(() => {
     if (selectedConv) {
       fetchMessages(selectedConv.conversationId);
-
-      const channel = supabase
-        .channel(`chat_${selectedConv.conversationId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "messages",
-            filter: `conversation_id=eq.${selectedConv.conversationId}`,
-          },
-          (payload) => {
-            setMessages((prev) => [...prev, payload.new]);
-            scrollToBottom();
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
+      const timer = window.setInterval(() => fetchMessages(selectedConv.conversationId), 5000);
+      return () => window.clearInterval(timer);
     }
   }, [selectedConv]);
 
@@ -171,13 +66,14 @@ export default function AdminChatSupport({ isOpen, onClose }) {
     const content = newMessage.trim();
     setNewMessage("");
 
-    const { error } = await supabase.from("messages").insert({
-      conversation_id: selectedConv.conversationId,
-      sender_id: user.id,
-      content,
-    });
-
-    if (error) {
+    try {
+      await apiFetch(`/admin/conversations/${encodeURIComponent(selectedConv.conversationId)}/messages`, {
+        clerkId: user.id,
+        method: "POST",
+        body: { content },
+      });
+      await fetchMessages(selectedConv.conversationId);
+    } catch (error) {
       console.error("Failed to send message:", error);
     }
   };
@@ -225,8 +121,12 @@ export default function AdminChatSupport({ isOpen, onClose }) {
                 <div className="mb-4 rounded-full bg-slate-100 p-4 text-slate-400">
                   <MessageCircle size={32} />
                 </div>
-                <p className="text-sm font-bold text-slate-500">Belum ada chat bantuan</p>
-                <p className="text-xs text-slate-400 mt-1">Pesan dari user akan muncul di sini</p>
+                <p className="text-sm font-bold text-slate-500">
+                  Belum ada chat bantuan
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Pesan dari user akan muncul di sini
+                </p>
               </div>
             ) : (
               conversations.map((conv) => (
@@ -237,7 +137,10 @@ export default function AdminChatSupport({ isOpen, onClose }) {
                 >
                   <div className="relative">
                     <img
-                      src={conv.opponent.avatar_url || "https://www.gravatar.com/avatar/0?d=mp"}
+                      src={
+                        conv.opponent.avatar_url ||
+                        "https://www.gravatar.com/avatar/0?d=mp"
+                      }
                       alt=""
                       className="h-12 w-12 rounded-full object-cover border-2 border-white shadow-sm"
                     />
@@ -253,7 +156,12 @@ export default function AdminChatSupport({ isOpen, onClose }) {
                         {conv.opponent.name}
                       </p>
                       <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap ml-2">
-                        {conv.lastTime ? formatDistanceToNow(new Date(conv.lastTime), { addSuffix: false, locale: localeId }) : ""}
+                        {conv.lastTime
+                          ? formatDistanceToNow(new Date(conv.lastTime), {
+                              addSuffix: false,
+                              locale: localeId,
+                            })
+                          : ""}
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 truncate font-medium">
@@ -283,8 +191,13 @@ export default function AdminChatSupport({ isOpen, onClose }) {
                       }`}
                     >
                       {msg.content}
-                      <p className={`text-[10px] mt-1 ${isMe ? "text-white/70" : "text-slate-400"}`}>
-                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      <p
+                        className={`text-[10px] mt-1 ${isMe ? "text-white/70" : "text-slate-400"}`}
+                      >
+                        {new Date(msg.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </p>
                     </div>
                   </div>

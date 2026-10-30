@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { useUser } from "@clerk/clerk-react";
+import { apiFetch } from "../lib/apiClient";
 import LoadingLogo from "../components/LoadingLogo";
 import {
   Search,
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 
 export default function Posts() {
+  const { user } = useUser();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,14 +59,10 @@ export default function Posts() {
   };
 
   useEffect(() => {
+    if (!user) return;
     async function fetchPosts() {
       try {
-        const { data, error } = await supabase
-          .from("posts")
-          .select("*, users!inner(name, avatar_url)")
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
+        const data = await apiFetch("/admin/posts", { clerkId: user.id });
         setPosts(data || []);
       } catch (err) {
         console.error("Error fetching posts:", err);
@@ -73,7 +71,7 @@ export default function Posts() {
       }
     }
     fetchPosts();
-  }, []);
+  }, [user]);
 
   const formatIDR = (val) =>
     new Intl.NumberFormat("id-ID", {

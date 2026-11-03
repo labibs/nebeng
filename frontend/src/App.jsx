@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
-import { AnimatePresence } from "framer-motion";
 
 import SyncUser from "./components/SyncUser"; // ✅ WAJIB
 import MainLayout from "./layouts/MainLayout";
@@ -40,40 +39,38 @@ function App() {
         {/* USER SUDAH LOGIN */}
         {/* ===================== */}
         <SignedIn>
-          <AnimatePresence mode="wait">
-            <Routes>
-              <Route element={<MainLayout />}>
-                <Route path="/" element={<Home />} />
-                <Route path="/create/assistant" element={<CreatePost />} />
-                <Route path="/create" element={<CreatePost />} />
-                <Route path="/chat" element={<ChatInbox />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route
-                  path="/profile/detail/:clerkId"
-                  element={<ProfileDetail />}
-                />
-                <Route path="/transaksi" element={<Transaksi />} />
-                <Route path="/market" element={<Market />} />
-                <Route path="/outlet" element={<Outlet />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Route>
-              <Route element={<ChatLayout />}>
-                <Route path="/post/:postId" element={<DetailPost />} />
-                <Route path="/post/:postId/edit" element={<EditPost />} />
-                <Route path="/chat/:conversationId" element={<ChatRoom />} />
-                <Route path="/deal" element={<DealPage />} />
-                <Route path="/outlet/:id" element={<DetailOutlet />} />
-                <Route path="/outlet/:id/edit" element={<EditOutlet />} />
-                <Route path="/product/:id" element={<DetailProduct />} />
-                <Route path="/product/:id/image" element={<DetailImage />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-              </Route>
-
-              {/* Redirect semua route tidak dikenal ke home */}
+          <Routes>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/create/assistant" element={<CreatePost />} />
+              <Route path="/create" element={<CreatePost />} />
+              <Route path="/chat" element={<ChatInbox />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route
+                path="/profile/detail/:clerkId"
+                element={<ProfileDetail />}
+              />
+              <Route path="/transaksi" element={<Transaksi />} />
+              <Route path="/market" element={<Market />} />
+              <Route path="/outlet" element={<Outlet />} />
               <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </AnimatePresence>
+            </Route>
+            <Route element={<ChatLayout />}>
+              <Route path="/post/:postId" element={<DetailPost />} />
+              <Route path="/post/:postId/edit" element={<EditPost />} />
+              <Route path="/chat/:conversationId" element={<ChatRoom />} />
+              <Route path="/deal" element={<DealPage />} />
+              <Route path="/outlet/:id" element={<DetailOutlet />} />
+              <Route path="/outlet/:id/edit" element={<EditOutlet />} />
+              <Route path="/product/:id" element={<DetailProduct />} />
+              <Route path="/product/:id/image" element={<DetailImage />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+            </Route>
+
+            {/* Redirect semua route tidak dikenal ke home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </SignedIn>
 
         {/* ===================== */}

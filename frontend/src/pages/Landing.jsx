@@ -266,22 +266,24 @@ export default function Landing() {
           </a>
 
           {/* CTA Buttons */}
-          <div className="relative z-10 mt-4 flex w-full max-w-md flex-row items-center justify-center gap-4">
-            <SignInButton mode="modal">
-              <button className="group flex-1 flex items-center justify-center h-14 rounded-2xl bg-[#4e73df] text-white text-lg font-bold shadow-[0_10px_25px_rgba(78,115,223,0.25)] hover:shadow-[0_15px_35px_rgba(78,115,223,0.35)] hover:-translate-y-0.5 active:scale-95 transition-all">
-                Masuk
-              </button>
-            </SignInButton>
+          <div className="relative z-10 flex w-full max-w-md flex-1 items-center justify-center">
+            <div className="flex w-full flex-row items-center justify-center gap-4">
+              <SignInButton mode="modal">
+                <button className="group flex h-14 flex-1 items-center justify-center rounded-2xl bg-[#4e73df] text-lg font-bold text-white shadow-[0_10px_25px_rgba(78,115,223,0.25)] transition-all hover:-translate-y-0.5 hover:shadow-[0_15px_35px_rgba(78,115,223,0.35)] active:scale-95">
+                  Masuk
+                </button>
+              </SignInButton>
 
-            <SignUpButton mode="modal">
-              <button className="group flex-1 flex items-center justify-center h-14 rounded-2xl border-2 border-slate-200 bg-white/70 backdrop-blur-md text-slate-700 text-lg font-bold shadow-sm hover:bg-white hover:border-slate-300 hover:-translate-y-0.5 active:scale-95 transition-all">
-                Daftar
-              </button>
-            </SignUpButton>
+              <SignUpButton mode="modal">
+                <button className="group flex h-14 flex-1 items-center justify-center rounded-2xl border-2 border-slate-200 bg-white/70 text-lg font-bold text-slate-700 shadow-sm backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white active:scale-95">
+                  Daftar
+                </button>
+              </SignUpButton>
+            </div>
           </div>
 
           {/* Footer with Version Combined */}
-          <div className="relative z-10 mt-auto flex items-center justify-center gap-2 pb-2 pt-8 text-xs text-slate-400 sm:text-sm">
+          <div className="relative z-10 flex items-center justify-center gap-2 pb-2 pt-4 text-xs text-slate-400 sm:text-sm">
             <button
               type="button"
               onClick={() => setShowVersionLog(true)}

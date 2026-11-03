@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { useEffect } from "react";
 import CreateActionPicker from "../components/create/CreateActionPicker";
@@ -10,8 +10,18 @@ import CreatePerjalanan from "../components/create/CreatePerjalanan";
 import CreateWarung from "../components/create/CreateWarung";
 import CreateContent from "../components/create/CreateContent";
 import CreateJualanKeliling from "../components/create/CreateJualanKeliling";
-import AiPostAssistant from "../components/create/AiPostAssistant";
 import { Sparkles } from "lucide-react";
+
+const AiPostAssistant = lazy(() => import("../components/create/AiPostAssistant"));
+
+function AssistantLoading() {
+  return (
+    <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-[#f0f7ff]">
+      <img src="/pwa-512x512.png" alt="" className="h-16 w-16 animate-pulse object-contain" />
+      <p className="mt-3 text-sm font-medium text-slate-500">Menyiapkan chat AI...</p>
+    </div>
+  );
+}
 
 export default function CreatePost() {
   const location = useLocation();
@@ -83,7 +93,9 @@ export default function CreatePost() {
 
           <div className="relative z-10 h-full">
             {action === "assistant" && (
-              <AiPostAssistant onBack={closeAssistant} />
+              <Suspense fallback={<AssistantLoading />}>
+                <AiPostAssistant onBack={closeAssistant} />
+              </Suspense>
             )}
             {action === "nitip_bawakan" && (
               <CreateNitipBawakan

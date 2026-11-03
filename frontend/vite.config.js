@@ -12,7 +12,7 @@ export default defineConfig({
       devOptions: {
         enabled: true, // Aktifin SW di mode dev untuk testing
       },
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "*.svg"], // Assets yang dicache
+      includeAssets: ["favicon.ico", "favicon.png", "apple-touch-icon.png", "*.svg"], // Assets yang dicache
       manifest: {
         name: "Numpak.id",
         short_name: "Numpak",

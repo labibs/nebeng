@@ -26,6 +26,32 @@ export default function CreatePost() {
     return () => setBottomNavHidden(false);
   }, [action, setBottomNavHidden]);
 
+  useEffect(() => {
+    if (action !== "assistant") return;
+
+    const previousState = window.history.state;
+    window.history.pushState(
+      {
+        ...(previousState && typeof previousState === "object" ? previousState : {}),
+        __numpakCreateAssistant: true,
+      },
+      "",
+      window.location.href,
+    );
+
+    const closeAssistantOnBack = () => setAction(null);
+    window.addEventListener("popstate", closeAssistantOnBack);
+    return () => window.removeEventListener("popstate", closeAssistantOnBack);
+  }, [action]);
+
+  const closeAssistant = () => {
+    if (window.history.state?.__numpakCreateAssistant) {
+      window.history.back();
+      return;
+    }
+    setAction(null);
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#f0f7ff] px-4 py-6">
       <div className="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-blue-200/45 blur-3xl" />
@@ -61,7 +87,7 @@ export default function CreatePost() {
 
           <div className="relative z-10 h-full">
             {action === "assistant" && (
-              <AiPostAssistant onBack={() => setAction(null)} />
+              <AiPostAssistant onBack={closeAssistant} />
             )}
             {action === "nitip_bawakan" && (
               <CreateNitipBawakan

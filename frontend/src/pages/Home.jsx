@@ -286,7 +286,7 @@ export default function Home() {
 
   return (
     <div
-      className="absolute inset-0 bg-black text-base-content flex flex-col items-center overflow-hidden"
+      className={`absolute inset-0 ${loading ? "bg-transparent" : "bg-black"} text-base-content flex flex-col items-center overflow-hidden`}
       onTouchStart={handlePullStart}
       onTouchMove={handlePullMove}
       onTouchEnd={handlePullEnd}
@@ -518,7 +518,7 @@ export default function Home() {
       </SearchModal>
 
       <main
-        className="absolute inset-0 w-full h-full overflow-hidden bg-black"
+        className={`absolute inset-0 w-full h-full overflow-hidden ${loading ? "bg-transparent" : "bg-black"}`}
         style={{
           transform:
             pullDistance > 0 ? `translateY(${pullDistance}px)` : undefined,

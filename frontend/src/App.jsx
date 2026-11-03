@@ -44,6 +44,7 @@ function App() {
             <Routes>
               <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
+                <Route path="/create/assistant" element={<CreatePost />} />
                 <Route path="/create" element={<CreatePost />} />
                 <Route path="/chat" element={<ChatInbox />} />
                 <Route path="/profile" element={<Profile />} />

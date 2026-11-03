@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation, useOutletContext } from "react-router-dom";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { useEffect } from "react";
 import CreateActionPicker from "../components/create/CreateActionPicker";
 import CreateNitipBawakan from "../components/create/CreateNitipBawakan";
@@ -15,9 +15,12 @@ import { Sparkles } from "lucide-react";
 
 export default function CreatePost() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { setBottomNavHidden } = useOutletContext();
   const [action, setAction] = useState(() =>
-    location.state?.actionType || null,
+    location.pathname === "/create/assistant"
+      ? "assistant"
+      : location.state?.actionType || null,
   );
 
   useEffect(() => {
@@ -27,26 +30,16 @@ export default function CreatePost() {
   }, [action, setBottomNavHidden]);
 
   useEffect(() => {
-    if (action !== "assistant") return;
-
-    const previousState = window.history.state;
-    window.history.pushState(
-      {
-        ...(previousState && typeof previousState === "object" ? previousState : {}),
-        __numpakCreateAssistant: true,
-      },
-      "",
-      window.location.href,
-    );
-
-    const closeAssistantOnBack = () => setAction(null);
-    window.addEventListener("popstate", closeAssistantOnBack);
-    return () => window.removeEventListener("popstate", closeAssistantOnBack);
-  }, [action]);
+    if (location.pathname === "/create/assistant") {
+      setAction("assistant");
+    } else if (action === "assistant") {
+      setAction(null);
+    }
+  }, [location.pathname, action]);
 
   const closeAssistant = () => {
-    if (window.history.state?.__numpakCreateAssistant) {
-      window.history.back();
+    if (location.pathname === "/create/assistant") {
+      navigate("/create", { replace: true });
       return;
     }
     setAction(null);
@@ -65,7 +58,10 @@ export default function CreatePost() {
               Mau ngapain hari ini?
             </h1>
             <button
-              onClick={() => setAction("assistant")}
+              onClick={() => {
+                setAction("assistant");
+                navigate("/create/assistant");
+              }}
               className="mb-4 flex w-full items-center gap-3 rounded-2xl bg-blue-600 p-4 text-left text-white shadow-lg transition hover:bg-blue-700"
             >
               <span className="rounded-full bg-white/15 p-3"><Sparkles size={22} /></span>

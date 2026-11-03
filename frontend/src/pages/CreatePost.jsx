@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useOutletContext } from "react-router-dom";
+import { useEffect } from "react";
 import CreateActionPicker from "../components/create/CreateActionPicker";
 import CreateNitipBawakan from "../components/create/CreateNitipBawakan";
 import CreateNitipBelikan from "../components/create/CreateNitipBelikan";
@@ -9,12 +10,21 @@ import CreatePerjalanan from "../components/create/CreatePerjalanan";
 import CreateWarung from "../components/create/CreateWarung";
 import CreateContent from "../components/create/CreateContent";
 import CreateJualanKeliling from "../components/create/CreateJualanKeliling";
+import AiPostAssistant from "../components/create/AiPostAssistant";
+import { Sparkles } from "lucide-react";
 
 export default function CreatePost() {
   const location = useLocation();
+  const { setBottomNavHidden } = useOutletContext();
   const [action, setAction] = useState(() =>
     location.state?.actionType || null,
   );
+
+  useEffect(() => {
+    const isAssistantOpen = action === "assistant";
+    setBottomNavHidden(isAssistantOpen);
+    return () => setBottomNavHidden(false);
+  }, [action, setBottomNavHidden]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#f0f7ff] px-4 py-6">
@@ -28,6 +38,16 @@ export default function CreatePost() {
             <h1 className="mb-4 text-center text-xl font-bold">
               Mau ngapain hari ini?
             </h1>
+            <button
+              onClick={() => setAction("assistant")}
+              className="mb-4 flex w-full items-center gap-3 rounded-2xl bg-blue-600 p-4 text-left text-white shadow-lg transition hover:bg-blue-700"
+            >
+              <span className="rounded-full bg-white/15 p-3"><Sparkles size={22} /></span>
+              <span>
+                <span className="block font-bold">Buat postingan dengan AI</span>
+                <span className="block text-xs text-white/80">Ceritakan saja, asisten bantu susun postingannya</span>
+              </span>
+            </button>
             <CreateActionPicker onSelect={setAction} />
           </>
         )}
@@ -40,6 +60,9 @@ export default function CreatePost() {
           <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white/20 to-transparent" />
 
           <div className="relative z-10 h-full">
+            {action === "assistant" && (
+              <AiPostAssistant onBack={() => setAction(null)} />
+            )}
             {action === "nitip_bawakan" && (
               <CreateNitipBawakan
                 onBack={() => setAction(null)}

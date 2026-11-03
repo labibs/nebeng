@@ -6,9 +6,69 @@ import {
 } from "@clerk/clerk-react";
 import { Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { ArrowUpRight, X } from "lucide-react";
+
+const versionHistory = [
+  {
+    version: "2.0.4",
+    period: "Pembaruan terbaru",
+    changes: [
+      "Hadir komentar pada postingan.",
+      "Panel admin, chat bantuan, dan notifikasi admin disempurnakan.",
+      "Integrasi aplikasi diperbarui agar menggunakan backend Laravel API.",
+      "Penyempurnaan landing page dan tampilan di perangkat mobile.",
+    ],
+  },
+  {
+    version: "2.0.3",
+    period: "April 2026",
+    changes: ["Penyegaran kartu postingan di halaman utama."],
+  },
+  {
+    version: "2.0.2",
+    period: "April 2026",
+    changes: ["Penyempurnaan pengalaman chat dan tampilan aplikasi."],
+  },
+  {
+    version: "2.0.1",
+    period: "April 2026",
+    changes: ["Pembaruan identitas visual dan penyempurnaan desain aplikasi."],
+  },
+  {
+    version: "2.0.0",
+    period: "April 2026",
+    changes: ["Penyegaran besar pada tampilan halaman utama, market, dan pengalaman aplikasi."],
+  },
+  {
+    version: "1.4.0",
+    period: "Februari–Maret 2026",
+    changes: ["Penyempurnaan alur pesanan, deal, transaksi, dan pengelompokan pesanan."],
+  },
+  {
+    version: "1.3.0",
+    period: "Januari 2026",
+    changes: ["Hadir fitur market, outlet dan produk, keranjang, filter, serta jualan keliling."],
+  },
+  {
+    version: "1.2.0",
+    period: "Januari 2026",
+    changes: ["Hadir alur deal, negosiasi ongkos, pembayaran, transaksi, dan pelacakan."],
+  },
+  {
+    version: "1.1.0",
+    period: "Desember 2025",
+    changes: ["Hadir chat real-time, tanda pesan dibaca, notifikasi, dan pencarian percakapan."],
+  },
+  {
+    version: "1.0.1",
+    period: "Desember 2025",
+    changes: ["Rilis awal: daftar dan masuk, profil, halaman utama, serta pembuatan postingan."],
+  },
+];
 
 export default function Landing() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showVersionLog, setShowVersionLog] = useState(false);
 
   const slides = [
     {
@@ -95,6 +155,13 @@ export default function Landing() {
       gradient: "from-red-900/80 via-red-900/40 to-transparent",
       img: "https://images.unsplash.com/photo-1492724441997-5dc865305da7?w=1600&q=80",
     },
+    {
+      title: "Buat Postingan Lebih Mudah dengan AI",
+      desc: "Ceritakan kebutuhanmu lewat chat.\nAI membantu menyusun detail postingan sebelum kamu membagikannya.",
+      emoji: "✨",
+      gradient: "from-blue-950/85 via-blue-800/45 to-transparent",
+      img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1600&q=80",
+    },
   ];
 
   // Auto slide setiap 6 detik
@@ -105,6 +172,15 @@ export default function Landing() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (!showVersionLog) return;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setShowVersionLog(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [showVersionLog]);
+
   const goToSlide = (index) => setCurrentSlide(index);
 
   return (
@@ -114,7 +190,7 @@ export default function Landing() {
       </SignedIn>
 
       <SignedOut>
-        <div className="relative min-h-screen bg-[#f0f7ff] flex flex-col items-center justify-center px-6 py-2 overflow-hidden text-slate-900">
+        <div className="relative min-h-screen bg-[#f0f7ff] flex flex-col items-center justify-start sm:justify-center px-6 py-2 overflow-hidden text-slate-900">
           {/* Animated Background blobs like in Market page */}
           <div className="absolute -left-20 -top-20 h-80 w-80 rounded-full bg-blue-200/50 blur-3xl opacity-60" />
           <div className="absolute -right-20 top-60 h-[400px] w-[400px] rounded-full bg-blue-100/50 blur-3xl opacity-60" />
@@ -179,9 +255,18 @@ export default function Landing() {
             <span className="text-[#4e73df]">💎</span> Uang ditahan aman hingga
             barang sampai
           </p>
+          <a
+            href="https://numpak-landing.sakte.id/"
+            target="_blank"
+            rel="noreferrer"
+            className="relative z-10 mt-1 mb-6 inline-flex items-center gap-1.5 rounded-full border border-[#4e73df]/15 bg-white/75 px-4 py-2 text-sm font-semibold text-[#4e73df] shadow-sm transition hover:-translate-y-0.5 hover:bg-white hover:shadow-md"
+          >
+            Yuk, kenalan lebih dekat
+            <ArrowUpRight size={16} aria-hidden="true" />
+          </a>
 
           {/* CTA Buttons */}
-          <div className="relative z-10 flex flex-row gap-4 justify-center items-center w-full max-w-md">
+          <div className="relative z-10 mt-4 flex w-full max-w-md flex-row items-center justify-center gap-4">
             <SignInButton mode="modal">
               <button className="group flex-1 flex items-center justify-center h-14 rounded-2xl bg-[#4e73df] text-white text-lg font-bold shadow-[0_10px_25px_rgba(78,115,223,0.25)] hover:shadow-[0_15px_35px_rgba(78,115,223,0.35)] hover:-translate-y-0.5 active:scale-95 transition-all">
                 Masuk
@@ -196,8 +281,15 @@ export default function Landing() {
           </div>
 
           {/* Footer with Version Combined */}
-          <div className="relative z-10 mt-8 flex items-center justify-center gap-2 text-xs sm:text-sm text-slate-400">
-            <span className="font-bold text-[#4e73df]/60">V 2.0.4</span>
+          <div className="relative z-10 mt-auto flex items-center justify-center gap-2 pb-2 pt-8 text-xs text-slate-400 sm:text-sm">
+            <button
+              type="button"
+              onClick={() => setShowVersionLog(true)}
+              aria-label="Lihat catatan versi 2.0.4"
+              className="font-bold text-[#4e73df]/70 transition hover:text-[#4e73df] hover:underline"
+            >
+              V 2.0.4
+            </button>
             <span className="h-1 w-1 rounded-full bg-slate-300" />
             <p>
               Powered by{" "}
@@ -209,6 +301,52 @@ export default function Landing() {
               </a>
             </p>
           </div>
+
+          {showVersionLog && (
+            <div
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget) setShowVersionLog(false);
+              }}
+            >
+              <section
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="version-log-title"
+                className="w-full max-w-md rounded-3xl bg-white p-6 text-slate-800 shadow-2xl"
+              >
+                <div className="mb-4 flex items-start justify-between gap-4">
+                  <div>
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-[#4e73df]">Catatan versi</p>
+                    <h2 id="version-log-title" className="text-xl font-bold">Riwayat Numpak</h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowVersionLog(false)}
+                    aria-label="Tutup catatan versi"
+                    className="rounded-full bg-slate-100 p-2 text-slate-600 transition hover:bg-slate-200"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1">
+                  {versionHistory.map((release) => (
+                    <article key={release.version} className="border-l-2 border-blue-100 pl-4">
+                      <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-3">
+                        <h3 className="font-bold text-slate-800">v{release.version}</h3>
+                        <span className="text-xs text-slate-400">{release.period}</span>
+                      </div>
+                      <ul className="space-y-1.5 text-sm text-slate-600">
+                        {release.changes.map((change) => (
+                          <li key={change} className="flex gap-2"><span className="text-[#4e73df]">•</span><span>{change}</span></li>
+                        ))}
+                      </ul>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            </div>
+          )}
         </div>
       </SignedOut>
     </>

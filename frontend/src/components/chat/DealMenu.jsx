@@ -5,6 +5,7 @@ import { apiFetch } from "../../lib/apiClient";
 import SlideToUnlock from "./SlideToUnlock";
 
 import { X } from "lucide-react";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function DealMenu({
   onClose,
@@ -24,6 +25,7 @@ export default function DealMenu({
   const [dealData, setDealData] = useState(null);
   const [allDone, setAllDone] = useState(false);
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
 
   const postTypeConfig = {
     nitip_bawakan: { label: "nitip bawain", icon: "🧳" },
@@ -93,64 +95,64 @@ export default function DealMenu({
   const deals = [
     {
       tag: "ongkos",
-      title: "Ongkos Jastip",
+      title: t("Ongkos Jastip"),
       icon: "💰",
-      ket: "Sepakati biaya jasa titip / belanja",
+      ket: t("Sepakati biaya jasa titip / belanja"),
       desc:
         dealData?.agreed_fee && dealData.agreed_fee > 0
-          ? `Rp${Number(dealData.agreed_fee).toLocaleString("id-ID")}`
-          : "Belum disepakati",
+          ? `Rp${Number(dealData.agreed_fee).toLocaleString(language === "en" ? "en-US" : "id-ID")}`
+          : t("Belum disepakati"),
       isCompleted: dealData?.agreed_fee != null && dealData.agreed_fee > 0,
       onOpen: onOpenNego,
     },
     {
       tag: "lokasi",
-      title: "Lokasi Ketemuan",
+      title: t("Lokasi Ketemuan"),
       icon: "📍",
-      ket: "Tentukan tempat serah terima",
+      ket: t("Tentukan tempat serah terima"),
       desc:
         dealData?.pickup_location && dealData.pickup_location !== "TBD"
           ? dealData.pickup_location
-          : "Belum ditentukan",
+          : t("Belum ditentukan"),
       isCompleted:
         dealData?.pickup_location && dealData.pickup_location !== "TBD",
       onOpen: onOpenLocation,
     },
     {
       tag: "waktu",
-      title: "Waktu Ketemuan",
+      title: t("Waktu Ketemuan"),
       icon: "🕐",
-      ket: "Sepakati jam & hari bertemu",
+      ket: t("Sepakati jam & hari bertemu"),
       desc:
         dealData?.pickup_datetime && !dealData.pickup_datetime.includes("TBD")
-          ? new Date(dealData.pickup_datetime).toLocaleString("id-ID")
-          : "Belum ditentukan",
+          ? new Date(dealData.pickup_datetime).toLocaleString(language === "en" ? "en-US" : "id-ID")
+          : t("Belum ditentukan"),
       isCompleted:
         dealData?.pickup_datetime && !dealData.pickup_datetime.includes("TBD"),
       onOpen: onOpenTime,
     },
     {
       tag: "barang",
-      title: "Barang Titipan",
+      title: t("Barang Titipan"),
       icon: "📦",
-      ket: "Konfirmasi detail barang yang dititipkan",
+      ket: t("Konfirmasi detail barang yang dititipkan"),
       desc:
         dealData?.item_description && dealData.item_description !== "TBD"
           ? dealData.item_description
-          : "Belum dikonfirmasi",
+          : t("Belum dikonfirmasi"),
       isCompleted:
         dealData?.item_description && dealData.item_description !== "TBD",
       onOpen: onOpenItem,
     },
     {
       tag: "pengantaran",
-      title: "Lokasi Pengantaran",
+      title: t("Lokasi Pengantaran"),
       icon: "🚚",
-      ket: "Tentukan lokasi tujuan pengantaran",
+      ket: t("Tentukan lokasi tujuan pengantaran"),
       desc:
         dealData?.delivery_location && dealData.delivery_location !== "TBD"
           ? dealData.delivery_location
-          : "Belum ditentukan",
+          : t("Belum ditentukan"),
       isCompleted:
         dealData?.delivery_location && dealData.delivery_location !== "TBD",
       onOpen: onOpenDelivery,
@@ -200,11 +202,11 @@ export default function DealMenu({
               <div className="flex items-center gap-1 mb-0.5">
                 <span className="text-xs">{config.icon}</span>
                 <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight truncate">
-                  {config.label}
+                  {t(config.label)}
                 </h3>
               </div>
               <p className="text-[10px] font-medium text-slate-400">
-                Sepakati detail transaksi
+                {t("Sepakati detail transaksi")}
               </p>
             </div>
           </div>
@@ -287,7 +289,7 @@ export default function DealMenu({
                   navigate(`/deal?deal=${dealData?.id}&trx=${trx.id}`);
                 } catch (err) {
                   console.error(
-                    "Gagal membuat / update transaksi:",
+                    t("Gagal membuat / update transaksi:"),
                     err.message,
                   );
                 }
@@ -298,7 +300,7 @@ export default function DealMenu({
               onClick={onClose}
               className="w-full rounded-2xl bg-slate-100 text-slate-600 py-3 text-[13px] font-semibold hover:bg-slate-200 transition-colors"
             >
-              Tutup
+                {t("Tutup")}
             </button>
           )}
         </div>

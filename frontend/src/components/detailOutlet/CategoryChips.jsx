@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, Settings } from "lucide-react";
 import AddCategoryBottomSheet from "./AddCategorryBottomSheet";
 import ManageCategoriesBottomSheet from "./ManageCategoriesBottomSheet";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function CategoryChips({
   isOwner,
@@ -13,6 +14,7 @@ export default function CategoryChips({
   onUpdated,
   onDeleted,
 }) {
+  const { t } = useLanguage();
   const [activeId, setActiveId] = useState(null);
   const [openAdd, setOpenAdd] = useState(false);
   const [openManage, setOpenManage] = useState(false);
@@ -38,7 +40,7 @@ export default function CategoryChips({
                          bg-base-100 hover:bg-base-200"
             >
               <Plus size={14} />
-              Etalase
+              {t("Etalase")}
             </button>
           )}
 
@@ -70,7 +72,7 @@ export default function CategoryChips({
                          bg-base-100 hover:bg-base-200"
             >
               <Plus size={14} />
-              Tambah
+              {t("Tambah")}
             </button>
           )}
         </div>

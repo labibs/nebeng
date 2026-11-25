@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { ArrowRight, BaggageClaim , Check, ClipboardCheck, Truck, MapPin, MapPinHouse, PackageCheck } from "lucide-react";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function SlideToDelivered({ onComplete, status }) {
+  const { t } = useLanguage();
   const [percent, setPercent] = useState(0);
   const [done, setDone] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -101,7 +103,7 @@ export default function SlideToDelivered({ onComplete, status }) {
               ${done ? "opacity-0" : "opacity-80"}
             `}
             >
-              Titipan Sudah Sampai
+              {t("Titipan Sudah Sampai")}
               <MapPinHouse className="w-4 h-4 ml-2 opacity-70" />
             </div>
 
@@ -109,7 +111,7 @@ export default function SlideToDelivered({ onComplete, status }) {
             {done && (
               <div className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-white">
                 <PackageCheck className="w-4 h-4 mr-1" />
-                Barang Diterima
+                {t("Barang Diterima")}
               </div>
             )}
           </div>

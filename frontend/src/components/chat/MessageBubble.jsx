@@ -4,6 +4,7 @@ import CartNegoModal from "./CartNegoModal";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../../lib/apiClient";
 import { useEffect, useState } from "react";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function MessageBubble({
   msg,
@@ -19,6 +20,7 @@ export default function MessageBubble({
   onUpdateDealItem,
   onUpdateDealDelivery,
 }) {
+  const { t, language } = useLanguage();
   const isMine = msg.sender_id === currentUserId;
   const avatar = isMine ? currentUserAvatar : recipientImageUrl;
   const navigate = useNavigate();
@@ -84,7 +86,7 @@ export default function MessageBubble({
 
         <div className="chat-header">
           <time className="text-xs opacity-70">
-            {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+            {new Date(msg.created_at).toLocaleTimeString(language === "en" ? "en-US" : "id-ID", {
               hour: "2-digit",
               minute: "2-digit",
             })}
@@ -120,14 +122,14 @@ export default function MessageBubble({
             </div>
             <div>
               <div className="font-bold text-blue-700 dark:text-blue-300">
-                Ajukan Deal
+                {t("Ajukan Deal")}
               </div>
               <div className="text-xs opacity-70">
                 {hasTransaction || msg.deal_id
-                  ? "Sudah deal"
+                  ? t("Sudah deal")
                   : msg.sender_id === currentUserId
-                    ? "Menunggu konfirmasi dari lawan..."
-                    : "Pilih aksi"}
+                    ? t("Menunggu konfirmasi dari lawan...")
+                    : t("Pilih aksi")}
               </div>
             </div>
           </div>
@@ -155,7 +157,7 @@ export default function MessageBubble({
                     onClick={async (e) => {
                       const button = e.currentTarget;
                       button.disabled = true;
-                      button.innerText = "Memproses...";
+                      button.innerText = t("Memproses...");
                       try {
                         const result = onInsertDeal
                           ? await onInsertDeal(payload, payload.agreed_fee, msg?.id)
@@ -177,9 +179,9 @@ export default function MessageBubble({
                         }
                       } catch (err) {
                         console.error("Deal confirm error:", err);
-                        alert("Gagal mengonfirmasi deal: " + err.message);
+                        alert(`${t("Gagal mengonfirmasi deal:")} ${err.message}`);
                         button.disabled = false;
-                        button.innerText = "Terima";
+                        button.innerText = t("Terima");
                       }
                     }}
                     className="flex-1 btn btn-info btn-sm rounded-xl text-white font-medium shadow-md hover:shadow-lg transition-all"
@@ -197,7 +199,7 @@ export default function MessageBubble({
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    Terima
+                    {t("Terima")}
                   </button>
                   <button
                     onClick={() => {
@@ -241,7 +243,7 @@ export default function MessageBubble({
                         d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    Nego
+                    {t("Nego")}
                   </button>
                 </div>
               );
@@ -271,7 +273,7 @@ export default function MessageBubble({
           <div
             className={`chat-footer text-xs mt-1 ${msg.is_read ? "text-blue-500" : "opacity-70"}`}
           >
-            {msg.is_read ? "Terbaca ✓✓" : "Terkirim ✓"}
+            {msg.is_read ? t("Terbaca ✓✓") : t("Terkirim ✓")}
           </div>
         )}
 
@@ -399,7 +401,7 @@ export default function MessageBubble({
 
         <div className="chat-header">
           <time className="text-xs opacity-70">
-            {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+            {new Date(msg.created_at).toLocaleTimeString(language === "en" ? "en-US" : "id-ID", {
               hour: "2-digit",
               minute: "2-digit",
             })}
@@ -424,7 +426,7 @@ export default function MessageBubble({
           <div
             className={`chat-footer text-xs mt-1 ${msg.is_read ? "text-blue-500" : "opacity-70"}`}
           >
-            {msg.is_read ? "Terbaca ✓✓" : "Terkirim ✓"}
+            {msg.is_read ? t("Terbaca ✓✓") : t("Terkirim ✓")}
           </div>
         )}
       </div>
@@ -442,7 +444,7 @@ export default function MessageBubble({
 
       <div className="chat-header">
         <time className="text-xs opacity-70">
-          {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+          {new Date(msg.created_at).toLocaleTimeString(language === "en" ? "en-US" : "id-ID", {
             hour: "2-digit",
             minute: "2-digit",
           })}
@@ -467,7 +469,7 @@ export default function MessageBubble({
         <div
           className={`chat-footer text-xs mt-1 ${msg.is_read ? "text-blue-500" : "opacity-70"}`}
         >
-          {msg.is_read ? "Terbaca ✓✓" : "Terkirim ✓"}
+          {msg.is_read ? t("Terbaca ✓✓") : t("Terkirim ✓")}
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 import { Search, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function SearchModal({
   isOpen,
@@ -10,6 +11,7 @@ export default function SearchModal({
   placeholder = "Cari...",
   children,
 }) {
+  const { t } = useLanguage();
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -52,6 +54,7 @@ export default function SearchModal({
                 <button
                   type="button"
                   onClick={() => onChange("")}
+                  aria-label={t("Hapus pencarian")}
                   className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 transition hover:bg-slate-300"
                 >
                   <X size={14} />
@@ -60,6 +63,7 @@ export default function SearchModal({
                 <button
                   type="button"
                   onClick={onClose}
+                  aria-label={t("Tutup pencarian")}
                   className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400 transition hover:bg-slate-200"
                 >
                   <X size={14} />
@@ -73,7 +77,7 @@ export default function SearchModal({
             {value === "" && !children && (
               <div className="px-4 py-3 text-center">
                 <p className="text-[12px] font-medium text-slate-400">
-                  Ketik sesuatu untuk mulai mencari...
+                  {t("Ketik sesuatu untuk mulai mencari...")}
                 </p>
               </div>
             )}

@@ -7,6 +7,7 @@ import ItemModal from "./ItemModal";
 import { apiFetch } from "../../lib/apiClient";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { useLanguage } from "../../lib/LanguageContext";
 
 // Fix icon marker biar muncul (penting!)
 import L from "leaflet";
@@ -73,6 +74,7 @@ export default function DealCard({
   onUpdateDealDelivery,
   onUpdateDealItem,
 }) {
+  const { t, language } = useLanguage();
   const [negoPrice, setNegoPrice] = useState("");
   const [showNegoModal, setShowNegoModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -163,10 +165,10 @@ export default function DealCard({
 
     extractedData.locationName = locationMatch
       ? locationMatch[1].trim()
-      : "Lokasi Terpilih";
+      : t("Lokasi Terpilih");
     extractedData.address = addressMatch
       ? addressMatch[1].trim()
-      : "Alamat tidak tersedia";
+      : t("Alamat tidak tersedia");
 
     extractedData.lat = coordMatch ? parseFloat(coordMatch[1]) : null;
     extractedData.lng = coordMatch ? parseFloat(coordMatch[2]) : null;
@@ -180,15 +182,15 @@ export default function DealCard({
     const notesMatch = msg.content.match(/📝 Catatan: ([^\n]+)/);
     extractedData.meetingTime = timeMatch
       ? timeMatch[1].trim()
-      : "Waktu tidak tersedia";
+      : t("Waktu tidak tersedia");
     extractedData.notes = notesMatch
       ? notesMatch[1].trim()
-      : "Tidak ada catatan";
+      : t("Tidak ada catatan");
   } else if (dealType === "deal_barang_titipan") {
     // More robust parsing
     const lines = msg.content.split("\n");
-    let itemDetail = "Detail tidak tersedia";
-    let weight = "Ukuran & berat tidak tersedia";
+    let itemDetail = t("Detail tidak tersedia");
+    let weight = t("Ukuran & berat tidak tersedia");
     let photos = [];
     let ongkos = null;
 
@@ -225,7 +227,7 @@ export default function DealCard({
     } else {
       // Fallback sementara
       navigator.clipboard.writeText(text);
-      alert("Teks deal disalin ke clipboard!\n\n" + text);
+      alert(t("Teks deal disalin ke clipboard!\n\n") + text);
     }
   };
 
@@ -249,7 +251,7 @@ export default function DealCard({
 
         <div className="chat-header">
           <time className="text-xs opacity-70">
-            {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+            {new Date(msg.created_at).toLocaleTimeString(language === "en" ? "en-US" : "id-ID", {
               hour: "2-digit",
               minute: "2-digit",
             })}
@@ -396,21 +398,21 @@ export default function DealCard({
                 }`}
               >
                 {dealType === "deal_ongkos_jastip"
-                  ? "Deal Ongkos Jastip"
+                  ? t("Deal Ongkos Jastip")
                   : dealType === "deal_lokasi_ketemuan"
-                    ? "Deal Lokasi Ketemuan"
+                    ? t("Deal Lokasi Ketemuan")
                     : dealType === "deal_waktu_ketemuan"
-                      ? "Deal Waktu Ketemuan"
+                      ? t("Deal Waktu Ketemuan")
                       : dealType === "deal_lokasi_pengantaran"
-                        ? "Deal Lokasi Pengantaran"
-                        : "Deal Barang Titipan"}
+                        ? t("Deal Lokasi Pengantaran")
+                        : t("Deal Barang Titipan")}
               </div>
               <div className="text-xs opacity-70">
                 {msg.deal_id !== null || hasTransaction
-                  ? "Sudah deal"
+                  ? t("Sudah deal")
                   : isMine
-                    ? "Menunggu konfirmasi dari lawan..."
-                    : "Pilih aksi"}
+                    ? t("Menunggu konfirmasi dari lawan...")
+                    : t("Pilih aksi")}
               </div>
             </div>
           </div>
@@ -420,7 +422,7 @@ export default function DealCard({
             <div className="mb-5 whitespace-pre-wrap text-base-content/90 text-sm leading-relaxed">
               💰 Ongkos awal jastip : Rp{" "}
               {postInfo?.fee
-                ? parseInt(postInfo.fee).toLocaleString("id-ID")
+                ? parseInt(postInfo.fee).toLocaleString(language === "en" ? "en-US" : "id-ID")
                 : "-"}{" "}
               <br />
               {stripCoordinates(
@@ -442,7 +444,7 @@ export default function DealCard({
                     rel="noopener noreferrer"
                     className="text-[#81c784] underline font-medium mt-1 inline-block"
                   >
-                    Lihat di Google Maps
+                    {t("Lihat di Google Maps")}
                   </a>
                 )}
               </div>
@@ -474,7 +476,7 @@ export default function DealCard({
                               bg-base-100/10 backdrop-blur-[1px] cursor-zoom-in"
                   >
                     <span className="px-3 py-1 text-xs rounded-lg bg-base-200/80">
-                      Klik untuk zoom & geser
+                      {t("Klik untuk zoom & geser")}
                     </span>
                   </button>
                 )}
@@ -486,7 +488,7 @@ export default function DealCard({
                     className="absolute top-2 right-2 z-0 px-2 py-1 text-xs rounded-lg
                               bg-base-200/90 border border-base-300"
                   >
-                    Kunci Map
+                    {t("Kunci Map")}
                   </button>
                 )}
               </div>
@@ -505,7 +507,7 @@ export default function DealCard({
                     rel="noopener noreferrer"
                     className="text-[#81c784] underline font-medium mt-1 inline-block"
                   >
-                    Lihat di Google Maps
+                    {t("Lihat di Google Maps")}
                   </a>
                 )}
               </div>
@@ -536,7 +538,7 @@ export default function DealCard({
                               bg-base-100/10 backdrop-blur-[1px] cursor-zoom-in"
                   >
                     <span className="px-3 py-1 text-xs rounded-lg bg-base-200/80">
-                      Klik untuk zoom & geser
+                      {t("Klik untuk zoom & geser")}
                     </span>
                   </button>
                 )}
@@ -548,7 +550,7 @@ export default function DealCard({
                     className="absolute top-2 right-2 z-0 px-2 py-1 text-xs rounded-lg
                               bg-base-200/90 border border-base-300"
                   >
-                    Kunci Map
+                    {t("Kunci Map")}
                   </button>
                 )}
               </div>
@@ -578,7 +580,7 @@ export default function DealCard({
               {extractedData.ongkos !== null && (
                 <div className="mb-3 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
                   💰 Penawaran Ongkos: Rp{" "}
-                  {extractedData.ongkos.toLocaleString("id-ID")}
+                  {extractedData.ongkos.toLocaleString(language === "en" ? "en-US" : "id-ID")}
                 </div>
               )}
               {/* Photo Gallery */}
@@ -617,8 +619,8 @@ export default function DealCard({
                   <button
                     onClick={() => {
                       const replyText = extractedData.ongkos
-                        ? `Deal! Ongkos jastip Rp${extractedData.ongkos.toLocaleString("id-ID")} ✅`
-                        : `Deal! Ongkos jastip sesuai kesepakatan ✅`;
+                        ? `${t("Deal! Ongkos jastip Rp")}${extractedData.ongkos.toLocaleString(language === "en" ? "en-US" : "id-ID")} ✅`
+                        : t("Deal! Ongkos jastip sesuai kesepakatan ✅");
                       handleQuickReply(replyText);
                       if (onInsertDeal && extractedData.ongkos) {
                         onInsertDeal(msg.post.id, extractedData.ongkos, msg.id);
@@ -639,7 +641,7 @@ export default function DealCard({
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    Deal
+                    {t("Deal")}
                   </button>
 
                   <button
@@ -665,7 +667,7 @@ export default function DealCard({
                         d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    Nego
+                    {t("Nego")}
                   </button>
                 </>
               ) : dealType === "deal_lokasi_ketemuan" &&
@@ -708,7 +710,7 @@ export default function DealCard({
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    Deal
+                    {t("Deal")}
                   </button>
 
                   <button
@@ -728,7 +730,7 @@ export default function DealCard({
                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                       />
                     </svg>
-                    Revisi
+                    {t("Revisi")}
                   </button>
                 </>
               ) : dealType === "deal_lokasi_pengantaran" &&
@@ -771,7 +773,7 @@ export default function DealCard({
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    Deal
+                    {t("Deal")}
                   </button>
 
                   <button
@@ -791,7 +793,7 @@ export default function DealCard({
                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                       />
                     </svg>
-                    Revisi
+                    {t("Revisi")}
                   </button>
                 </>
               ) : dealType === "deal_waktu_ketemuan" &&
@@ -842,7 +844,7 @@ export default function DealCard({
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    Deal
+                    {t("Deal")}
                   </button>
 
                   <button
@@ -862,7 +864,7 @@ export default function DealCard({
                         d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                       />
                     </svg>
-                    Ubah
+                    {t("Ubah")}
                   </button>
                 </>
               ) : dealType === "deal_barang_titipan" &&
@@ -899,7 +901,7 @@ export default function DealCard({
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    Deal
+                    {t("Deal")}
                   </button>
 
                   <button
@@ -926,7 +928,7 @@ export default function DealCard({
                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                       />
                     </svg>
-                    Revisi
+                    {t("Revisi")}
                   </button>
                 </>
               ) : null}
@@ -980,7 +982,7 @@ export default function DealCard({
           <div
             className={`chat-footer text-xs mt-0 ${msg.is_read ? "text-blue-500" : "opacity-70"}`}
           >
-            {msg.is_read ? "Terbaca ✓✓" : "Terkirim ✓"}
+            {msg.is_read ? t("Terbaca ✓✓") : t("Terkirim ✓")}
           </div>
         )}
       </div>

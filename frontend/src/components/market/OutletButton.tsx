@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Store } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../lib/LanguageContext";
 
 interface OutletButtonProps {
   owner_avatar?: string | null;
@@ -12,6 +13,7 @@ export default function OutletButton({
   owner_avatar,
   owner_name,
 }: OutletButtonProps) {
+  const { t } = useLanguage();
   const [showAvatar, setShowAvatar] = useState(false);
   const navigate = useNavigate();
 
@@ -63,9 +65,9 @@ export default function OutletButton({
           </AnimatePresence>
         </div>
         <div>
-          <p className="text-[10px] text-slate-400">Outlet saya</p>
+          <p className="text-[10px] text-slate-400">{t("Outlet Saya")}</p>
           <p className="text-[13px] font-semibold text-[#20336b]">
-            {owner_name || "Kelola outlet"}
+            {owner_name || t("Kelola outlet")}
           </p>
         </div>
       </button>

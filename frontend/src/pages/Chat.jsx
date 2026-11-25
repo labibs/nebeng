@@ -6,12 +6,16 @@ import { apiFetch } from "../lib/apiClient";
 import { useCachedFetch } from "../lib/useCachedFetch";
 import { formatDistanceToNow } from "date-fns";
 import { id as localeId } from "date-fns/locale/id";
+import { enUS as localeEn } from "date-fns/locale/en-US";
 import { openChat } from "../lib/chatHelper";
 import { Search, X } from "lucide-react";
+import { useLanguage } from "../lib/LanguageContext";
 
 export default function ChatInbox() {
   const navigate = useNavigate();
   const { user, isLoaded } = useUser();
+  const { t, language } = useLanguage();
+  const dateLocale = language === "en" ? localeEn : localeId;
   const currentUserId = user?.id;
 
   const [showUserPicker, setShowUserPicker] = useState(false);
@@ -129,7 +133,7 @@ export default function ChatInbox() {
             <button
               onClick={() => setIsSearchVisible(!isSearchVisible)}
               className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-50 bg-white shadow-[0_12px_28px_rgba(82,109,181,0.15)] transition-transform active:scale-95 relative"
-              aria-label="Search"
+              aria-label={t("Search")}
             >
               <Search
                 size={20}
@@ -160,7 +164,7 @@ export default function ChatInbox() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari chat, nama, atau isi pesan..."
+              placeholder={t("Cari chat, nama, atau isi pesan...")}
                 className="w-full min-w-0 bg-transparent text-[14px] font-medium text-slate-700 outline-none placeholder:text-slate-400"
               />
               {searchQuery && (
@@ -183,10 +187,11 @@ export default function ChatInbox() {
             <div className="p-6 pb-2">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-xl text-slate-900">
-                  Pilih Kontak
+                  {t("Pilih Kontak")}
                 </h3>
                 <button
                   onClick={() => setShowUserPicker(false)}
+                  aria-label={t("Tutup")}
                   className="h-8 w-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500"
                 >
                   <X size={16} />
@@ -198,7 +203,7 @@ export default function ChatInbox() {
                 <Search size={18} className="shrink-0 text-[#4e73df]" />
                 <input
                   type="text"
-                  placeholder="Cari nama kontak..."
+                  placeholder={t("Cari nama kontak...")}
                   value={contactSearchQuery}
                   className="w-full min-w-0 bg-transparent text-[14px] font-medium text-slate-700 outline-none placeholder:text-slate-400"
                   onChange={(e) => setContactSearchQuery(e.target.value)}
@@ -278,7 +283,7 @@ export default function ChatInbox() {
             className="modal-backdrop bg-slate-900/40 backdrop-blur-sm"
             onClick={() => setShowUserPicker(false)}
           >
-            <button>close</button>
+                  <button>{t("Tutup")}</button>
           </form>
         </dialog>
       )}
@@ -303,10 +308,10 @@ export default function ChatInbox() {
         ) : conversations.length === 0 ? (
           <div className="p-12 text-center">
             <p className="text-xl font-medium text-base-content/60">
-              Belum ada obrolan
+              {t("Belum ada obrolan")}
             </p>
             <p className="mt-4 text-base text-base-content/50">
-              Mulai chat dari post yang kamu minati!
+              {t("Mulai chat dari post yang kamu minati!")}
             </p>
           </div>
         ) : (
@@ -337,13 +342,13 @@ export default function ChatInbox() {
                         {conv.lastTime
                           ? formatDistanceToNow(new Date(conv.lastTime), {
                               addSuffix: true,
-                              locale: localeId,
+                              locale: dateLocale,
                             })
                           : ""}
                       </time>
                     </div>
                     <p className="text-sm text-base-content/60 truncate">
-                      {conv.lastMessage || "Mulai obrolan..."}
+                      {conv.lastMessage || t("Mulai obrolan...")}
                     </p>
                   </div>
 

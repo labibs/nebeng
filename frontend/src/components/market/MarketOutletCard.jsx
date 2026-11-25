@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import GoogleMapsPointViewer from "../GoogleMapsViewer";
 import AddressText from "./AddressText";
 import OutletRouteViewer from "./OutletRouteViewer";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function MarketOutletCard({ outlet, clickable = true }) {
+  const { t } = useLanguage();
   const [openRoute, setOpenRoute] = useState(false);
   const [openMaps, setOpenMaps] = useState(false);
   const navigate = useNavigate();
@@ -17,18 +19,18 @@ export default function MarketOutletCard({ outlet, clickable = true }) {
   };
 
   const keteranganByStatus = () => {
-    if (status === "kurir") return "Bisa nitip";
-    if (status === "pembeli" && category === "Jasa") return "Butuh Jasa";
-    if (status === "pembeli" && category !== "Jasa") return "Nitip beliin";
-    return "Outlet resmi";
+    if (status === "kurir") return t("Bisa nitip");
+    if (status === "pembeli" && category === "Jasa") return t("Butuh Jasa");
+    if (status === "pembeli" && category !== "Jasa") return t("Nitip beliin");
+    return t("Outlet resmi");
   };
 
   const promoLabel =
     category === "Makanan"
-      ? "Promo ongkir"
+      ? t("Promo ongkir")
       : category === "Jasa"
-        ? "Diskon jasa"
-        : "Promo hari ini";
+        ? t("Diskon jasa")
+        : t("Promo hari ini");
 
   return (
     <div
@@ -44,7 +46,7 @@ export default function MarketOutletCard({ outlet, clickable = true }) {
           />
 
           <div className="absolute left-2.5 top-2.5 rounded-full bg-slate-900/60 px-2.5 py-1 text-[9px] font-medium text-white backdrop-blur-md">
-            {category || "Outlet"}
+            {t(category || "Outlet")}
           </div>
 
           <button
@@ -62,7 +64,7 @@ export default function MarketOutletCard({ outlet, clickable = true }) {
       <div className="p-4 pt-3.5">
         <div className="mb-1.5">
           <h3 className="line-clamp-1 text-[16px] font-semibold tracking-tight text-slate-900">
-            {name || "Tanpa Nama Toko"}
+            {name || t("Tanpa Nama Toko")}
           </h3>
         </div>
 
@@ -87,7 +89,7 @@ export default function MarketOutletCard({ outlet, clickable = true }) {
           </div>
           <div className="flex h-6 items-center rounded-full border border-slate-100 bg-slate-50 px-2">
             <span className="truncate text-[8px] font-medium leading-none text-slate-500">
-              Hemat 10%
+              {t("Hemat 10%")}
             </span>
           </div>
           <div className="ml-auto flex h-6 items-center gap-1 rounded-full border border-slate-100 bg-white px-2 text-[8px] font-semibold text-slate-700 shadow-sm">
@@ -112,7 +114,7 @@ export default function MarketOutletCard({ outlet, clickable = true }) {
                 )}
               </div>
               <span className="max-w-[56px] truncate text-[9px] font-medium text-slate-700">
-                {owner?.name?.split(" ")[0] || "Owner"}
+                {owner?.name?.split(" ")[0] || t("Owner")}
               </span>
             </div>
             <div className="flex h-7 items-center rounded-full border border-blue-100/50 bg-blue-50 px-2">

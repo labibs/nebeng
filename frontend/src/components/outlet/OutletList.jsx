@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { apiFetch } from "../../lib/apiClient";
 import MarketOutletCard from "../market/MarketOutletCard";
+import { useLanguage } from "../../lib/LanguageContext";
 
 const LIMIT = 10;
 
@@ -9,6 +10,7 @@ export default function OutletList({
   onSelectOutlet,
   selectedOutletId,
 }) {
+  const { t } = useLanguage();
   const [outlets, setOutlets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -63,13 +65,13 @@ export default function OutletList({
   };
 
   if (loading && outlets.length === 0) {
-    return <p className="text-sm opacity-60">Memuat outlet...</p>;
+    return <p className="text-sm opacity-60">{t("Memuat outlet...")}</p>;
   }
 
   if (!loading && outlets.length === 0) {
     return (
       <div className="p-4 border rounded-xl text-center opacity-60">
-        Kamu belum punya outlet, klik tombol + dan pilih Tambah Outlet
+        {t("Kamu belum punya outlet, klik tombol + dan pilih Tambah Outlet")}
       </div>
     );
   }

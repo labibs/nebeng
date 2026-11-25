@@ -25,6 +25,7 @@ import SlideToDelivered from "../components/transaksi/SlideToDelivered";
 import ReviewBottomSheet from "../components/transaksi/ReviewBottomSheet";
 import DealStatusBadge from "../components/common/DealStatusBadge";
 import SlideToUnlock from "../components/chat/SlideToUnlock";
+import { useLanguage } from "../lib/LanguageContext";
 
 function InfoRowCollapse({ icon: Icon, title, value, type, extraData }) {
   const [open, setOpen] = useState(false);
@@ -279,6 +280,7 @@ function PaymentOption({
 }
 
 export default function DealPage() {
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const dealId = searchParams.get("deal");
@@ -329,7 +331,7 @@ export default function DealPage() {
         }
       } catch (error) {
         console.error("Error fetching deal:", error);
-        alert("Gagal memuat detail deal");
+        alert(t("Gagal memuat detail deal"));
       }
       setLoading(false);
     }
@@ -571,7 +573,7 @@ export default function DealPage() {
   const handleCancelDeal = async () => {
     if (
       !window.confirm(
-        "Apakah Anda yakin ingin membatalkan deal ini? Item akan dikembalikan ke keranjang.",
+        t("Apakah Anda yakin ingin membatalkan deal ini? Item akan dikembalikan ke keranjang."),
       )
     )
       return;
@@ -594,12 +596,12 @@ export default function DealPage() {
         });
       }
 
-      alert("Deal dibatalkan. Barang telah dikembalikan ke Keranjang.");
+      alert(t("Deal dibatalkan. Barang telah dikembalikan ke Keranjang."));
       sendSystemMessage("Deal telah dibatalkan oleh pengguna. ❌");
       navigate("/transaksi");
     } catch (err) {
       console.error("Gagal membatalkan deal:", err);
-      alert("Gagal membatalkan deal. Silakan coba lagi.");
+      alert(t("Gagal membatalkan deal. Silakan coba lagi."));
     }
   };
 
@@ -636,7 +638,7 @@ export default function DealPage() {
       return data;
     } catch (error) {
       console.error("Gagal membuat transaksi:", error);
-      alert("Gagal melanjutkan ke transaksi. Coba lagi.");
+      alert(t("Gagal melanjutkan ke transaksi. Coba lagi."));
       return null;
     } finally {
       setPaying(false);
@@ -654,8 +656,8 @@ export default function DealPage() {
     });
   };
 
-  if (loading) return <p className="p-8 text-center">Memuat...</p>;
-  if (!deal) return <p className="p-8 text-center">Deal tidak ditemukan</p>;
+  if (loading) return <p className="p-8 text-center">{t("Memuat...")}</p>;
+  if (!deal) return <p className="p-8 text-center">{t("Deal tidak ditemukan")}</p>;
 
   const statusColor =
     deal.status === "completed"
@@ -676,8 +678,8 @@ export default function DealPage() {
 
   const isCarrierLogin = deal?.carrier_id === clerkId;
   const opponent = isCarrierLogin ? deal?.depositor : deal?.carrier;
-  const opponentRole = isCarrierLogin ? "Customer" : "Kurir";
-  const opponentType = isCarrierLogin ? "Bawa" : "Nitip";
+  const opponentRole = isCarrierLogin ? t("Customer") : t("Kurir");
+  const opponentType = isCarrierLogin ? t("Bawa") : t("Nitip");
   const needsTransaction = !transaction;
   const pickupLocationData = parseLocation(deal?.pickup_location);
   const deliveryLocationData = parseLocation(deal?.delivery_location);
@@ -718,11 +720,11 @@ export default function DealPage() {
       if (result.conversation_id) {
         navigate(`/chat/${result.conversation_id}`);
       } else {
-        alert("Gagal membuka chat");
+        alert(t("Gagal membuka chat"));
       }
     } catch (err) {
       console.error("Gagal membuka chat:", err);
-      alert("Gagal membuka chat");
+      alert(t("Gagal membuka chat"));
     }
   };
 
@@ -852,10 +854,8 @@ export default function DealPage() {
                   <div className="flex items-center gap-2 text-[#4e73df]">
                     <Truck className="w-4 h-4" />
                     <div>
-                      <p className="text-xs font-semibold">Sedang Mengantar</p>
-                      <p className="text-[10px] text-slate-400">
-                        Kurir dalam perjalanan
-                      </p>
+                      <p className="text-xs font-semibold">{t("Sedang Mengantar")}</p>
+                        <p className="text-[10px] text-slate-400">{t("Kurir dalam perjalanan")}</p>
                     </div>
                   </div>
 
@@ -865,7 +865,7 @@ export default function DealPage() {
                     className="btn btn-xs bg-[#4e73df] hover:bg-[#3b59bd] text-white gap-1 rounded-full"
                   >
                     <MapPin className="w-3 h-3" />
-                    Posisi Kurir
+                    {t("Posisi Kurir")}
                   </button>
                 </div>
               </div>
@@ -879,10 +879,8 @@ export default function DealPage() {
                     <div className="flex items-center gap-2 text-[#4e73df]">
                       <CarFront className="w-4 h-4" />
                       <div>
-                        <p className="text-xs font-semibold">Sedang Menunggu</p>
-                        <p className="text-[10px] text-slate-400">
-                          Persiapan keberangkatan
-                        </p>
+                        <p className="text-xs font-semibold">{t("Sedang Menunggu")}</p>
+                        <p className="text-[10px] text-slate-400">{t("Persiapan keberangkatan")}</p>
                       </div>
                     </div>
                   </div>
@@ -895,10 +893,8 @@ export default function DealPage() {
                   <div className="flex items-center gap-2 text-[#4e73df]">
                     <MapPinHouse className="w-4 h-4" />
                     <div>
-                      <p className="text-xs font-semibold">Tiba Ditujuan</p>
-                      <p className="text-[10px] text-slate-400">
-                        Barang sudah diterima
-                      </p>
+                        <p className="text-xs font-semibold">{t("Tiba Ditujuan")}</p>
+                      <p className="text-[10px] text-slate-400">{t("Barang sudah diterima")}</p>
                     </div>
                   </div>
                 </div>
@@ -910,7 +906,7 @@ export default function DealPage() {
           <div className="rounded-2xl bg-white shadow-sm p-4 border border-slate-100">
             <h2 className="text-sm font-semibold flex items-center gap-2 mb-2">
               <Info className="w-4 h-4 text-[#4e73df]" />
-              Ringkasan Transaksi
+              {t("Ringkasan Transaksi")}
             </h2>
             <p className="text-xs text-slate-500">
               <OpponentSummary isCarrierLogin={isCarrierLogin} />
@@ -921,7 +917,7 @@ export default function DealPage() {
           <div className="rounded-2xl bg-white shadow-sm p-4 border border-slate-100 space-y-4">
             <InfoRowCollapse
               icon={ClipboardList}
-              title="Deskripsi Barang"
+              title={t("Deskripsi Barang")}
               value={deal.item_description}
               type="photos"
               extraData={itemPhotos}
@@ -929,7 +925,7 @@ export default function DealPage() {
 
             <InfoRowCollapse
               icon={MapPin}
-              title="Lokasi Penjemputan"
+              title={t("Lokasi Penjemputan")}
               value={afterSecondComma(deal.pickup_location)}
               type="location"
               extraData={pickupLocationData}
@@ -937,7 +933,7 @@ export default function DealPage() {
 
             <InfoRowCollapse
               icon={MapPin}
-              title="Lokasi Pengantaran"
+              title={t("Lokasi Pengantaran")}
               value={afterSecondComma(deal.delivery_location)}
               type="location"
               extraData={deliveryLocationData}
@@ -945,10 +941,10 @@ export default function DealPage() {
 
             <InfoRowCollapse
               icon={CalendarClock}
-              title="Waktu Penjemputan"
+              title={t("Waktu Penjemputan")}
               value={
                 deal.pickup_datetime
-                  ? new Date(deal.pickup_datetime).toLocaleString("id-ID", {
+                  ? new Date(deal.pickup_datetime).toLocaleString(language === "en" ? "en-US" : "id-ID", {
                       weekday: "long",
                       day: "numeric",
                       month: "long",
@@ -966,7 +962,7 @@ export default function DealPage() {
           {/* Biaya */}
           {isCarrierLogin && (
             <div className="rounded-2xl bg-white shadow-sm p-4 border border-slate-100 space-y-3">
-              <p className="text-xs text-slate-400">Penghasilan dari Jastip</p>
+              <p className="text-xs text-slate-400">{t("Penghasilan dari Jastip")}</p>
               <p className="text-2xl font-bold text-[#4e73df]">
                 {jastipFee
                   ? jastipFee.toLocaleString("id-ID", {
@@ -982,7 +978,7 @@ export default function DealPage() {
               {/* Perincian biaya */}
               <div className="text-xs text-slate-500 space-y-1">
                 <div className="flex justify-between">
-                  <span>Harga Barang</span>
+                  <span>{t("Harga Barang")}</span>
                   <span>
                     {itemFee
                       ? itemFee.toLocaleString("id-ID", {
@@ -993,7 +989,7 @@ export default function DealPage() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Ongkos Jastip</span>
+                  <span>{t("Ongkos Jastip")}</span>
                   <span>
                     {jastipFee
                       ? jastipFee.toLocaleString("id-ID", {
@@ -1004,7 +1000,7 @@ export default function DealPage() {
                   </span>
                 </div>
                 <div className="flex justify-between font-semibold text-slate-700">
-                  <span>Total Nominal Transaksi</span>
+                  <span>{t("Total Nominal Transaksi")}</span>
                   <span>
                     {totalTransactionAmount
                       ? totalTransactionAmount.toLocaleString("id-ID", {
@@ -1020,7 +1016,7 @@ export default function DealPage() {
 
           {!isCarrierLogin && (
             <div className="rounded-2xl bg-white shadow-sm p-4 border border-slate-100 space-y-3">
-              <p className="text-xs text-slate-400">Total Biaya Numpak</p>
+              <p className="text-xs text-slate-400">{t("Total Biaya Numpak")}</p>
               <p className="text-2xl font-bold text-[#4e73df]">
                 {totalTransactionAmount
                   ? totalTransactionAmount.toLocaleString("id-ID", {
@@ -1033,7 +1029,7 @@ export default function DealPage() {
               {/* Perincian biaya */}
               <div className="text-xs text-slate-500 space-y-1">
                 <div className="flex justify-between">
-                  <span>Biaya Barang</span>
+                  <span>{t("Biaya Barang")}</span>
                   <span>
                     {itemFee
                       ? itemFee.toLocaleString("id-ID", {
@@ -1044,11 +1040,11 @@ export default function DealPage() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Biaya Penanganan</span>
+                  <span>{t("Biaya Penanganan")}</span>
                   <span>Rp 0</span>
                 </div>
                 <div className="flex justify-between font-semibold text-slate-700">
-                  <span>Biaya Nitip</span>
+                  <span>{t("Biaya Nitip")}</span>
                   <span>
                     {jastipFee
                       ? jastipFee.toLocaleString("id-ID", {
@@ -1065,26 +1061,25 @@ export default function DealPage() {
           {canPay && !isCarrierLogin && (
             <div className="rounded-2xl bg-white shadow-sm p-4 border border-slate-100">
               <h2 className="text-sm font-semibold mb-3 text-slate-700">
-                Metode Pembayaran
+                {t("Metode Pembayaran")}
               </h2>
               {paymentExpired && (
                 <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
-                  Pembayaran sebelumnya sudah kedaluwarsa. Silakan buat sesi
-                  pembayaran baru.
+                  {t("Pembayaran sebelumnya sudah kedaluwarsa. Silakan buat sesi pembayaran baru.")}
                 </div>
               )}
               <div className="space-y-2">
                 <PaymentOption
                   value="midtrans"
-                  title="Transfer / E-Wallet"
+                  title={t("Transfer / E-Wallet")}
                   desc="GoPay, ShopeePay, QRIS, VA Bank"
                   checked={true}
                   onChange={() => {}}
-                  badge="Rekomendasi"
+                  badge={t("Rekomendasi")}
                 />
                 <PaymentOption
-                  title="Bayar di Tempat (COD)"
-                  desc="Segera hadir"
+                  title={t("Bayar di Tempat (COD)")}
+                  desc={t("Segera hadir")}
                   disabled
                 />
               </div>
@@ -1111,7 +1106,7 @@ export default function DealPage() {
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
-                Batalkan Deal & Kembalikan ke Keranjang
+                {t("Batalkan Deal & Kembalikan ke Keranjang")}
               </button>
             </div>
           )}
@@ -1136,7 +1131,7 @@ export default function DealPage() {
                     d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.921-.755 1.688-1.54 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
                   />
                 </svg>
-                Beri Ulasan ke Jastiper
+                {t("Beri Ulasan ke Jastiper")}
               </button>
             </div>
           )}
@@ -1160,7 +1155,7 @@ export default function DealPage() {
                   </svg>
                 </div>
                 <div className="text-xs font-semibold">
-                  Ulasan sudah terkirim. Terima kasih!
+                  {t("Ulasan sudah terkirim. Terima kasih!")}
                 </div>
               </div>
             </div>
@@ -1180,7 +1175,7 @@ export default function DealPage() {
                 className="btn btn-outline flex-1 rounded-xl text-xs border-slate-200 text-slate-600 hover:bg-slate-50"
                 onClick={() => navigate(-1)}
               >
-                Kembali
+                {t("Kembali")}
               </button>
               <button
                 className="btn flex-1 rounded-xl border-none bg-[#4e73df] text-white hover:bg-[#3d64c7] text-xs"
@@ -1196,9 +1191,9 @@ export default function DealPage() {
                 {paying ? (
                   <span className="loading loading-spinner"></span>
                 ) : paymentExpired ? (
-                  "Bayar Ulang"
+                  t("Bayar Ulang")
                 ) : (
-                  "Bayar Sekarang"
+                  t("Bayar Sekarang")
                 )}
               </button>
             </div>
@@ -1228,7 +1223,7 @@ export default function DealPage() {
         {delivered && (
           <div className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-center rounded-xl bg-[#4e73df] shadow-sm p-3 text-white text-sm font-semibold">
             <PackageCheck className="w-4 h-4 mr-2" />
-            Pesanan Selesai
+            {t("Pesanan Selesai")}
           </div>
         )}
       </div>

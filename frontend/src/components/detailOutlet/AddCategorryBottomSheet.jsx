@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Plus, X, Tags } from "lucide-react";
 import { apiFetch } from "../../lib/apiClient";
+import { useLanguage } from "../../lib/LanguageContext";
 
 const EMOJI_ICONS = [
   "🍩",
@@ -34,6 +35,7 @@ export default function AddCategoryBottomSheet({
   onCreated,
   onUpdated,
 }) {
+  const { t } = useLanguage();
   const [categoryName, setCategoryName] = useState("");
   const [icon, setIcon] = useState("");
   const [search, setSearch] = useState("");
@@ -80,7 +82,7 @@ export default function AddCategoryBottomSheet({
       mode === "edit" ? onUpdated?.(data) : onCreated?.(data);
       onClose();
     } catch (error) {
-      alert(error.message || "Gagal menyimpan etalase");
+      alert(error.message || t("Gagal menyimpan etalase"));
     } finally {
       setLoading(false);
     }
@@ -102,7 +104,7 @@ export default function AddCategoryBottomSheet({
         <div className="px-6 pb-2 flex items-center justify-between flex-shrink-0">
           <h3 className="text-lg font-bold flex items-center gap-2">
             <Tags size={20} />
-            {mode === "edit" ? "Edit Etalase" : "Tambah Etalase"}
+            {mode === "edit" ? t("Edit Etalase") : t("Tambah Etalase")}
           </h3>
           <button
             onClick={onClose}
@@ -125,7 +127,7 @@ export default function AddCategoryBottomSheet({
             type="text"
             value={categoryName}
             onChange={(e) => setCategoryName(e.target.value)}
-            placeholder="Contoh: Minuman"
+            placeholder={t("Contoh: Minuman")}
             className="input input-lg w-full text-xl font-semibold text-center bg-slate-50 rounded-2xl focus:ring-4 focus:ring-[#4e73df]/30"
             autoFocus
           />
@@ -135,7 +137,7 @@ export default function AddCategoryBottomSheet({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari icon (🍔 ☕ 🔥)"
+            placeholder={t("Cari icon (🍔 ☕ 🔥)")}
             className="input input-md w-full bg-slate-50 rounded-2xl"
           />
 
@@ -161,8 +163,8 @@ export default function AddCategoryBottomSheet({
           {categoryName && (
             <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
               <p className="text-sm text-center text-emerald-700">
-                {icon || "📦"} Etalase <b>{categoryName}</b>{" "}
-                {mode === "edit" ? "akan diperbarui" : "akan ditambahkan"}
+                {icon || "📦"} {t("Etalase")} <b>{categoryName}</b>{" "}
+                {mode === "edit" ? t("akan diperbarui") : t("akan ditambahkan")}
               </p>
             </div>
           )}
@@ -176,7 +178,7 @@ export default function AddCategoryBottomSheet({
             className="w-full flex items-center justify-center gap-2 rounded-2xl bg-[#4e73df] text-white py-3 text-[13px] font-semibold hover:bg-[#3d64c7] transition-colors shadow-sm disabled:opacity-50"
           >
             <Plus size={16} />
-            {loading ? "Menyimpan..." : "Simpan Etalase"}
+            {loading ? t("Menyimpan...") : t("Simpan Etalase")}
           </button>
         </div>
       </div>

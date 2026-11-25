@@ -7,6 +7,8 @@ import "./index.css";
 import { ClerkProvider } from "@clerk/clerk-react";
 import "leaflet/dist/leaflet.css";
 import { UserProvider } from "./lib/UserContext.jsx";
+import { LanguageProvider } from "./lib/LanguageContext.jsx";
+import { useLanguage } from "./lib/LanguageContext.jsx";
 import ApiClientInit from "./components/ApiClientInit.jsx";
 
 // Komponen Toast Minimalis
@@ -50,6 +52,7 @@ const Toast = ({ message, type = "success", onClose }) => {
 };
 
 function SWUpdatePrompt() {
+  const { t } = useLanguage();
   const [showToast, setShowToast] = useState(null); // { message, type }
 
   const {
@@ -68,15 +71,15 @@ function SWUpdatePrompt() {
   // Gunakan useEffect agar aman dari infinite render
   useEffect(() => {
     if (offlineReady) {
-      setShowToast({ message: "App siap digunakan offline!", type: "success" });
+      setShowToast({ message: t("App siap digunakan offline!"), type: "success" });
       setOfflineReady(false);
     }
-  }, [offlineReady, setOfflineReady]);
+  }, [offlineReady, setOfflineReady, t]);
 
   useEffect(() => {
     if (needRefresh) {
       setShowToast({
-        message: "Versi baru tersedia!",
+        message: t("Versi baru tersedia!"),
         type: "info",
         action: () => {
           updateServiceWorker(true); // Reload + update
@@ -85,7 +88,7 @@ function SWUpdatePrompt() {
       });
       setNeedRefresh(false); // Biar tidak muncul lagi setelah ditutup
     }
-  }, [needRefresh, setNeedRefresh, updateServiceWorker]);
+  }, [needRefresh, setNeedRefresh, updateServiceWorker, t]);
 
   return (
     <>
@@ -99,7 +102,7 @@ function SWUpdatePrompt() {
                   onClick={showToast.action}
                   className="px-4 py-1 bg-white text-gray-900 text-sm rounded-full font-medium hover:bg-gray-100 transition"
                 >
-                  Update sekarang
+                  {t("Update sekarang")}
                 </button>
               </div>
             ) : (
@@ -119,9 +122,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
       <ApiClientInit /> {/* 🔥 Init API client with Clerk token */}
       <UserProvider>
-        <App />
+        <LanguageProvider>
+          <App />
+          <SWUpdatePrompt />
+        </LanguageProvider>
       </UserProvider>
-      <SWUpdatePrompt /> {/* Toast akan muncul di sini */}
     </ClerkProvider>
   </React.StrictMode>,
 );

@@ -1,7 +1,9 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function OutletHeader() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   return (
@@ -16,10 +18,10 @@ export default function OutletHeader() {
 
         <div className="flex flex-col">
           <h3 className="text-base font-semibold leading-tight text-slate-900">
-            Outlet Saya
+            {t("Outlet Saya")}
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
-            Kelola produk dan outletmu di sini
+            {t("Kelola produk dan outletmu di sini")}
           </p>
         </div>
       </div>

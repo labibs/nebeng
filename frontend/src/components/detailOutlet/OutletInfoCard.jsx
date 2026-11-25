@@ -11,8 +11,10 @@ import {
 import AddressText from "../market/AddressText";
 import GoogleMapsPointViewer from "../GoogleMapsViewer";
 import OutletRouteViewer from "../market/OutletRouteViewer";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function OutletInfoCard({ outlet, isOwner, user }) {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [openMaps, setOpenMaps] = useState(false);
   const [openRoute, setOpenRoute] = useState(false);
@@ -28,7 +30,7 @@ export default function OutletInfoCard({ outlet, isOwner, user }) {
       navigate(`/chat/${conversationId}`);
     } catch (error) {
       console.error("Error starting chat:", error);
-      alert("Gagal memulai chat");
+      alert(t("Gagal memulai chat"));
     }
   };
 
@@ -71,7 +73,7 @@ export default function OutletInfoCard({ outlet, isOwner, user }) {
 
         <div className="flex items-center justify-between bg-blue-50 rounded-xl p-3 text-center border border-blue-100">
           <p className="text-sm text-slate-600">
-            {outlet.description || "Belum ada deskripsi"}
+            {outlet.description || t("Belum ada deskripsi")}
           </p>
         </div>
         <hr className="my-2 border-slate-100" />
@@ -94,11 +96,11 @@ export default function OutletInfoCard({ outlet, isOwner, user }) {
                   {outlet?.owner?.name}
                 </p>
                 <span className="text-[9px] bg-blue-50 text-[#4e73df] px-1.5 py-0.5 rounded-full font-semibold border border-blue-100 shrink-0">
-                  Verifikasi
+                  {t("Verifikasi")}
                 </span>
               </div>
               <p className="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">
-                Owner Terpercaya
+                {t("Owner Terpercaya")}
               </p>
             </div>
             <button

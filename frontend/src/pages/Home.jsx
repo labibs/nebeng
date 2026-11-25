@@ -12,6 +12,8 @@ import { Bike, Car, Bus, Train, Plane, Search, X, Loader2 } from "lucide-react";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import SearchModal from "../components/common/SearchModal";
+import AiFeedAssistant, { AgentAvatar } from "../components/feed/AiFeedAssistant";
+import { useLanguage } from "../lib/LanguageContext";
 
 // Import CSS Swiper
 import "swiper/css";
@@ -19,6 +21,8 @@ import "swiper/css/navigation";
 import Profile from "./Profile";
 
 export default function Home() {
+  const { t, language } = useLanguage();
+  const numberLocale = language === "en" ? "en-US" : "id-ID";
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
 
@@ -30,6 +34,8 @@ export default function Home() {
   } = useCachedFetch("/posts");
   const [activeTab, setActiveTab] = useState("semua");
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isAiFeedOpen, setIsAiFeedOpen] = useState(false);
+  const [isAiBubbleExpanded, setIsAiBubbleExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const [isSyncingUser, setIsSyncingUser] = useState(false);
@@ -41,6 +47,27 @@ export default function Home() {
   const [dateFilterMode, setDateFilterMode] = useState("all"); // 'all', 'today', 'tomorrow', 'thisWeek', 'thisMonth', 'custom'
   const [customDate, setCustomDate] = useState(""); // format YYYY-MM-DD
   const [armadaFilter, setArmadaFilter] = useState("all");
+
+  useEffect(() => {
+    let expandTimer;
+    let collapseTimer;
+
+    const scheduleCycle = () => {
+      expandTimer = setTimeout(() => {
+        setIsAiBubbleExpanded(true);
+        collapseTimer = setTimeout(() => {
+          setIsAiBubbleExpanded(false);
+          scheduleCycle();
+        }, 2000);
+      }, 3000);
+    };
+
+    scheduleCycle();
+    return () => {
+      clearTimeout(expandTimer);
+      clearTimeout(collapseTimer);
+    };
+  }, []);
 
   // ----- Pull-to-refresh state -----
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -195,17 +222,17 @@ export default function Home() {
   const STEP = 10000;
 
   const formatFee = (val) => {
-    if (val === MIN && feeRange[1] === MAX) return "Semua";
-    if (val === MIN) return `Rp ${val.toLocaleString()}`;
-    return `Rp ${val.toLocaleString()}`;
+    if (val === MIN && feeRange[1] === MAX) return t("Semua");
+    if (val === MIN) return `Rp ${val.toLocaleString(numberLocale)}`;
+    return `Rp ${val.toLocaleString(numberLocale)}`;
   };
 
   const formatRange = () => {
     const [min, max] = feeRange;
-    if (min === MIN && max === MAX) return "Semua";
-    if (min === MIN) return `Maks Rp ${max.toLocaleString()}`;
-    if (max === MAX) return `Min Rp ${min.toLocaleString()}`;
-    return `Rp ${min.toLocaleString()} - Rp ${max.toLocaleString()}`;
+    if (min === MIN && max === MAX) return t("Semua");
+    if (min === MIN) return `${t("Maks")} Rp ${max.toLocaleString(numberLocale)}`;
+    if (max === MAX) return `${t("Min")} Rp ${min.toLocaleString(numberLocale)}`;
+    return `Rp ${min.toLocaleString(numberLocale)} - Rp ${max.toLocaleString(numberLocale)}`;
   };
 
   const filteredPosts = (posts || []).filter((post) => {
@@ -273,15 +300,15 @@ export default function Home() {
   // Tab options
 
   const tabOptions = [
-    { id: "semua", label: "Semua" },
-    { id: "titip", label: "Mau Titip" },
-    { id: "bawa", label: "Bisa Bawa" },
+    { id: "semua", label: t("Semua") },
+    { id: "titip", label: t("Mau Titip") },
+    { id: "bawa", label: t("Bisa Bawa") },
   ];
 
   // User menu items
   const userMenuItems = [
-    { label: "Profil Saya", href: "/profile" },
-    { label: "Buat Post Baru", href: "/create-post" },
+    { label: t("Profil Saya"), href: "/profile" },
+    { label: t("Buat Post Baru"), href: "/create-post" },
   ];
 
   return (
@@ -336,7 +363,7 @@ export default function Home() {
             <button
               onClick={() => setIsSearchModalOpen(true)}
               className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-50 bg-white shadow-[0_12px_28px_rgba(82,109,181,0.15)] transition-transform active:scale-95 relative"
-              aria-label="Search"
+              aria-label={t("Search")}
             >
               <Search size={20} className="text-[#4e73df]" />
               {searchQuery && (
@@ -379,12 +406,34 @@ export default function Home() {
 
       {/* Spacer untuk fixed header */}
 
+      {!isAiFeedOpen && (
+        <div className="fixed right-4 bottom-[112px] z-40 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsAiFeedOpen(true)}
+            aria-label={t("Ngobrol untuk cari jasa")}
+            className="rounded-full transition hover:-translate-y-0.5 active:scale-95"
+          >
+            <AgentAvatar className="h-12 w-12 shadow-[0_10px_30px_rgba(78,80,190,0.4)]" />
+          </button>
+          <div className={`overflow-hidden transition-all duration-300 ease-out ${isAiBubbleExpanded ? "max-w-48 opacity-100" : "max-w-0 opacity-0"}`}>
+            <div
+              aria-hidden={!isAiBubbleExpanded}
+              className="whitespace-nowrap rounded-full border border-white/80 bg-gradient-to-r from-violet-600 to-blue-600 py-2.5 pl-4 pr-7 text-left text-white shadow-[0_10px_30px_rgba(78,80,190,0.4)]"
+            >
+              <span className="block text-[13px] font-bold">{t("Butuh bantuan?")}</span>
+              <span className="block text-[10px] text-white/80">{t("Yuk, ngobrol")}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <SearchModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
         value={searchQuery}
         onChange={setSearchQuery}
-        placeholder="Cari kota, barang & postingan..."
+        placeholder={t("Cari kota, barang & postingan...")}
       >
         <div className="flex-1 overflow-y-auto px-1 py-3 space-y-3 max-h-[60vh]">
           {/* Tabs */}
@@ -413,11 +462,11 @@ export default function Home() {
           <div className="space-y-2 rounded-[24px] border border-slate-100 bg-slate-50/50 p-3">
             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
               {[
-                { id: "all", label: "Semua", icon: null },
-                { id: "motor", label: "Motor", icon: Bike },
-                { id: "mobil", label: "Mobil", icon: Car },
-                { id: "bus", label: "Bus", icon: Bus },
-                { id: "kereta", label: "Kereta", icon: Train },
+                { id: "all", label: t("Semua"), icon: null },
+                { id: "motor", label: t("Motor"), icon: Bike },
+                { id: "mobil", label: t("Mobil"), icon: Car },
+                { id: "bus", label: t("Bus"), icon: Bus },
+                { id: "kereta", label: t("Kereta"), icon: Train },
               ].map((option) => {
                 const Icon = option.icon;
                 return (
@@ -446,10 +495,10 @@ export default function Home() {
           <div className="space-y-2 rounded-[24px] border border-slate-100 bg-slate-50/50 p-3">
             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
               {[
-                { id: "all", label: "Semua Tanggal" },
-                { id: "today", label: "Hari Ini" },
-                { id: "tomorrow", label: "Besok" },
-                { id: "thisWeek", label: "Minggu Ini" },
+                { id: "all", label: t("Semua Tanggal") },
+                { id: "today", label: t("Hari Ini") },
+                { id: "tomorrow", label: t("Besok") },
+                { id: "thisWeek", label: t("Minggu Ini") },
               ].map((option) => (
                 <button
                   key={option.id}
@@ -488,7 +537,7 @@ export default function Home() {
           {/* Fee Slider */}
           <div className="space-y-2.5 rounded-[24px] border border-slate-100 bg-slate-50/50 px-4 py-3">
             <div className="flex justify-between text-[11px] font-bold text-slate-600">
-              <span>Ongkos Fee</span>
+              <span>{t("Ongkos Fee")}</span>
               <span className="text-[#4e73df]">{formatRange()}</span>
             </div>
             <div className="px-1 py-1">
@@ -504,7 +553,7 @@ export default function Home() {
             </div>
             <div className="flex justify-between text-[9px] text-slate-400">
               <span>Rp 0</span>
-              <span>Rp 1.000.000</span>
+              <span>Rp 1,000,000</span>
             </div>
           </div>
 
@@ -512,10 +561,17 @@ export default function Home() {
             onClick={() => setIsSearchModalOpen(false)}
             className="w-full h-12 rounded-2xl bg-[#4e73df] text-white text-[14px] font-bold shadow-lg shadow-blue-200 active:scale-[0.98] transition-transform mt-2"
           >
-            Terapkan Filter
+            {t("Terapkan Filter")}
           </button>
         </div>
       </SearchModal>
+
+      {isAiFeedOpen && (
+        <AiFeedAssistant
+          posts={posts || []}
+          onBack={() => setIsAiFeedOpen(false)}
+        />
+      )}
 
       <main
         className={`absolute inset-0 w-full h-full overflow-hidden ${loading ? "bg-transparent" : "bg-black"}`}
@@ -551,7 +607,7 @@ export default function Home() {
         ) : (
           <div className="flex h-full items-center justify-center">
             <p className="text-xl text-white/60">
-              {searchQuery ? "Tidak ada post yang cocok" : "Belum ada posts"}
+              {searchQuery ? t("Tidak ada post yang cocok") : t("Belum ada posts")}
             </p>
           </div>
         )}

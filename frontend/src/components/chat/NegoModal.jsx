@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X, DollarSign } from "lucide-react";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function NegoModal({
   isOpen,
@@ -8,6 +9,7 @@ export default function NegoModal({
   initialPrice,
   postInfo = "",
 }) {
+  const { t } = useLanguage();
   if (!isOpen) return null;
 
   const formatRupiah = (value) => {
@@ -32,7 +34,7 @@ export default function NegoModal({
           <div className="px-6 pb-2 flex items-center justify-between flex-shrink-0">
             <h3 className="text-lg font-bold flex items-center gap-2">
               <DollarSign size={20} />
-              Nego Ongkos Jastip
+              {t("Nego Ongkos Jastip")}
             </h3>
             <button
               onClick={onClose}
@@ -42,10 +44,11 @@ export default function NegoModal({
             </button>
           </div>
           <p className="px-6 text-sm text-slate-400">
-            {formatRupiah(postInfo.fee)} mau dinego berapa ?
+            {formatRupiah(postInfo.fee)} {t("mau dinego berapa ?")}
           </p>
 
           <NegoForm
+            t={t}
             initialPrice={postInfo?.fee ? Math.floor(postInfo.fee * 0.95) : 0}
             onSend={onSend}
             onClose={onClose}
@@ -57,7 +60,7 @@ export default function NegoModal({
 }
 
 // Form terpisah agar lebih rapi
-function NegoForm({ initialPrice, onSend, onClose }) {
+function NegoForm({ initialPrice, onSend, onClose, t }) {
   const [negoPrice, setNegoPrice] = useState(initialPrice.toString());
 
   const handleSend = () => {
@@ -103,7 +106,7 @@ function NegoForm({ initialPrice, onSend, onClose }) {
           disabled={!negoPrice || parseInt(negoPrice) <= 0}
           className="w-full flex items-center justify-center gap-2 rounded-2xl bg-[#4e73df] text-white py-3 text-[13px] font-semibold hover:bg-[#3d64c7] transition-colors shadow-sm disabled:opacity-50"
         >
-          Kirim Nego
+          {t("Kirim Nego")}
         </button>
       </div>
     </>

@@ -1,6 +1,8 @@
 import { actions } from "./actions";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function CreateActionPicker({ onSelect }) {
+  const { t } = useLanguage();
   return (
     <div className="grid grid-cols-2 gap-4 mb-15">
       {actions.map(action => (
@@ -16,8 +18,8 @@ export default function CreateActionPicker({ onSelect }) {
           "
         >
           <div className="text-3xl">{action.icon}</div>
-          <div className="font-bold mt-2">{action.title}</div>
-          <div className="text-xs opacity-70">{action.desc}</div>
+          <div className="font-bold mt-2">{t(action.title)}</div>
+          <div className="text-xs opacity-70">{t(action.desc)}</div>
         </button>
       ))}
     </div>

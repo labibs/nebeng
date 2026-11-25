@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, X, Settings } from "lucide-react";
 import AddCategoryBottomSheet from "./AddCategorryBottomSheet";
 import { apiFetch } from "../../lib/apiClient";
 import swal from "sweetalert2";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function ManageCategoriesBottomSheet({
   open,
@@ -13,6 +14,7 @@ export default function ManageCategoriesBottomSheet({
   onUpdated,
   onDeleted,
 }) {
+  const { t } = useLanguage();
   const [editingCategory, setEditingCategory] = useState(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
 
@@ -20,23 +22,23 @@ export default function ManageCategoriesBottomSheet({
 
   const handleDelete = async (cat) => {
     const result = await swal.fire({
-      title: "Hapus Etalase?",
-      text: `Etalase "${cat.name}" akan dihapus permanen.`,
+      title: t("Hapus Etalase?"),
+      text: t("Etalase \"{name}\" akan dihapus permanen.").replace("{name}", cat.name),
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
-      confirmButtonText: "Ya, Hapus!",
-      cancelButtonText: "Batal",
+      confirmButtonText: t("Ya, Hapus!"),
+      cancelButtonText: t("Batal"),
     });
 
     if (result.isConfirmed) {
       try {
         await apiFetch(`/categories/${cat.id}`, { method: 'DELETE' });
-        swal.fire("Terhapus!", "Etalase telah dihapus.", "success");
+        swal.fire(t("Terhapus!"), t("Etalase telah dihapus."), "success");
         onDeleted?.(cat.id);
       } catch (error) {
-        swal.fire("Error", error.message || "Gagal menghapus etalase", "error");
+        swal.fire(t("Error"), error.message || t("Gagal menghapus etalase"), "error");
       }
     }
   };
@@ -53,7 +55,7 @@ export default function ManageCategoriesBottomSheet({
         <div className="px-6 pb-2 flex items-center justify-between flex-shrink-0">
           <h3 className="text-lg font-bold flex items-center gap-2">
             <Settings size={20} />
-            Atur Etalase
+            {t("Atur Etalase")}
           </h3>
           <button onClick={onClose} className="btn btn-circle btn-sm btn-ghost">
             <X size={20} />
@@ -63,7 +65,7 @@ export default function ManageCategoriesBottomSheet({
         <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
           {categories.length === 0 ? (
             <div className="text-center py-10 opacity-50">
-              Belum ada etalase
+              {t("Belum ada etalase")}
             </div>
           ) : (
             categories.map((cat) => (
@@ -99,7 +101,7 @@ export default function ManageCategoriesBottomSheet({
             className="w-full flex items-center justify-center gap-2 rounded-2xl bg-[#4e73df] text-white py-3 text-[13px] font-semibold hover:bg-[#3d64c7] transition-colors shadow-sm"
           >
             <Plus size={16} />
-            Tambah Etalase Baru
+            {t("Tambah Etalase Baru")}
           </button>
         </div>
       </div>

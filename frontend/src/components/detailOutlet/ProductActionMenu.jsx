@@ -1,7 +1,9 @@
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function ProductActionMenu({ product, onEdit, onDelete }) {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -42,7 +44,7 @@ export default function ProductActionMenu({ product, onEdit, onDelete }) {
             <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-slate-100">
               <Pencil size={13} className="text-slate-600" />
             </div>
-            Edit
+            {t("Edit")}
           </button>
 
           <button
@@ -56,7 +58,7 @@ export default function ProductActionMenu({ product, onEdit, onDelete }) {
             <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-red-50">
               <Trash2 size={13} className="text-red-500" />
             </div>
-            Hapus
+            {t("Hapus")}
           </button>
         </div>
       )}

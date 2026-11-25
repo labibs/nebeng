@@ -7,6 +7,7 @@ import {
 import { Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ArrowUpRight, X } from "lucide-react";
+import { useLanguage } from "../lib/LanguageContext";
 
 const versionHistory = [
   {
@@ -67,6 +68,7 @@ const versionHistory = [
 ];
 
 export default function Landing() {
+  const { t } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showVersionLog, setShowVersionLog] = useState(false);
 
@@ -224,10 +226,10 @@ export default function Landing() {
                   >
                     <div className="text-4xl mb-4">{slide.emoji}</div>
                     <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 text-center leading-tight">
-                      {slide.title}
+                      {t(slide.title)}
                     </h2>
                     <p className="text-sm sm:text-base text-white/90 text-center max-w-xl leading-relaxed whitespace-pre-line">
-                      {slide.desc}
+                      {t(slide.desc)}
                     </p>
                   </div>
                 </div>
@@ -252,8 +254,7 @@ export default function Landing() {
 
           {/* Trust Message */}
           <p className="relative z-10 text-base sm:text-lg font-bold text-slate-600 text-center mb-8 px-4">
-            <span className="text-[#4e73df]">💎</span> Uang ditahan aman hingga
-            barang sampai
+            <span className="text-[#4e73df]">💎</span> {t("Uang ditahan aman hingga barang sampai")}
           </p>
           <a
             href="https://numpak-landing.sakte.id/"
@@ -261,7 +262,7 @@ export default function Landing() {
             rel="noreferrer"
             className="relative z-10 mt-1 mb-6 inline-flex items-center gap-1.5 rounded-full border border-[#4e73df]/15 bg-white/75 px-4 py-2 text-sm font-semibold text-[#4e73df] shadow-sm transition hover:-translate-y-0.5 hover:bg-white hover:shadow-md"
           >
-            Yuk, kenalan lebih dekat
+            {t("Yuk, kenalan lebih dekat")}
             <ArrowUpRight size={16} aria-hidden="true" />
           </a>
 
@@ -270,13 +271,13 @@ export default function Landing() {
             <div className="flex w-full flex-row items-center justify-center gap-4">
               <SignInButton mode="modal">
                 <button className="group flex h-14 flex-1 items-center justify-center rounded-2xl bg-[#4e73df] text-lg font-bold text-white shadow-[0_10px_25px_rgba(78,115,223,0.25)] transition-all hover:-translate-y-0.5 hover:shadow-[0_15px_35px_rgba(78,115,223,0.35)] active:scale-95">
-                  Masuk
+                  {t("Masuk")}
                 </button>
               </SignInButton>
 
               <SignUpButton mode="modal">
                 <button className="group flex h-14 flex-1 items-center justify-center rounded-2xl border-2 border-slate-200 bg-white/70 text-lg font-bold text-slate-700 shadow-sm backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white active:scale-95">
-                  Daftar
+                  {t("Daftar")}
                 </button>
               </SignUpButton>
             </div>
@@ -287,7 +288,7 @@ export default function Landing() {
             <button
               type="button"
               onClick={() => setShowVersionLog(true)}
-              aria-label="Lihat catatan versi 2.0.4"
+              aria-label={t("Lihat catatan versi 2.0.4")}
               className="font-bold text-[#4e73df]/70 transition hover:text-[#4e73df] hover:underline"
             >
               V 2.0.4
@@ -319,13 +320,13 @@ export default function Landing() {
               >
                 <div className="mb-4 flex items-start justify-between gap-4">
                   <div>
-                    <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-[#4e73df]">Catatan versi</p>
-                    <h2 id="version-log-title" className="text-xl font-bold">Riwayat Numpak</h2>
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-[#4e73df]">{t("Catatan versi")}</p>
+                    <h2 id="version-log-title" className="text-xl font-bold">{t("Riwayat Numpak")}</h2>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowVersionLog(false)}
-                    aria-label="Tutup catatan versi"
+                    aria-label={t("Tutup catatan versi")}
                     className="rounded-full bg-slate-100 p-2 text-slate-600 transition hover:bg-slate-200"
                   >
                     <X size={20} />
@@ -336,11 +337,11 @@ export default function Landing() {
                     <article key={release.version} className="border-l-2 border-blue-100 pl-4">
                       <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-3">
                         <h3 className="font-bold text-slate-800">v{release.version}</h3>
-                        <span className="text-xs text-slate-400">{release.period}</span>
+                        <span className="text-xs text-slate-400">{t(release.period)}</span>
                       </div>
                       <ul className="space-y-1.5 text-sm text-slate-600">
                         {release.changes.map((change) => (
-                          <li key={change} className="flex gap-2"><span className="text-[#4e73df]">•</span><span>{change}</span></li>
+                          <li key={change} className="flex gap-2"><span className="text-[#4e73df]">•</span><span>{t(change)}</span></li>
                         ))}
                       </ul>
                     </article>

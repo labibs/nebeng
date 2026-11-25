@@ -13,8 +13,10 @@ import SearchModal from "../components/common/SearchModal";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { Star, MapPin, ArrowUpDown } from "lucide-react";
+import { useLanguage } from "../lib/LanguageContext";
 
 export default function MarketPage() {
+  const { t, language } = useLanguage();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
@@ -50,7 +52,7 @@ export default function MarketPage() {
 
   const { user } = useUser();
   const ownerAvatar = user?.imageUrl || null;
-  const ownerName = user?.firstName || user?.fullName || "Outlet Saya";
+  const ownerName = user?.firstName || user?.fullName || t("Outlet Saya");
 
   // Client-side filtering for price
   const filteredProducts = products.filter((p) => {
@@ -92,7 +94,7 @@ export default function MarketPage() {
           onClose={() => setIsFilterOpen(false)}
           value={search}
           onChange={setSearch}
-          placeholder="Filter produk..."
+          placeholder={t("Filter produk...")}
         >
           <div className="flex-1 overflow-y-auto px-1 py-4 space-y-6 max-h-[65vh]">
             {/* Sort By */}
@@ -100,7 +102,7 @@ export default function MarketPage() {
               <div className="flex items-center gap-2 px-1">
                 <ArrowUpDown size={14} className="text-[#4e73df]" />
                 <span className="text-[12px] font-bold text-slate-700 uppercase tracking-wider">
-                  Urutkan
+                  {t("Urutkan")}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -114,7 +116,7 @@ export default function MarketPage() {
                         : "bg-slate-50 text-slate-400 border border-slate-100 hover:text-[#4e73df]"
                     }`}
                   >
-                    {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                    {t(opt.charAt(0).toUpperCase() + opt.slice(1))}
                   </button>
                 ))}
               </div>
@@ -123,10 +125,10 @@ export default function MarketPage() {
             {/* Price Range */}
             <div className="space-y-4 rounded-[24px] border border-slate-100 bg-slate-50/50 p-4">
               <div className="flex justify-between items-center text-[12px] font-bold text-slate-700">
-                <span className="uppercase tracking-wider">Rentang Harga</span>
+                <span className="uppercase tracking-wider">{t("Rentang Harga")}</span>
                 <span className="text-[#4e73df]">
-                  Rp {priceRange[0].toLocaleString()} -{" "}
-                  {priceRange[1].toLocaleString()}
+                  Rp {priceRange[0].toLocaleString(language === "en" ? "en-US" : "id-ID")} -{" "}
+                  {priceRange[1].toLocaleString(language === "en" ? "en-US" : "id-ID")}
                 </span>
               </div>
               <div className="px-1">
@@ -152,7 +154,7 @@ export default function MarketPage() {
               <div className="flex justify-between items-center text-[12px] font-bold text-slate-700">
                 <div className="flex items-center gap-1.5 uppercase tracking-wider">
                   <Star size={14} className="text-amber-400 fill-amber-400" />
-                  <span>Rating Bintang</span>
+                  <span>{t("Rating Bintang")}</span>
                 </div>
                 <span className="text-[#4e73df]">
                   {starRating[0]} - {starRating[1]}
@@ -176,7 +178,7 @@ export default function MarketPage() {
               onClick={() => setIsFilterOpen(false)}
               className="w-full h-12 rounded-2xl bg-[#4e73df] text-white text-[14px] font-bold shadow-lg shadow-blue-200 active:scale-[0.98] transition-transform"
             >
-              Terapkan Filter
+              {t("Terapkan Filter")}
             </button>
           </div>
         </SearchModal>
@@ -188,13 +190,13 @@ export default function MarketPage() {
           />
 
           <MarketOutletList
-            title="Outlet Pilihan"
+            title={t("Outlet Pilihan")}
             search={search}
             category={activeCategory}
           />
 
           <MarketSection
-            title="Daftar Item"
+            title={t("Daftar Item")}
             products={filteredProducts.filter((p) => p.owner_id !== user?.id)}
             loading={false}
           />

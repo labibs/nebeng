@@ -1,6 +1,7 @@
 // components/cart/CartItemCard.jsx
 import { Trash2, Plus, Minus } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function CartItemCard({
   item,
@@ -9,6 +10,7 @@ export default function CartItemCard({
   onUpdateQuantity,
   onDelete,
 }) {
+  const { t, language } = useLanguage();
   const product = item.product || {};
   const warung = item.warung || {};
 
@@ -18,12 +20,12 @@ export default function CartItemCard({
   };
 
   const keteranganByStatus = () => {
-    if (warung.status === "kurir") return "Mau Nitip";
+    if (warung.status === "kurir") return t("Mau Nitip");
     if (warung.status === "pembeli" && warung.category === "Jasa")
-      return "Anterin Kesini";
+      return t("Anterin Kesini");
     if (warung.status === "pembeli" && warung.category !== "Jasa")
-      return "Beliin Kesini";
-    return "Nitip Sekarang";
+      return t("Beliin Kesini");
+    return t("Nitip Sekarang");
   };
 
   return (
@@ -74,15 +76,15 @@ export default function CartItemCard({
             <div className="flex justify-between items-start mt-1">
               <p className="text-sm font-semibold text-[#4e73df]">
                 Rp{" "}
-                {Number(product.estimated_price || 0).toLocaleString("id-ID")}
+                {Number(product.estimated_price || 0).toLocaleString(language === "en" ? "en-US" : "id-ID")}
               </p>
-              <p className="text-[10px] text-slate-400">{item.quantity} pcs</p>
+              <p className="text-[10px] text-slate-400">{item.quantity} {t("pcs")}</p>
             </div>
 
             {/* Catatan */}
             {item.notes && (
               <p className="text-[10px] text-slate-400 mt-1 italic">
-                Catatan: {item.notes}
+                {t("Catatan")}: {item.notes}
               </p>
             )}
           </div>
@@ -93,12 +95,12 @@ export default function CartItemCard({
         {/* Estimasi Total + Controls */}
         <div className="flex items-center justify-between w-full">
           <div>
-            <p className="text-[10px] text-slate-400">Estimasi Total</p>
+            <p className="text-[10px] text-slate-400">{t("Estimasi Total")}</p>
             <p className="text-sm font-bold text-slate-900">
               Rp{" "}
               {(
                 Number(item.estimated_price || 0) * item.quantity
-              ).toLocaleString("id-ID")}
+              ).toLocaleString(language === "en" ? "en-US" : "id-ID")}
             </p>
           </div>
 
@@ -106,6 +108,7 @@ export default function CartItemCard({
             <div className="flex items-center border border-slate-200 rounded-full overflow-hidden text-sm font-medium">
               <button
                 onClick={() => handleQtyChange(item.quantity - 1)}
+                aria-label={t("Kurangi jumlah")}
                 disabled={item.quantity <= 1}
                 className="w-8 h-8 flex items-center justify-center bg-slate-50 disabled:opacity-40 text-slate-600"
               >
@@ -116,6 +119,7 @@ export default function CartItemCard({
               </span>
               <button
                 onClick={() => handleQtyChange(item.quantity + 1)}
+                aria-label={t("Tambah jumlah")}
                 className="w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-600 hover:bg-slate-100"
               >
                 <Plus size={14} />
@@ -126,7 +130,7 @@ export default function CartItemCard({
             <button
               onClick={() => onDelete(item.id)}
               className="w-8 h-8 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-full transition-colors"
-              title="Hapus item"
+              title={t("Hapus item")}
             >
               <Trash2 size={14} />
             </button>

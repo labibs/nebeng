@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Plus, X, Package } from "lucide-react";
 import { apiFetch } from "../../lib/apiClient";
 import { uploadPostImage } from "../../lib/uploadPostImage";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function AddProductBottomSheet({
   open,
@@ -11,6 +12,7 @@ export default function AddProductBottomSheet({
   categories = [],
   onCreated,
 }) {
+  const { t, language } = useLanguage();
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -56,7 +58,7 @@ export default function AddProductBottomSheet({
       handleClose();
     } catch (err) {
       console.error(err);
-      alert(err.message || "Gagal menambahkan produk");
+      alert(err.message || t("Gagal menambahkan produk"));
     } finally {
       setLoading(false);
     }
@@ -85,7 +87,7 @@ export default function AddProductBottomSheet({
         <div className="px-6 pb-2 flex items-center justify-between flex-shrink-0">
           <h3 className="text-lg font-bold flex items-center gap-2">
             <Package size={20} />
-            Tambah Produk
+            {t("Tambah Produk")}
           </h3>
           <button
             onClick={handleClose}
@@ -101,7 +103,7 @@ export default function AddProductBottomSheet({
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Nama produk"
+            placeholder={t("Nama produk")}
             className="input input-lg w-full bg-slate-50 text-center font-semibold rounded-2xl"
             autoFocus
           />
@@ -113,7 +115,7 @@ export default function AddProductBottomSheet({
             className="select select-lg w-full bg-slate-50 rounded-2xl"
           >
             <option value="" disabled>
-              Pilih Etalase
+              {t("Pilih Etalase")}
             </option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>
@@ -158,7 +160,7 @@ export default function AddProductBottomSheet({
                 />
               ) : (
                 <span className="text-sm text-slate-400">
-                  📷 Upload foto produk
+                📷 {t("Upload foto produk")}
                 </span>
               )}
             </div>
@@ -169,7 +171,7 @@ export default function AddProductBottomSheet({
             <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
               <p className="text-sm text-center text-emerald-700">
                 🧺 <b>{name}</b>
-                <br />~ Rp {Number(price).toLocaleString("id-ID")}
+                <br />~ Rp {Number(price).toLocaleString(language === "en" ? "en-US" : "id-ID")}
               </p>
             </div>
           )}
@@ -183,7 +185,7 @@ export default function AddProductBottomSheet({
             className="w-full flex items-center justify-center gap-2 rounded-2xl bg-[#4e73df] text-white py-3 text-[13px] font-semibold hover:bg-[#3d64c7] transition-colors shadow-sm disabled:opacity-50"
           >
             <Plus size={16} />
-            {loading ? "Menyimpan..." : "Simpan Produk"}
+            {loading ? t("Menyimpan...") : t("Simpan Produk")}
           </button>
         </div>
       </div>

@@ -1,7 +1,9 @@
 import React from "react";
 import { X, Clock } from "lucide-react";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function TimeModal({ isOpen, onClose, onSend }) {
+  const { t, language } = useLanguage();
   if (!isOpen) return null;
 
   return (
@@ -21,7 +23,7 @@ export default function TimeModal({ isOpen, onClose, onSend }) {
           <div className="px-6 pb-2 flex items-center justify-between flex-shrink-0">
             <h3 className="text-lg font-bold flex items-center gap-2">
               <Clock size={20} />
-              Pilih Waktu Ketemuan
+              {t("Pilih Waktu Ketemuan")}
             </h3>
             <button
               onClick={onClose}
@@ -31,7 +33,7 @@ export default function TimeModal({ isOpen, onClose, onSend }) {
             </button>
           </div>
 
-          <TimeForm onSend={onSend} onClose={onClose} />
+          <TimeForm onSend={onSend} onClose={onClose} t={t} language={language} />
         </div>
       </div>
     </>
@@ -39,7 +41,7 @@ export default function TimeModal({ isOpen, onClose, onSend }) {
 }
 
 // Form terpisah agar lebih rapi
-function TimeForm({ onSend, onClose }) {
+function TimeForm({ onSend, onClose, t, language }) {
   const [selectedDate, setSelectedDate] = React.useState("");
   const [selectedTime, setSelectedTime] = React.useState("");
   const [notes, setNotes] = React.useState("");
@@ -47,13 +49,13 @@ function TimeForm({ onSend, onClose }) {
   const handleSend = () => {
     if (selectedDate && selectedTime) {
       const dateTime = new Date(`${selectedDate}T${selectedTime}`);
-      const formattedDate = dateTime.toLocaleDateString("id-ID", {
+      const formattedDate = dateTime.toLocaleDateString(language === "en" ? "en-US" : "id-ID", {
         weekday: "long",
         year: "numeric",
         month: "long",
         day: "numeric",
       });
-      const formattedTime = dateTime.toLocaleTimeString("id-ID", {
+      const formattedTime = dateTime.toLocaleTimeString(language === "en" ? "en-US" : "id-ID", {
         hour: "2-digit",
         minute: "2-digit",
       });
@@ -74,7 +76,7 @@ function TimeForm({ onSend, onClose }) {
         <div className="form-control">
           <label className="label">
             <span className="label-text font-medium text-slate-600">
-              Tanggal Ketemuan
+              {t("Tanggal Ketemuan")}
             </span>
           </label>
           <input
@@ -90,7 +92,7 @@ function TimeForm({ onSend, onClose }) {
         <div className="form-control">
           <label className="label">
             <span className="label-text font-medium text-slate-600">
-              Jam Ketemuan
+              {t("Jam Ketemuan")}
             </span>
           </label>
           <input
@@ -105,13 +107,13 @@ function TimeForm({ onSend, onClose }) {
         <div className="form-control">
           <label className="label">
             <span className="label-text font-medium text-slate-600">
-              Catatan (Opsional)
+              {t("Catatan (Opsional)")}
             </span>
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Tambahkan catatan jika perlu..."
+            placeholder={t("Tambahkan catatan jika perlu...")}
             className="textarea textarea-bordered w-full resize-none rounded-2xl bg-slate-50"
             rows={3}
           />
@@ -153,7 +155,7 @@ function TimeForm({ onSend, onClose }) {
           disabled={!selectedDate || !selectedTime}
           className="w-full flex items-center justify-center gap-2 rounded-2xl bg-[#4e73df] text-white py-3 text-[13px] font-semibold hover:bg-[#3d64c7] transition-colors shadow-sm disabled:opacity-50"
         >
-          Kirim Waktu
+          {t("Kirim Waktu")}
         </button>
       </div>
     </>

@@ -1,5 +1,6 @@
 import { X, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "../lib/LanguageContext";
 
 export default function GoogleMapsEmbedViewer({
   open,
@@ -9,6 +10,7 @@ export default function GoogleMapsEmbedViewer({
   address,
   title = "Lokasi Outlet",
 }) {
+  const { t } = useLanguage();
   const embedUrl = `https://maps.google.com/maps?q=${latitude},${longitude}&z=16&output=embed`;
 
   return (
@@ -32,13 +34,14 @@ export default function GoogleMapsEmbedViewer({
             {/* Header */}
             <div className="p-5 flex items-center justify-between border-b border-slate-50 bg-white/80 backdrop-blur-md z-10">
               <div>
-                <h3 className="font-bold text-lg text-slate-900">{title}</h3>
+                <h3 className="font-bold text-lg text-slate-900">{t(title)}</h3>
                 <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">
-                  Detail Lokasi
+                  {t("Detail Lokasi")}
                 </p>
               </div>
               <button
                 onClick={() => setOpen(false)}
+                aria-label={t("Tutup")}
                 className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 active:scale-90 transition-transform"
               >
                 <X size={18} />
@@ -49,7 +52,7 @@ export default function GoogleMapsEmbedViewer({
             <div className="h-[45vh] w-full bg-slate-50 border-y">
               {!latitude ? (
                 <div className="h-full flex items-center justify-center text-sm opacity-60">
-                  Lokasi belum tersedia
+                  {t("Lokasi belum tersedia")}
                 </div>
               ) : (
                 <iframe
@@ -70,7 +73,7 @@ export default function GoogleMapsEmbedViewer({
                 </div>
                 <div className="min-w-0">
                   <h4 className="font-bold text-[14px] text-slate-900">
-                    Alamat Lengkap
+                    {t("Alamat Lengkap")}
                   </h4>
                   <p className="text-[12px] text-slate-500 mt-1 leading-relaxed line-clamp-2">
                     {address || `${latitude}, ${longitude}`}

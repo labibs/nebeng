@@ -1,7 +1,8 @@
 import MessageBubble from "./MessageBubble";
+import { useLanguage } from "../../lib/LanguageContext";
 
-function formatDateSeparator(dateStr) {
-  return new Date(dateStr).toLocaleDateString("id-ID", {
+function formatDateSeparator(dateStr, language) {
+  return new Date(dateStr).toLocaleDateString(language === "en" ? "en-US" : "id-ID", {
     weekday: "long",
     day: "2-digit",
     month: "long",
@@ -26,6 +27,7 @@ export default function ChatMessages({
   onUpdateDealItem,
   onUpdateDealDelivery,
 }) {
+  const { language } = useLanguage();
   if (loading) {
     return (
       <div className="p-4 pb-32">
@@ -45,7 +47,7 @@ export default function ChatMessages({
 
   // --- GROUP PESAN PER TANGGAL ---
   const grouped = messages.reduce((acc, msg) => {
-    const key = new Date(msg.created_at).toLocaleDateString("id-ID", {
+    const key = new Date(msg.created_at).toLocaleDateString(language === "en" ? "en-US" : "id-ID", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -68,7 +70,7 @@ export default function ChatMessages({
               className="px-3 py-1 rounded-full text-xs
               bg-base-300/90 dark:bg-base-700/90 backdrop-blur"
             >
-              {formatDateSeparator(msgs[0].created_at)}
+              {formatDateSeparator(msgs[0].created_at, language)}
             </div>
           </div>
 

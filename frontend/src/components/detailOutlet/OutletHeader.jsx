@@ -3,18 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../../lib/apiClient";
 import OutletActionMenu from "../outlet/OutletActionMenu";
 import Swal from "sweetalert2";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function OutletHeader({ outlet, isOwner }) {
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleDeleteOutlet = async (id) => {
     const result = await Swal.fire({
-      title: "Hapus Outlet?",
-      text: "Outlet yang dihapus tidak bisa dikembalikan",
+      title: t("Hapus Outlet?"),
+      text: t("Outlet yang dihapus tidak bisa dikembalikan"),
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Ya, hapus",
-      cancelButtonText: "Batal",
+      confirmButtonText: t("Ya, hapus"),
+      cancelButtonText: t("Batal"),
       reverseButtons: true,
     });
 
@@ -24,16 +26,16 @@ export default function OutletHeader({ outlet, isOwner }) {
       await apiFetch(`/warungs/${id}`, { method: 'DELETE' });
     } catch (error) {
       Swal.fire({
-        title: "Gagal",
-        text: error.message || "Outlet gagal dihapus",
+        title: t("Gagal"),
+        text: error.message || t("Outlet gagal dihapus"),
         icon: "error",
       });
       return;
     }
 
     await Swal.fire({
-      title: "Berhasil",
-      text: "Outlet berhasil dihapus",
+      title: t("Berhasil"),
+      text: t("Outlet berhasil dihapus"),
       icon: "success",
       timer: 1200,
       showConfirmButton: false,
@@ -54,13 +56,13 @@ export default function OutletHeader({ outlet, isOwner }) {
 
         <div className="flex flex-col flex-1 min-w-0">
           <h3 className="text-base font-semibold leading-tight text-slate-900 truncate">
-            Detail Outlet {outlet.name}
+            {t("Detail Outlet")} {outlet.name}
           </h3>
 
           <p className="text-xs text-slate-400 mt-0.5">
             {isOwner
-              ? "Kelola produk dan outletmu"
-              : "Pilih produk yang ingin dibeli"}
+              ? t("Kelola produk dan outletmu")
+              : t("Pilih produk yang ingin dibeli")}
           </p>
         </div>
         {isOwner && (

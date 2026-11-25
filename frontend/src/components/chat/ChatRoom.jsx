@@ -2,6 +2,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { apiFetch } from "../../lib/apiClient";
+import { useLanguage } from "../../lib/LanguageContext";
 import {
   buildDirectDealPayload,
   createOrReuseDealFromPayload,
@@ -17,13 +18,15 @@ const POLL_INTERVAL = 4000;
 export default function ChatRoom() {
   const { conversationId } = useParams();
   const { user } = useUser();
+  const { t, language } = useLanguage();
+  const numberLocale = language === "en" ? "en-US" : "id-ID";
 
   const currentUserId = user?.id;
   const currentUserAvatar =
     user?.imageUrl || "https://www.gravatar.com/avatar/0?d=mp";
 
   const [recipient, setRecipient] = useState({
-    name: "Loading...",
+    name: t("Loading..."),
     imageUrl: "https://www.gravatar.com/avatar/0?d=mp",
   });
   const [postInfo, setPostInfo] = useState(null);
@@ -75,10 +78,10 @@ export default function ChatRoom() {
       return data?.id;
     } catch (error) {
       console.error("Error kirim pesan:", error);
-      alert("Gagal mengirim pesan");
+      alert(t("Gagal mengirim pesan"));
       return null;
     }
-  }, [conversationId, conversationPostId, currentUserId]);
+  }, [conversationId, conversationPostId, currentUserId, t]);
 
   const location = useLocation();
   // Auto-send deal summary if arriving from Checkout
@@ -98,9 +101,9 @@ export default function ChatRoom() {
       const itemName =
         items && items.length > 0
           ? items[0].product?.name || items[0].notes
-          : "Barang Jastip";
+          : t("Barang Jastip");
       const warungName =
-        items && items.length > 0 ? items[0].warung?.name : "Warung";
+        items && items.length > 0 ? items[0].warung?.name : t("Warung");
 
       const totalItemPrice = items
         ? items.reduce(
@@ -138,14 +141,14 @@ export default function ChatRoom() {
 
       const payloadStr = JSON.stringify(payload);
       const textMessage = `[deal_offer]
-🏪 Warung: ${warungName}
-📦 ${itemCount} Barang: ${itemName}
-📍 Dari: ${pickupLocStr}
-📍 Ke: ${deliveryLocStr}
-💰 Harga Barang: Rp${totalItemPrice.toLocaleString("id-ID")}
-💰 Jastip/Ongkos: Rp${proposedFee.toLocaleString("id-ID")}
-🔥 Total Pembayaran: Rp${totalPayment.toLocaleString("id-ID")}
-📝 Catatan: ${notes || "-"}
+🏪 ${t("Warung")}: ${warungName}
+📦 ${itemCount} ${t("Barang")}: ${itemName}
+📍 ${t("Dari")}: ${pickupLocStr}
+📍 ${t("Ke")}: ${deliveryLocStr}
+💰 ${t("Harga Barang")}: Rp${totalItemPrice.toLocaleString(numberLocale)}
+💰 ${t("Jastip/Ongkos")}: Rp${proposedFee.toLocaleString(numberLocale)}
+🔥 ${t("Total Pembayaran")}: Rp${totalPayment.toLocaleString(numberLocale)}
+📝 ${t("Catatan")}: ${notes || "-"}
 <!--PAYLOAD:${payloadStr}-->`;
 
       // Call sendMessage
@@ -158,7 +161,7 @@ export default function ChatRoom() {
       // Bersihkan state agar tidak terkirim ulang kalau user refresh
       window.history.replaceState({}, document.title);
     }
-  }, [location.state, currentUserId, conversationId, conversationPostId, sendMessage]);
+  }, [location.state, currentUserId, conversationId, conversationPostId, sendMessage, t, numberLocale]);
 
   const findOrCreateDeal = async (finalPostId, msgId) => {
     if (!finalPostId || !currentUserId || !postInfo) return null;
@@ -243,10 +246,10 @@ export default function ChatRoom() {
         }),
       });
 
-      alert("Lokasi deal berhasil diupdate!");
+      alert(t("Lokasi deal berhasil diupdate!"));
     } catch (error) {
       console.error("Error update deal location:", error);
-      alert("Gagal update lokasi deal");
+      alert(t("Gagal update lokasi deal"));
     }
   };
 
@@ -267,10 +270,10 @@ export default function ChatRoom() {
         }),
       });
 
-      alert("Waktu deal berhasil diupdate!");
+      alert(t("Waktu deal berhasil diupdate!"));
     } catch (error) {
       console.error("Error update deal time:", error);
-      alert("Gagal update waktu deal");
+      alert(t("Gagal update waktu deal"));
     }
   };
 
@@ -291,10 +294,10 @@ export default function ChatRoom() {
         }),
       });
 
-      alert("Detail barang deal berhasil diupdate!");
+      alert(t("Detail barang deal berhasil diupdate!"));
     } catch (error) {
       console.error("Error update deal item:", error);
-      alert("Gagal update detail barang deal");
+      alert(t("Gagal update detail barang deal"));
     }
   };
 
@@ -315,10 +318,10 @@ export default function ChatRoom() {
         }),
       });
 
-      alert("Lokasi pengantaran deal berhasil diupdate!");
+      alert(t("Lokasi pengantaran deal berhasil diupdate!"));
     } catch (error) {
       console.error("Error update deal delivery:", error);
-      alert("Gagal update lokasi pengantaran deal");
+      alert(t("Gagal update lokasi pengantaran deal"));
     }
   };
 
@@ -509,7 +512,7 @@ export default function ChatRoom() {
   if (!conversationId) {
     return (
       <div className="flex h-screen items-center justify-center text-lg">
-        Chat tidak ditemukan
+        {t("Chat tidak ditemukan")}
       </div>
     );
   }

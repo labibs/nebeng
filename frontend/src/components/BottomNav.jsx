@@ -3,8 +3,10 @@ import { Home, Plus, MessageCircle, ClipboardCheck, Store } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/apiClient";
 import { useUser } from "@clerk/clerk-react";
+import { useLanguage } from "../lib/LanguageContext";
 
 export default function BottomNav() {
+  const { t } = useLanguage();
   const location = useLocation();
   const { user } = useUser();
   const currentUserId = user?.id;
@@ -52,20 +54,22 @@ export default function BottomNav() {
               "radial-gradient(circle 34px at 50% 0, transparent 32px, black 34px)",
           }}
         >
-          <NavItem to="/" icon={Home} currentPath={location.pathname} />
+          <NavItem to="/" icon={Home} currentPath={location.pathname} label={t("Beranda")} />
           <NavItem
             to="/chat"
             icon={MessageCircle}
             currentPath={location.pathname}
             badge={totalUnread}
+            label={t("Chat")}
           />
           <div className="w-20" />
           <NavItem
             to="/transaksi"
             icon={ClipboardCheck}
             currentPath={location.pathname}
+            label={t("Transaksi")}
           />
-          <NavItem to="/market" icon={Store} currentPath={location.pathname} />
+          <NavItem to="/market" icon={Store} currentPath={location.pathname} label={t("Market")} />
         </div>
 
         {/* Floating Create Button - FIXED */}
@@ -96,11 +100,11 @@ export default function BottomNav() {
   );
 }
 
-function NavItem({ to, icon: Icon, currentPath, badge = 0 }) {
+function NavItem({ to, icon: Icon, currentPath, badge = 0, label }) {
   const isActive = currentPath === to;
 
   return (
-    <Link to={to} className="relative flex flex-1 items-center justify-center">
+    <Link to={to} aria-label={label} title={label} className="relative flex flex-1 items-center justify-center">
       <div className="relative p-3">
         <div
           className={`absolute inset-0 -z-10 rounded-full bg-gradient-to-r from-[#4e73df] to-[#6c8ef8] blur-xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${

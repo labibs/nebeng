@@ -2,6 +2,7 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import CartIconButton from "../cart/CartIconButton";
 import OutletButton from "./OutletButton";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function MarketHeader({
   search,
@@ -10,6 +11,7 @@ export default function MarketHeader({
   owner_name,
   onOpenFilter,
 }) {
+  const { t } = useLanguage();
   const [isSticky, setIsSticky] = useState(false);
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function MarketHeader({
               type="text"
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Cari outlet atau produk..."
+              placeholder={t("Cari outlet atau produk...")}
               className="w-full min-w-0 bg-transparent text-[14px] text-slate-700 outline-none placeholder:text-slate-400"
             />
             {search ? (

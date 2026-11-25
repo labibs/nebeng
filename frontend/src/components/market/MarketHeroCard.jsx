@@ -1,6 +1,8 @@
 import { Calendar, Clock, Heart, Sparkles } from "lucide-react";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function MarketHeroCard() {
+  const { t } = useLanguage();
   return (
     <div className="relative mt-2 overflow-hidden rounded-[40px] bg-gradient-to-br from-[#4e73df] via-[#5a81f3] to-[#6c8ef8] p-6 shadow-[0_25px_50px_-12px_rgba(78,115,223,0.3)]">
       {/* Decorative Elements */}
@@ -23,14 +25,14 @@ export default function MarketHeroCard() {
             <Sparkles size={16} className="text-amber-200 fill-amber-200" />
           </div>
           <span className="text-[13px] font-bold tracking-wider text-white uppercase">
-            Promo Terbatas
+            {t("Promo Terbatas")}
           </span>
         </div>
 
         <div className="mb-6">
           <h2 className="text-[26px] font-extrabold leading-tight text-white">
-            Belanja Hemat <br />
-            <span className="text-blue-100 opacity-90">Hingga 50%</span>
+            {t("Belanja Hemat")} <br />
+            <span className="text-blue-100 opacity-90">{t("Hingga 50%")}</span>
           </h2>
         </div>
 
@@ -42,7 +44,7 @@ export default function MarketHeroCard() {
                 <div className="p-1.5 bg-white/20 rounded-lg">
                   <Calendar size={14} />
                 </div>
-                <span className="text-[13px] font-bold">Minggu, 05 April</span>
+                <span className="text-[13px] font-bold">{t("Minggu, 05 April")}</span>
               </div>
               <div className="flex items-center gap-2.5 text-white/90">
                 <div className="p-1.5 bg-white/20 rounded-lg">
@@ -63,10 +65,10 @@ export default function MarketHeroCard() {
         {/* Action Buttons */}
         <div className="flex items-center gap-3 mt-auto">
           <button className="flex-1 rounded-[20px] bg-white py-3.5 text-[14px] font-bold text-slate-500 shadow-md transition-all active:scale-95">
-            Abaikan
+            {t("Abaikan")}
           </button>
           <button className="flex-1 rounded-[20px] bg-[#2e3a59]/30 backdrop-blur-md border border-white/20 py-3.5 text-[14px] font-bold text-white shadow-md transition-all active:scale-95">
-            Cek Produk
+            {t("Cek Produk")}
           </button>
         </div>
       </div>

@@ -15,8 +15,10 @@ import { apiFetch } from "../lib/apiClient";
 import LoadingLogo from "../components/LoadingLogo";
 import CartHeader from "../components/cart/CartHeader";
 import CartItemCard from "../components/cart/CartItemCard";
+import { useLanguage } from "../lib/LanguageContext";
 
 export default function Cart() {
+  const { t, language } = useLanguage();
   const { user } = useUser();
   const navigate = useNavigate();
 
@@ -83,7 +85,7 @@ export default function Cart() {
           : `kurir-to-me-${item.user_id}`;
         partnerName = isMyRequest
           ? item.warung.name
-          : item.buyer?.name || "Pembeli";
+          : item.buyer?.name || t("Pembeli");
         partnerAvatar = isMyRequest
           ? item.warung.owner?.avatar_url
           : item.buyer?.avatar_url;
@@ -94,14 +96,14 @@ export default function Cart() {
           : `pembeli-to-me-${item.user_id}`;
         partnerName = isMyRequest
           ? item.warung.name
-          : item.buyer?.name || "Pembeli";
+          : item.buyer?.name || t("Pembeli");
         partnerAvatar = isMyRequest
           ? item.warung.owner?.avatar_url
           : item.buyer?.avatar_url;
       } else if (status === "milik") {
         target = milikGroups;
         key = `milik-${item.warung.id}-${item.user_id}`;
-        partnerName = item.buyer?.name || "Customer";
+        partnerName = item.buyer?.name || t("Customer");
         partnerAvatar = item.buyer?.avatar_url;
       }
 
@@ -196,7 +198,7 @@ export default function Cart() {
   };
 
   const deleteItem = async (id) => {
-    if (!confirm("Yakin ingin menghapus item ini?")) return;
+    if (!confirm(t("Yakin ingin menghapus item ini?"))) return;
     setItems((prev) => prev.filter((item) => item.id !== id));
     setSelectedIds((prev) => {
       const newSet = new Set(prev);
@@ -213,7 +215,7 @@ export default function Cart() {
 
   const deleteSelected = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(`Yakin ingin menghapus ${selectedIds.size} item?`)) return;
+    if (!confirm(t("Yakin ingin menghapus ") + selectedIds.size + t(" item?"))) return;
     const ids = Array.from(selectedIds);
     setItems((prev) => prev.filter((item) => !selectedIds.has(item.id)));
     setSelectedIds(new Set());
@@ -279,14 +281,14 @@ export default function Cart() {
       ? firstItem.warung?.created_by_clerk_id
       : firstItem.user_id;
     const opponentName = isBuyer
-      ? firstItem.warung?.owner?.name || "Owner"
-      : firstItem.buyer?.name || "Pembeli";
+      ? firstItem.warung?.owner?.name || t("Owner")
+      : firstItem.buyer?.name || t("Pembeli");
     const opponentAvatar = isBuyer
       ? firstItem.warung?.owner?.avatar_url
       : firstItem.buyer?.avatar_url;
 
     if (!opponentId) {
-      alert("Gagal mengidentifikasi partner");
+      alert(t("Gagal mengidentifikasi partner"));
       setIsProcessing(false);
       return;
     }
@@ -305,7 +307,7 @@ export default function Cart() {
       });
     } catch (err) {
       console.error("Deal error:", err);
-      alert("Gagal melanjutkan deal: " + err.message);
+      alert(t("Gagal melanjutkan deal: ") + err.message);
     } finally {
       setIsProcessing(false);
     }
@@ -385,17 +387,16 @@ export default function Cart() {
               </div>
             </div>
             <h3 className="text-xl font-bold mb-2 text-slate-700">
-              Wah, Keranjang Kosong!
+              {t("Wah, Keranjang Kosong!")}
             </h3>
             <p className="text-sm text-slate-400 max-w-xs mx-auto mb-8">
-              Mulai titip kebutuhanmu ke teman perjalanan atau tetangga di
-              Market.
+              {t("Mulai titip kebutuhanmu ke teman perjalanan atau tetangga di Market.")}
             </p>
             <button
               onClick={() => navigate("/market")}
               className="w-full max-w-xs h-12 rounded-2xl bg-[#4e73df] text-white text-sm font-semibold hover:bg-[#3d64c7] transition-colors shadow-sm"
             >
-              Cari Jastiper
+              {t("Cari Jastiper")}
             </button>
           </div>
         ) : (
@@ -427,7 +428,7 @@ export default function Cart() {
                     )}
                   </div>
                   <span className="text-sm font-medium text-slate-600">
-                    Pilih Semua
+                    {t("Pilih Semua")}
                   </span>
                 </button>
                 {selectedIds.size > 0 && (
@@ -436,7 +437,7 @@ export default function Cart() {
                     className="flex items-center gap-1.5 text-sm text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-xl transition-colors"
                   >
                     <Trash2 size={14} />
-                    Hapus ({selectedIds.size})
+                    {t("Hapus")} ({selectedIds.size})
                   </button>
                 )}
               </div>
@@ -449,7 +450,7 @@ export default function Cart() {
                   <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
                     <Bike size={16} />
                   </div>
-                  Nitip ke Kurir
+                  {t("Nitip ke Kurir")}
                   <span className="text-xs font-medium text-slate-400">
                     ({Object.keys(filteredKurir).length})
                   </span>
@@ -535,7 +536,7 @@ export default function Cart() {
                   <div className="w-8 h-8 rounded-xl bg-[#e4edff] flex items-center justify-center text-[#4e73df]">
                     <Plus size={16} />
                   </div>
-                  Permintaan Nitip
+                  {t("Permintaan Nitip")}
                   <span className="text-xs font-medium text-slate-400">
                     ({Object.keys(filteredPembeli).length})
                   </span>
@@ -621,7 +622,7 @@ export default function Cart() {
                   <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
                     <ShoppingCart size={16} />
                   </div>
-                  Order di Warung
+                  {t("Order di Warung")}
                   <span className="text-xs font-medium text-slate-400">
                     ({Object.keys(filteredMilik).length})
                   </span>
@@ -707,7 +708,7 @@ export default function Cart() {
                   <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500">
                     <ShoppingCart size={16} />
                   </div>
-                  Lainnya
+                  {t("Lainnya")}
                   <span className="text-xs font-medium text-slate-400">
                     ({ungroupedItems.length})
                   </span>
@@ -737,10 +738,10 @@ export default function Cart() {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="text-xs text-slate-400">
-                  {selectedItems.length} item dipilih
+                  {selectedItems.length} {t("item dipilih")}
                 </p>
                 <p className="text-lg font-bold text-slate-900">
-                  Rp {totalPrice.toLocaleString("id-ID")}
+                  Rp {totalPrice.toLocaleString(language === "en" ? "en-US" : "id-ID")}
                 </p>
               </div>
               {isMilikSelection ? (
@@ -749,7 +750,7 @@ export default function Cart() {
                   disabled={multipleOwnersSelected}
                   className="h-12 px-6 rounded-2xl bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 transition-colors disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-amber-500/20"
                 >
-                  Cari Kurir <Bike size={18} />
+                  {t("Cari Kurir")} <Bike size={18} />
                 </button>
               ) : (
                 <button
@@ -760,10 +761,10 @@ export default function Cart() {
                   {isProcessing ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : multipleOwnersSelected ? (
-                    "Pilih 1 Toko"
+                    t("Pilih 1 Toko")
                   ) : (
                     <>
-                      Ajukan Deal <CheckSquare size={16} />
+                      {t("Ajukan Deal")} <CheckSquare size={16} />
                     </>
                   )}
                 </button>

@@ -1,8 +1,10 @@
 import React from "react";
 import { X, MapPin } from "lucide-react";
 import FloatingLocationInput from "../FloatingLocationInput";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function DeliveryModal({ isOpen, onClose, onSend }) {
+  const { t } = useLanguage();
   if (!isOpen) return null;
 
   return (
@@ -22,7 +24,7 @@ export default function DeliveryModal({ isOpen, onClose, onSend }) {
           <div className="px-6 pb-2 flex items-center justify-between flex-shrink-0">
             <h3 className="text-lg font-bold flex items-center gap-2">
               <MapPin size={20} />
-              Pilih Lokasi Pengantaran
+              {t("Pilih Lokasi Pengantaran")}
             </h3>
             <button
               onClick={onClose}
@@ -32,7 +34,7 @@ export default function DeliveryModal({ isOpen, onClose, onSend }) {
             </button>
           </div>
 
-          <DeliveryForm onSend={onSend} onClose={onClose} />
+          <DeliveryForm onSend={onSend} onClose={onClose} t={t} />
         </div>
       </div>
     </>
@@ -40,7 +42,7 @@ export default function DeliveryModal({ isOpen, onClose, onSend }) {
 }
 
 // Form terpisah agar lebih rapi
-function DeliveryForm({ onSend, onClose }) {
+function DeliveryForm({ onSend, onClose, t }) {
   const [location, setLocation] = React.useState({
     name: "",
     address: "",
@@ -60,7 +62,7 @@ function DeliveryForm({ onSend, onClose }) {
     <>
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
         <FloatingLocationInput
-          label="Lokasi Pengantaran"
+          label={t("Lokasi Pengantaran")}
           name="delivery"
           value={location}
           onChange={setLocation}
@@ -87,7 +89,7 @@ function DeliveryForm({ onSend, onClose }) {
           disabled={!location.lat || !location.lng}
           className="w-full flex items-center justify-center gap-2 rounded-2xl bg-[#4e73df] text-white py-3 text-[13px] font-semibold hover:bg-[#3d64c7] transition-colors shadow-sm disabled:opacity-50"
         >
-          Kirim Lokasi
+          {t("Kirim Lokasi")}
         </button>
       </div>
     </>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useLanguage } from "../lib/LanguageContext";
 import {
   ArrowLeft,
   MapPin,
@@ -13,6 +14,8 @@ import { apiFetch } from "../lib/apiClient";
 import LocationPicker from "../components/create/LocationPicker";
 
 export default function Checkout() {
+  const { t, language } = useLanguage();
+  const numberLocale = language === "en" ? "en-US" : "id-ID";
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedIds, items, opponent } = location.state || {};
@@ -94,7 +97,7 @@ export default function Checkout() {
 
   const handleConfirmDeal = async () => {
     if (!pickupLocation || !deliveryLocation) {
-      alert("Lokasi pickup dan delivery harus diisi");
+      alert(t("Lokasi pickup dan delivery harus diisi"));
       return;
     }
 
@@ -136,7 +139,7 @@ export default function Checkout() {
       });
     } catch (err) {
       console.error("Deal error:", err);
-      alert("Gagal memulai deal: " + err.message);
+      alert(t("Gagal memulai deal: ") + err.message);
       setIsProcessing(false);
     }
   };
@@ -158,7 +161,7 @@ export default function Checkout() {
           <ArrowLeft size={24} />
         </button>
         <div className="flex-1 flex items-center gap-3">
-          <h1 className="font-bold text-lg">Ajukan Deal</h1>
+          <h1 className="font-bold text-lg">{t("Ajukan Deal")}</h1>
         </div>
       </div>
 
@@ -166,7 +169,7 @@ export default function Checkout() {
         {/* Info Partner */}
         <div className="bg-base-100 rounded-2xl p-4 shadow-sm border border-base-300">
           <h2 className="font-bold text-sm text-base-content/60 mb-3 uppercase tracking-wider">
-            Partner Deal
+            {t("Partner Deal")}
           </h2>
           <div className="flex items-center gap-3">
             <div className="avatar">
@@ -179,7 +182,7 @@ export default function Checkout() {
             </div>
             <div>
               <p className="font-bold text-base">{opponent.name}</p>
-              <p className="text-sm opacity-70">Akan membuat obrolan baru</p>
+              <p className="text-sm opacity-70">{t("Akan membuat obrolan baru")}</p>
             </div>
           </div>
         </div>
@@ -188,7 +191,7 @@ export default function Checkout() {
         <div className="bg-base-100 rounded-2xl p-4 shadow-sm border border-base-300">
           <div className="flex items-center gap-2 mb-4">
             <ClipboardList className="text-[#4e73df] w-5 h-5" />
-            <h2 className="font-bold text-base">Ringkasan Pesanan</h2>
+            <h2 className="font-bold text-base">{t("Ringkasan Pesanan")}</h2>
           </div>
           <div className="space-y-3">
             {items.map((item) => (
@@ -207,11 +210,11 @@ export default function Checkout() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm line-clamp-2">
-                    {item.product?.name || item.notes || "Item"}
+                    {item.product?.name || item.notes || t("Item")}
                   </p>
                   <p className="text-xs opacity-70 mt-0.5">
                     {item.quantity} x Rp{" "}
-                    {(item.estimated_price || 0).toLocaleString("id-ID")}
+                    {(item.estimated_price || 0).toLocaleString(numberLocale)}
                   </p>
                 </div>
                 <div className="text-right flex-shrink-0">
@@ -219,7 +222,7 @@ export default function Checkout() {
                     Rp{" "}
                     {(
                       item.quantity * Number(item.estimated_price || 0)
-                    ).toLocaleString("id-ID")}
+                    ).toLocaleString(numberLocale)}
                   </p>
                 </div>
               </div>
@@ -229,26 +232,26 @@ export default function Checkout() {
           <div className="mt-4 pt-4 border-t border-base-200">
             <div className="flex justify-between items-center mb-1">
               <p className="text-sm text-base-content/70">
-                Subtotal ({totalQuantity} barang)
+                {t("Subtotal")} ({totalQuantity} {t("barang")})
               </p>
               <p className="font-semibold">
-                Rp {totalPrice.toLocaleString("id-ID")}
+                Rp {totalPrice.toLocaleString(numberLocale)}
               </p>
             </div>
             <div className="flex justify-between items-center mb-2">
               <p className="text-sm text-base-content/70">
-                Penawaran Ongkos/Jastip
+                {t("Penawaran Ongkos/Jastip")}
               </p>
               <p className="font-semibold">
-                Rp {(Number(proposedFee) || 0).toLocaleString("id-ID")}
+                Rp {(Number(proposedFee) || 0).toLocaleString(numberLocale)}
               </p>
             </div>
             <div className="flex justify-between items-center border-t border-base-200 pt-2 mt-2">
-              <p className="font-bold text-base-content/70">Total Penawaran</p>
+              <p className="font-bold text-base-content/70">{t("Total Penawaran")}</p>
               <p className="font-black text-lg text-[#4e73df]">
                 Rp{" "}
                 {(totalPrice + (Number(proposedFee) || 0)).toLocaleString(
-                  "id-ID",
+                  numberLocale,
                 )}
               </p>
             </div>
@@ -260,19 +263,18 @@ export default function Checkout() {
           <div className="flex items-center gap-2 mb-2">
             <Truck className="text-[#4e73df] w-5 h-5" />
             <h2 className="font-bold text-base">
-              Detail Pengiriman & Penawaran
+              {t("Detail Pengiriman & Penawaran")}
             </h2>
           </div>
 
           <div className="form-control w-full space-y-2">
             <label className="label py-1">
               <span className="label-text font-semibold flex items-center gap-1">
-                <MapPin className="w-4 h-4 text-[#4e73df]" /> Lokasi Pickup/Beli
-                (Warung/Lokasi)
+                <MapPin className="w-4 h-4 text-[#4e73df]" /> {t("Lokasi Pickup/Beli (Warung/Lokasi)")}
               </span>
             </label>
             <LocationPicker
-              label="Pilih Lokasi Pickup"
+              label={t("Pilih Lokasi Pickup")}
               value={pickupLocation}
               onSelect={setPickupLocation}
             />
@@ -281,11 +283,11 @@ export default function Checkout() {
           <div className="form-control w-full space-y-2">
             <label className="label py-1">
               <span className="label-text font-semibold flex items-center gap-1">
-                <MapPin className="w-4 h-4 text-[#4e73df]" /> Tujuan Pengantaran
+                <MapPin className="w-4 h-4 text-[#4e73df]" /> {t("Tujuan Pengantaran")}
               </span>
             </label>
             <LocationPicker
-              label="Pilih Tujuan Pengantaran"
+              label={t("Pilih Tujuan Pengantaran")}
               value={deliveryLocation}
               onSelect={setDeliveryLocation}
             />
@@ -294,8 +296,7 @@ export default function Checkout() {
           <div className="form-control w-full space-y-2">
             <label className="label py-1">
               <span className="label-text font-semibold flex items-center gap-1">
-                <Wallet className="w-4 h-4 text-[#4e73df]" /> Penawaran
-                Ongkos/Jastip
+                <Wallet className="w-4 h-4 text-[#4e73df]" /> {t("Penawaran Ongkos/Jastip")}
               </span>
             </label>
             <div className="relative">
@@ -311,20 +312,19 @@ export default function Checkout() {
               />
             </div>
             <p className="text-xs opacity-60 px-1 mt-1">
-              Estimasi tambahan biaya untuk kurir
+              {t("Estimasi tambahan biaya untuk kurir")}
             </p>
           </div>
 
           <div className="form-control w-full space-y-2">
             <label className="label py-1">
               <span className="label-text font-semibold flex items-center gap-1">
-                <Info className="w-4 h-4 text-blue-500" /> Catatan Tambahan
-                (Opsional)
+                <Info className="w-4 h-4 text-blue-500" /> {t("Catatan Tambahan (Opsional)")}
               </span>
             </label>
             <textarea
               className="w-full p-4 rounded-2xl border bg-white/70 dark:bg-white/5 text-sm active:outline-none focus:outline-none"
-              placeholder="Contoh: Tolong belikan yang rasa cokelat ya kalau ada"
+              placeholder={t("Contoh: Tolong belikan yang rasa cokelat ya kalau ada")}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
@@ -339,19 +339,19 @@ export default function Checkout() {
           <div className="flex justify-between items-end px-1">
             <div>
               <p className="text-xs font-medium text-base-content/70 mb-1">
-                Total Pembayaran
+                {t("Total Pembayaran")}
               </p>
               <p className="font-black text-xl text-[#4e73df] leading-none">
                 Rp{" "}
                 {(totalPrice + (Number(proposedFee) || 0)).toLocaleString(
-                  "id-ID",
+                  numberLocale,
                 )}
               </p>
             </div>
             <div className="text-right">
               <p className="text-[11px] font-medium text-base-content/50">
-                Termasuk Jastip <br />
-                Rp {(Number(proposedFee) || 0).toLocaleString("id-ID")}
+                {t("Termasuk Jastip")} <br />
+                Rp {(Number(proposedFee) || 0).toLocaleString(numberLocale)}
               </p>
             </div>
           </div>
@@ -363,7 +363,7 @@ export default function Checkout() {
             {isProcessing ? (
               <span className="loading loading-spinner"></span>
             ) : (
-              "Ajukan Deal"
+              t("Ajukan Deal")
             )}
           </button>
         </div>

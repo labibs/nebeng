@@ -11,6 +11,7 @@ import CreateWarung from "../components/create/CreateWarung";
 import CreateContent from "../components/create/CreateContent";
 import CreateJualanKeliling from "../components/create/CreateJualanKeliling";
 import { Sparkles } from "lucide-react";
+import { useLanguage } from "../lib/LanguageContext";
 
 const AiPostAssistant = lazy(() => import("../components/create/AiPostAssistant"));
 
@@ -24,6 +25,7 @@ function AssistantLoading() {
 }
 
 export default function CreatePost() {
+  const { t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
   const { setBottomNavHidden } = useOutletContext();
@@ -65,7 +67,7 @@ export default function CreatePost() {
         {!action && (
           <>
             <h1 className="mb-4 text-center text-xl font-bold">
-              Mau ngapain hari ini?
+              {t("Mau ngapain hari ini?")}
             </h1>
             <button
               onClick={() => {
@@ -76,8 +78,8 @@ export default function CreatePost() {
             >
               <span className="rounded-full bg-white/15 p-3"><Sparkles size={22} /></span>
               <span>
-                <span className="block font-bold">Buat postingan dengan AI</span>
-                <span className="block text-xs text-white/80">Ceritakan saja, asisten bantu susun postingannya</span>
+                <span className="block font-bold">{t("Buat postingan dengan AI")}</span>
+                <span className="block text-xs text-white/80">{t("Ceritakan saja, asisten bantu susun postingannya")}</span>
               </span>
             </button>
             <CreateActionPicker onSelect={setAction} />

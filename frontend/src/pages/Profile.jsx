@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useUser, useClerk } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../lib/apiClient";
+import { useLanguage } from "../lib/LanguageContext";
 import { openChat } from "../lib/chatHelper";
 import {
   LogOut,
@@ -17,6 +18,8 @@ export default function Profile() {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const navigate = useNavigate();
+  const { language, setLanguage, t } = useLanguage();
+  const [showLanguageSettings, setShowLanguageSettings] = useState(false);
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -40,13 +43,13 @@ export default function Profile() {
   if (loading) {
     return (
       <div className="p-6 text-center text-[#4e73df] font-bold">
-        Loading profile...
+        {t("Loading profile...")}
       </div>
     );
   }
 
   if (!profile) {
-    return <div className="p-6 text-center">Profile tidak ditemukan</div>;
+      return <div className="p-6 text-center">{t("Profil tidak ditemukan")}</div>;
   }
 
   const handleHelp = async () => {
@@ -55,7 +58,7 @@ export default function Profile() {
       const admins = await apiFetch('/users/admins');
 
       if (!admins || admins.length === 0) {
-        alert("Maaf, layanan bantuan sedang tidak tersedia.");
+        alert(t("Maaf, layanan bantuan sedang tidak tersedia."));
         return;
       }
 
@@ -82,19 +85,19 @@ export default function Profile() {
       );
     } catch (err) {
       console.error("Error opening help chat:", err);
-      alert("Terjadi kesalahan saat menghubungi bantuan.");
+      alert(t("Terjadi kesalahan saat menghubungi bantuan."));
     }
   };
 
   const menuItems = [
     {
-      label: "Pengaturan",
+      label: t("Pengaturan"),
       icon: Settings,
-      action: () => alert("Pengaturan segera hadir!"),
+      action: () => setShowLanguageSettings((shown) => !shown),
     },
-    { label: "Outlet Saya", icon: Store, action: () => navigate("/outlet") },
+    { label: t("Outlet Saya"), icon: Store, action: () => navigate("/outlet") },
     {
-      label: "Bantuan",
+      label: t("Bantuan"),
       icon: HelpCircle,
       action: handleHelp,
     },
@@ -103,7 +106,7 @@ export default function Profile() {
   // Tambahkan shortcut Dashboard hanya jika role-nya admin
   if (profile?.role === "admin") {
     menuItems.push({
-      label: "Dashboard Admin",
+      label: t("Dashboard Admin"),
       icon: LayoutDashboard,
       action: () => {
         window.location.href =
@@ -118,7 +121,7 @@ export default function Profile() {
       <div className="absolute -top-2 right-4 w-4 h-4 bg-white border-t border-l border-slate-200 rotate-45" />
 
       {/* Konten Profile */}
-      <div className="p-5 pb-6 space-y-5 pt-[env(safe-area-inset-top)]">
+      <div className="p-5 pb-6 pt-5 space-y-5">
         {/* Header Profile */}
         <div className="flex items-center gap-4">
           <div className="relative">
@@ -147,9 +150,9 @@ export default function Profile() {
               <User size={20} />
             </div>
             <div className="text-left">
-              <p className="text-sm font-bold text-white">Detail Profile</p>
+              <p className="text-sm font-bold text-white">{t("Detail Profil")}</p>
               <p className="text-[10px] font-medium text-white/70">
-                Lihat tampilan premium
+                {t("Lihat tampilan premium")}
               </p>
             </div>
           </div>
@@ -162,7 +165,7 @@ export default function Profile() {
         {/* Shortcuts Section */}
         <div className="space-y-1">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 pl-1">
-            Shortcuts
+            {t("Shortcuts")}
           </p>
           {menuItems.map((item, index) => (
             <button
@@ -186,6 +189,27 @@ export default function Profile() {
           ))}
         </div>
 
+        {showLanguageSettings && (
+          <section className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+            <h3 className="text-sm font-bold text-slate-800">{t("Bahasa")}</h3>
+            <p className="mt-1 text-xs text-slate-500">{t("Pilih bahasa aplikasi")}</p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {[{ id: "id", label: t("Bahasa Indonesia") }, { id: "en", label: t("Inggris") }].map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  aria-pressed={language === option.id}
+                  onClick={() => setLanguage(option.id)}
+                  className={`rounded-xl border px-3 py-2.5 text-xs font-bold transition ${language === option.id ? "border-blue-600 bg-blue-600 text-white" : "border-slate-200 bg-white text-slate-600"}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-[10px] text-slate-400">{t("Simpan preferensi di perangkat ini")}</p>
+          </section>
+        )}
+
         {/* Logout Section */}
         <div className="pt-2 border-t border-slate-100">
           <button
@@ -195,7 +219,7 @@ export default function Profile() {
             <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center group-hover:bg-rose-100 transition-colors">
               <LogOut size={16} />
             </div>
-            Logout Akun
+            {t("Keluar")}
           </button>
         </div>
       </div>

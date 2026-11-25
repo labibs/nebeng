@@ -1,11 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Bot, LoaderCircle, Send, Sparkles } from "lucide-react";
 import { apiFetch } from "../../lib/apiClient";
-
-const initialMessage = {
-  role: "assistant",
-  content: "Hai! Ceritakan saja postingan yang ingin kamu buat. Aku akan bantu merapikan detailnya sebelum dipublikasikan.",
-};
+import { useLanguage } from "../../lib/LanguageContext";
 
 const typeLabels = {
   nitip_bawakan: "Nitip Bawain",
@@ -18,6 +14,11 @@ const typeLabels = {
 };
 
 export default function AiPostAssistant({ onBack }) {
+  const { t } = useLanguage();
+  const initialMessage = useMemo(() => ({
+    role: "assistant",
+    content: t("Hai! Ceritakan saja postingan yang ingin kamu buat. Aku akan bantu merapikan detailnya sebelum dipublikasikan."),
+  }), [t]);
   const [messages, setMessages] = useState([initialMessage]);
   const [draft, setDraft] = useState(null);
   const [input, setInput] = useState("");
@@ -88,14 +89,14 @@ export default function AiPostAssistant({ onBack }) {
 
   const summaryItems = draft
     ? [
-        ["Barang / kebutuhan", draft.item_description],
-        ["Dari", draft.from_city],
-        ["Ke", draft.to_city],
-        ["Tanggal", draft.travel_date],
-        ["Harga", draft.price != null ? `Rp${Number(draft.price).toLocaleString("id-ID")}` : null],
-        ["Ongkos", draft.fee != null ? `Rp${Number(draft.fee).toLocaleString("id-ID")}` : null],
-        ["Detail", draft.description],
-        ["Lokasi", draft.location],
+        [t("Barang / kebutuhan"), draft.item_description],
+        [t("Dari"), draft.from_city],
+        [t("Ke"), draft.to_city],
+        [t("Tanggal"), draft.travel_date],
+        [t("Harga"), draft.price != null ? `Rp${Number(draft.price).toLocaleString("id-ID")}` : null],
+        [t("Ongkos"), draft.fee != null ? `Rp${Number(draft.fee).toLocaleString("id-ID")}` : null],
+        [t("Detail"), draft.description],
+        [t("Lokasi"), draft.location],
       ].filter(([, value]) => value)
     : [];
 
@@ -109,8 +110,8 @@ export default function AiPostAssistant({ onBack }) {
           <Bot size={22} />
         </div>
         <div>
-          <h2 className="font-bold">Asisten buat postingan</h2>
-          <p className="text-xs opacity-65">Ceritakan kebutuhanmu lewat chat</p>
+          <h2 className="font-bold">{t("Asisten buat postingan")}</h2>
+          <p className="text-xs opacity-65">{t("Ceritakan kebutuhanmu lewat chat")}</p>
         </div>
       </header>
 
@@ -133,7 +134,7 @@ export default function AiPostAssistant({ onBack }) {
           <section className="mx-auto max-w-md rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
             <div className="mb-2 flex items-center gap-2 font-semibold">
               <Sparkles size={17} className="text-blue-600" />
-              Pratinjau · {typeLabels[draft.type] || "Postingan"}
+              {t("Pratinjau")} · {t(typeLabels[draft.type] || "Postingan")}
             </div>
             {summaryItems.length > 0 && (
               <dl className="space-y-1 text-sm">
@@ -146,7 +147,7 @@ export default function AiPostAssistant({ onBack }) {
             )}
             {draft.ready && (
               <button onClick={createPost} disabled={posting || sending} className="mt-4 w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white disabled:opacity-60">
-                {posting ? "Membuat postingan..." : "Buat postingan"}
+                {posting ? t("Membuat postingan...") : t("Buat postingan")}
               </button>
             )}
           </section>
@@ -168,14 +169,14 @@ export default function AiPostAssistant({ onBack }) {
           }}
           rows={1}
           maxLength={2000}
-          placeholder="Contoh: Aku mau nitip bawain paket ke Bandung..."
+          placeholder={t("Contoh: Aku mau nitip bawain paket ke Bandung...")}
           className="max-h-28 min-h-10 flex-1 resize-y bg-transparent px-2 py-2 text-sm outline-none"
         />
         <button type="submit" disabled={!input.trim() || sending} aria-label="Kirim pesan" className="rounded-xl bg-blue-600 p-3 text-white disabled:opacity-40">
           <Send size={18} />
         </button>
       </form>
-      <p className="mt-2 text-center text-[11px] opacity-55">Periksa pratinjau sebelum postingan dibuat.</p>
+      <p className="mt-2 text-center text-[11px] opacity-55">{t("Periksa pratinjau sebelum postingan dibuat.")}</p>
     </div>
   );
 }

@@ -1,7 +1,9 @@
 import { Star, User, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function MarketProductCard({ product }) {
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
 
   const status = product?.warung_status;
@@ -9,10 +11,10 @@ export default function MarketProductCard({ product }) {
   const ownerAvatar = product?.owner_avatar;
 
   const keteranganByStatus = () => {
-    if (status === "kurir") return "Bisa nitip";
-    if (status === "pembeli" && category === "Jasa") return "Butuh Jasa";
-    if (status === "pembeli" && category !== "Jasa") return "Nitip beliin";
-    return "Outlet resmi";
+    if (status === "kurir") return t("Bisa nitip");
+    if (status === "pembeli" && category === "Jasa") return t("Butuh Jasa");
+    if (status === "pembeli" && category !== "Jasa") return t("Nitip beliin");
+    return t("Outlet resmi");
   };
 
   return (
@@ -29,7 +31,7 @@ export default function MarketProductCard({ product }) {
           />
 
           <div className="absolute left-2 top-2 rounded-full bg-slate-900/50 px-2 py-0.5 text-[8px] font-medium text-white backdrop-blur-md">
-            {product.category_name?.slice(0, 10) || "Item"}
+            {product.category_name?.slice(0, 10) || t("Item")}
           </div>
         </div>
       </div>
@@ -50,13 +52,13 @@ export default function MarketProductCard({ product }) {
 
           <div className="flex items-center gap-1.5 pt-1">
             <span className="text-[14px] font-bold text-slate-900">
-              Rp{Number(product.estimated_price || 0).toLocaleString("id-ID")}
+              Rp{Number(product.estimated_price || 0).toLocaleString(language === "en" ? "en-US" : "id-ID")}
             </span>
             <span className="rounded-full border border-amber-100 bg-amber-50 px-1.5 py-0.5 text-[8px] font-medium leading-none text-amber-700">
-              Diskon 10%
+              {t("Diskon 10%")}
             </span>
             <span className="shrink-0 text-[9px] font-medium text-slate-400">
-              estimasi
+              {t("estimasi")}
             </span>
           </div>
         </div>
@@ -83,7 +85,7 @@ export default function MarketProductCard({ product }) {
                 )}
               </div>
               <span className="max-w-[42px] truncate text-[8px] font-medium text-slate-600">
-                {product.owner_name?.split(" ")[0] || "Owner"}
+                {product.owner_name?.split(" ")[0] || t("Owner")}
               </span>
             </div>
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X, Star, MessageSquare } from "lucide-react";
 import { apiFetch } from "../../lib/apiClient";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function ReviewBottomSheet({
   deal,
@@ -9,6 +10,7 @@ export default function ReviewBottomSheet({
   onClose,
   onSuccess,
 }) {
+  const { t } = useLanguage();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,7 +18,7 @@ export default function ReviewBottomSheet({
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      alert("Silakan pilih rating bintang terlebih dahulu.");
+      alert(t("Silakan pilih rating bintang terlebih dahulu."));
       return;
     }
 
@@ -33,12 +35,12 @@ export default function ReviewBottomSheet({
         }),
       });
 
-      alert("Terima kasih atas ulasan Anda!");
+      alert(t("Terima kasih atas ulasan Anda!"));
       onSuccess();
       onClose();
     } catch (err) {
       console.error("Gagal mengirim ulasan:", err.message);
-      alert("Gagal mengirim ulasan. Silakan coba lagi.");
+      alert(t("Gagal mengirim ulasan. Silakan coba lagi."));
     } finally {
       setLoading(false);
     }
@@ -61,7 +63,7 @@ export default function ReviewBottomSheet({
         <div className="px-6 pb-2 flex items-center justify-between flex-shrink-0">
           <h3 className="text-lg font-bold flex items-center gap-2">
             <MessageSquare size={20} />
-            Beri Ulasan
+            {t("Beri Ulasan")}
           </h3>
           <button
             onClick={onClose}
@@ -71,7 +73,7 @@ export default function ReviewBottomSheet({
           </button>
         </div>
         <p className="px-6 text-sm text-slate-400 flex-shrink-0">
-          Bagaimana pengalaman nitip kamu dengan {deal.carrier?.name}?
+          {t("Bagaimana pengalaman nitip kamu dengan")} {deal.carrier?.name}?
         </p>
 
         {/* Content */}
@@ -108,11 +110,11 @@ export default function ReviewBottomSheet({
           {/* COMMENT AREA */}
           <div className="mb-4">
             <label className="text-sm font-semibold mb-2 block px-1 text-slate-600">
-              Komentar (Opsional)
+              {t("Komentar (Opsional)")}
             </label>
             <textarea
               className="textarea textarea-bordered w-full rounded-2xl h-32 text-base focus:ring-2 focus:ring-[#4e73df]/20 focus:border-[#4e73df] transition-all bg-slate-50"
-              placeholder="Ceritakan pengalamanmu..."
+              placeholder={t("Ceritakan pengalamanmu...")}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
             />
@@ -126,7 +128,7 @@ export default function ReviewBottomSheet({
             disabled={loading || rating === 0}
             className="w-full flex items-center justify-center gap-2 rounded-2xl bg-[#4e73df] text-white py-3 text-[13px] font-semibold hover:bg-[#3d64c7] transition-colors shadow-sm disabled:opacity-50"
           >
-            {loading ? "Mengirim..." : "Kirim Ulasan"}
+            {loading ? t("Mengirim...") : t("Kirim Ulasan")}
           </button>
         </div>
       </div>

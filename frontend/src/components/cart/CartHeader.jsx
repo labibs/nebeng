@@ -1,12 +1,14 @@
 import { ArrowLeft, Search, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function CartHeader({
   title = "Keranjang Nitip",
   searchQuery = "",
   setSearchQuery = () => {},
 }) {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [isSearchVisible, setIsSearchVisible] = useState(false);
 
@@ -16,16 +18,18 @@ export default function CartHeader({
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
+            aria-label={t("Kembali")}
             className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-50 bg-white shadow-[0_12px_28px_rgba(82,109,181,0.15)] transition-transform active:scale-95"
           >
             <ArrowLeft size={20} className="text-slate-700" />
           </button>
-          <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+          <h3 className="text-lg font-bold text-slate-900">{t(title)}</h3>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsSearchVisible(!isSearchVisible)}
+            aria-label={t("Search")}
             className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-50 bg-white shadow-[0_12px_28px_rgba(82,109,181,0.15)] transition-transform active:scale-95 relative"
           >
             <Search
@@ -48,7 +52,7 @@ export default function CartHeader({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari item, toko, atau nama..."
+              placeholder={t("Cari item, toko, atau nama...")}
               className="w-full min-w-0 bg-transparent text-[14px] font-medium text-slate-700 outline-none placeholder:text-slate-400"
             />
             {searchQuery && (

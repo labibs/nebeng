@@ -1,4 +1,5 @@
 import MarketProductCard from "./MarketProductCard";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function MarketSection({
   title,
@@ -6,6 +7,7 @@ export default function MarketSection({
   products = [],
   loading = false,
 }) {
+  const { t } = useLanguage();
   return (
     <div className="space-y-5">
       <div className="flex items-end justify-between gap-3 px-1">
@@ -17,14 +19,14 @@ export default function MarketSection({
             <p className="mt-1 text-[13px] text-slate-500">{subtitle}</p>
           ) : (
             <p className="mt-1 text-[12px] font-medium text-slate-400">
-              Temukan produk terbaik
+              {t("Temukan produk terbaik")}
             </p>
           )}
         </div>
         <div className="flex items-center gap-1.5 rounded-2xl bg-white px-3 py-1.5 shadow-sm border border-slate-50">
           <span className="h-1.5 w-1.5 rounded-full bg-[#4e73df] animate-pulse"></span>
           <span className="text-[11px] font-semibold text-slate-500">
-            {products.length} item
+            {products.length} {t("item")}
           </span>
         </div>
       </div>
@@ -50,10 +52,10 @@ export default function MarketSection({
             <span className="text-xl">🔍</span>
           </div>
           <p className="text-[15px] font-semibold text-slate-700">
-            Tidak ada produk
+            {t("Tidak ada produk")}
           </p>
           <p className="mx-auto mt-2 max-w-[200px] text-[13px] text-slate-400">
-            Coba ganti pencarian atau pilih kategori lain.
+            {t("Coba ganti pencarian atau pilih kategori lain.")}
           </p>
         </div>
       )}

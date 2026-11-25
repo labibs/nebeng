@@ -4,8 +4,10 @@ import { ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../../lib/apiClient";
 import { useUser } from "@clerk/clerk-react";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function CartIconButton({ className = "" }) {
+  const { t } = useLanguage();
   const { user } = useUser();
   const navigate = useNavigate();
   const [count, setCount] = useState(0);
@@ -66,7 +68,7 @@ export default function CartIconButton({ className = "" }) {
     <button
       onClick={handleClick}
       className={`group relative flex items-center justify-center p-2 rounded-full transition-all active:scale-90 ${className}`}
-      aria-label="Keranjang Nitip"
+      aria-label={t("Keranjang Nitip")}
     >
       <div className="relative">
         <ShoppingCart

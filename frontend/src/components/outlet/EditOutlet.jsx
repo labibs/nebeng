@@ -7,9 +7,11 @@ import { uploadPostImage } from "../../lib/uploadPostImage";
 import { ArrowLeft } from "lucide-react";
 import LocationPicker from "../create/LocationPicker";
 import SlideToCreate from "../create/SlideToCreate";
+import { useLanguage } from "../../lib/LanguageContext";
 import { useNavigate } from "react-router-dom";
 
 export default function EditOutlet() {
+  const { t } = useLanguage();
   const { id } = useParams();
   const { user } = useUser();
 
@@ -185,7 +187,7 @@ export default function EditOutlet() {
   if (fetching) {
     return (
       <div className="min-h-screen flex items-center justify-center text-sm opacity-60">
-        Memuat data outlet...
+        {t("Memuat data outlet...")}
       </div>
     );
   }

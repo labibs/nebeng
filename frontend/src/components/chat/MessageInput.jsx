@@ -9,6 +9,7 @@ import ItemModal from "./ItemModal";
 import DeliveryModal from "./DeliveryModal";
 import { Send, Image, Smile, Handshake, X } from "lucide-react";
 import { uploadPostImage } from "../../lib/uploadPostImage";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function MessageInput({
   currentUserId,
@@ -19,6 +20,7 @@ export default function MessageInput({
   depositorId,
   setMessages,
 }) {
+  const { t } = useLanguage();
   const [newMessage, setNewMessage] = useState("");
   const [showDealMenu, setShowDealMenu] = useState(false);
   const [showNegoModal, setShowNegoModal] = useState(false);
@@ -146,7 +148,7 @@ export default function MessageInput({
     } catch (error) {
       console.error("Error kirim pesan:", error);
       setMessages((prev) => prev.filter((msg) => msg.id !== tempId));
-      alert("Gagal mengirim pesan");
+      alert(t("Gagal mengirim pesan"));
       setNewMessage(trimmedContent);
     }
   };
@@ -161,7 +163,7 @@ export default function MessageInput({
       await sendMessage(url, "image");
     } catch (err) {
       console.error(err);
-      alert("Gagal upload gambar");
+      alert(t("Gagal upload gambar"));
     } finally {
       setUploading(false);
     }
@@ -207,6 +209,7 @@ export default function MessageInput({
           {/* Menu Handshake / Deal */}
           <button
             onClick={() => setShowDealMenu(!showDealMenu)}
+            aria-label={t("Buka opsi deal")}
             className={`w-11 h-11 shrink-0 rounded-full flex items-center justify-center transition-all ${
               showDealMenu
                 ? "bg-[#4e73df] text-white"
@@ -220,6 +223,7 @@ export default function MessageInput({
           <div className="flex-1 flex items-center gap-2.5 rounded-[24px] bg-[#f5f7ff] px-4 py-1.5 shadow-inner border border-slate-100/50">
             <button
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              aria-label={t("Pilih emoji")}
               className="text-slate-400 hover:text-[#4e73df] transition-colors"
             >
               <Smile size={20} />
@@ -231,7 +235,7 @@ export default function MessageInput({
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-              placeholder="Tulis pesan..."
+              placeholder={t("Tulis pesan...")}
               className="w-full bg-transparent text-[14px] py-2.5 text-slate-700 outline-none placeholder:text-slate-400"
             />
 
@@ -245,6 +249,7 @@ export default function MessageInput({
 
             <button
               onClick={() => fileInputRef.current?.click()}
+              aria-label={t("Kirim gambar")}
               disabled={uploading}
               className="text-slate-400 hover:text-[#4e73df] transition-colors disabled:opacity-50"
             >
@@ -259,6 +264,7 @@ export default function MessageInput({
           {/* Send Button */}
           <button
             onClick={() => sendMessage()}
+            aria-label={t("Kirim pesan")}
             disabled={!newMessage.trim() || uploading}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#4e73df] text-white shadow-[0_8px_20px_rgba(78,115,223,0.3)] active:scale-95 transition-all disabled:opacity-50"
           >

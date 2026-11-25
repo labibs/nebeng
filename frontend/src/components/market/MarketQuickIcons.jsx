@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { apiFetch } from "../../lib/apiClient";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function MarketQuickIcons({ active, onChange, warungCategory }) {
+  const { t } = useLanguage();
   const [icons, setIcons] = useState([]);
 
   useEffect(() => {
@@ -42,9 +44,9 @@ export default function MarketQuickIcons({ active, onChange, warungCategory }) {
           </div>
           <div>
             <p className="text-sm font-semibold text-slate-900 dark:text-white">
-              Shortcut cepat
+              {t("Shortcut cepat")}
             </p>
-            <p className="text-xs">Pilih kategori produk spesifik</p>
+            <p className="text-xs">{t("Pilih kategori produk spesifik")}</p>
           </div>
         </div>
         <button
@@ -52,7 +54,7 @@ export default function MarketQuickIcons({ active, onChange, warungCategory }) {
           onClick={() => onChange(null)}
           className="text-xs font-medium text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-200"
         >
-          Reset
+          {t("Reset")}
         </button>
       </div>
 
@@ -86,7 +88,7 @@ export default function MarketQuickIcons({ active, onChange, warungCategory }) {
                     : "mt-2 text-xs font-medium text-slate-500 dark:text-slate-300"
                 }
               >
-                {item.name}
+                {t(item.name)}
               </p>
             </button>
           );

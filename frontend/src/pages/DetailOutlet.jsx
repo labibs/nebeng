@@ -9,8 +9,10 @@ import OutletInfoCard from "../components/detailOutlet/OutletInfoCard";
 import CategoryChips from "../components/detailOutlet/CategoryChips";
 import ProductGrid from "../components/detailOutlet/ProductGrid";
 import AddProductBottomSheet from "../components/detailOutlet/AddProductBottomSheet";
+import { useLanguage } from "../lib/LanguageContext";
 
 export default function DetailOutlet() {
+  const { t } = useLanguage();
   const { id } = useParams();
   const [outlet, setOutlet] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -170,7 +172,7 @@ export default function DetailOutlet() {
       </motion.div>
     );
   }
-  if (!outlet) return <div className="p-4">Outlet tidak ditemukan</div>;
+  if (!outlet) return <div className="p-4">{t("Outlet tidak ditemukan")}</div>;
 
   return (
     <motion.div

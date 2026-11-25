@@ -1,3 +1,5 @@
+import { useLanguage } from "../../lib/LanguageContext";
+
 const categories = [
   "Semua",
   "Makanan",
@@ -10,14 +12,15 @@ const categories = [
 ];
 
 export default function MarketCategories({ active, onChange }) {
+  const { t } = useLanguage();
   return (
     <div className="space-y-3.5">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-[18px] font-bold tracking-tight text-slate-900">
-          Kategori
+          {t("Kategori")}
         </h2>
         <button className="text-[11px] font-semibold text-[#4e73df] hover:opacity-70 transition-all">
-          Lihat semua
+          {t("Lihat semua")}
         </button>
       </div>
 
@@ -36,7 +39,7 @@ export default function MarketCategories({ active, onChange }) {
                   : "whitespace-nowrap rounded-[26px] border border-slate-50 bg-white px-5 py-2.5 text-[12px] font-medium text-slate-500 shadow-[0_8px_25px_rgba(0,0,0,0.04)] transition-all hover:bg-slate-50 active:scale-95"
               }
             >
-              {item}
+              {t(item)}
             </button>
           );
         })}

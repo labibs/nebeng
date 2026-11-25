@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useLanguage } from "../../lib/LanguageContext";
 import { Package, Bike, Truck, Car, ArrowRight } from "lucide-react";
 
 export default function PostCard({ msg, isMine, avatar, postInfo }) {
+  const { t, language } = useLanguage();
   const [showFullAddress, setShowFullAddress] = useState(false);
   const post = msg.post || {};
 
@@ -45,7 +47,7 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
 
       <div className="chat-header">
         <time className="text-xs opacity-70">
-          {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+          {new Date(msg.created_at).toLocaleTimeString(language === "en" ? "en-US" : "id-ID", {
             hour: "2-digit",
             minute: "2-digit",
           })}
@@ -72,11 +74,11 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
           </div>
           <div className="flex flex-col">
             <h3 className="font-black text-slate-800 text-[15px] leading-tight uppercase tracking-tight">
-              {post.type === "titip" ? "Mau Titip" : "Bisa Bawa"}
+              {post.type === "titip" ? t("Mau Titip") : t("Bisa Bawa")}
             </h3>
             <p className="text-xs font-bold text-emerald-600 mt-0.5">
-              Ongkos: Rp
-              {post.fee ? parseInt(post.fee).toLocaleString("id-ID") : "-"}
+              {t("Ongkos")}: Rp
+              {post.fee ? parseInt(post.fee).toLocaleString(language === "en" ? "en-US" : "id-ID") : "-"}
             </p>
           </div>
         </div>
@@ -88,7 +90,7 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
               post.item_photo ||
               "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=200&q=80"
             }
-            alt="Barang"
+            alt={t("Barang")}
             className="w-full h-full object-cover"
           />
         </div>
@@ -113,14 +115,14 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
           onClick={() => setShowFullAddress(!showFullAddress)}
           className="w-full py-2 bg-slate-50 rounded-xl text-[9px] text-slate-500 font-bold hover:bg-slate-100 transition-colors uppercase tracking-widest border border-slate-100"
         >
-          {showFullAddress ? "Tutup Alamat" : "Detail Alamat"}
+          {showFullAddress ? t("Tutup Alamat") : t("Detail Alamat")}
         </button>
 
         {showFullAddress && (
           <div className="mt-3 p-3 bg-slate-50 rounded-xl text-[10px] space-y-2 border border-slate-100 animate-in fade-in slide-in-from-top-2">
             <div>
               <span className="block font-black text-slate-400 mb-0.5">
-                ALAMAT ASAL:
+                {t("ALAMAT ASAL:")}
               </span>
               <span className="text-slate-600 leading-tight">
                 {post.from_city.replace(
@@ -131,7 +133,7 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
             </div>
             <div>
               <span className="block font-black text-slate-400 mb-0.5">
-                ALAMAT TUJUAN:
+                {t("ALAMAT TUJUAN:")}
               </span>
               <span className="text-slate-600 leading-tight">
                 {post.to_city.replace(
@@ -145,7 +147,7 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
 
         <div className="mt-4 pt-4 border-t border-slate-50">
           <p className="text-[11px] text-center text-slate-400 italic leading-relaxed">
-            "{msg.content || "Saya tertarik dengan penawaran ini."}"
+            "{msg.content || t("Saya tertarik dengan penawaran ini.")}"
           </p>
         </div>
 
@@ -165,7 +167,7 @@ export default function PostCard({ msg, isMine, avatar, postInfo }) {
         <div
           className={`chat-footer text-xs mt-0 ${msg.is_read ? "text-blue-500" : "opacity-70"}`}
         >
-          {msg.is_read ? "Terbaca ✓✓" : "Terkirim ✓"}
+          {msg.is_read ? t("Terbaca ✓✓") : t("Terkirim ✓")}
         </div>
       )}
     </div>

@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function ChatHeader({ recipient, isLoading = false }) {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -11,6 +13,7 @@ export default function ChatHeader({ recipient, isLoading = false }) {
         <div className="flex items-center gap-3 px-4 py-3">
           <button
             onClick={() => navigate(-1)}
+            aria-label={t("Kembali")}
             className="flex h-11 w-11 items-center justify-center rounded-full bg-white border border-slate-100 shadow-[0_12px_28px_rgba(82,109,181,0.15)] transition-transform active:scale-95"
           >
             <svg
@@ -45,6 +48,7 @@ export default function ChatHeader({ recipient, isLoading = false }) {
       <div className="flex items-center gap-3 px-4 py-3">
         <button
           onClick={() => navigate(-1)}
+          aria-label={t("Kembali")}
           className="flex h-11 w-11 items-center justify-center rounded-full bg-white border border-slate-100 shadow-[0_12px_28px_rgba(82,109,181,0.15)] transition-transform active:scale-95"
         >
           <svg
@@ -84,7 +88,7 @@ export default function ChatHeader({ recipient, isLoading = false }) {
             <h2 className="font-bold text-base text-slate-900 truncate">
               {recipient.name}
             </h2>
-            <p className="text-xs text-slate-400">Online</p>
+            <p className="text-xs text-slate-400">{t("Online")}</p>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { useUser } from "@clerk/clerk-react";
 import { apiFetch } from "../lib/apiClient";
 import { useCachedFetch } from "../lib/useCachedFetch";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../lib/LanguageContext";
 import TransaksiHeader from "../components/transaksi/TransaksiHeader";
 import DealStatusBadge from "../components/common/DealStatusBadge";
 
@@ -69,6 +70,7 @@ function getRouteLabel(location, fallback) {
 }
 
 export default function TransaksiPage() {
+  const { t, language } = useLanguage();
   const ITEMS_PER_PAGE = 10;
   const { user, isLoaded } = useUser();
   const clerkId = user?.id || null;
@@ -157,7 +159,7 @@ export default function TransaksiPage() {
   if (!clerkId) {
     return (
       <div className="flex items-center justify-center h-screen">
-        Loading user...
+        {t("Loading user...")}
       </div>
     );
   }
@@ -239,8 +241,8 @@ export default function TransaksiPage() {
             <div className="p-12 text-center">
               <p className="text-xl font-medium text-base-content/60">
                 {searchQuery
-                  ? "Tidak ada transaksi yang cocok"
-                  : "Belum ada transaksi"}
+                  ? t("Tidak ada transaksi yang cocok")
+                  : t("Belum ada transaksi")}
               </p>
             </div>
           ) : (
@@ -280,11 +282,11 @@ export default function TransaksiPage() {
                       <div className="absolute left-1.5 top-1.5">
                         {trx.deal?.carrier_id === clerkId ? (
                           <span className="rounded-full bg-rose-500/80 px-2 py-0.5 text-[7px] font-extrabold text-white backdrop-blur-md tracking-wider uppercase">
-                            Carrier
+                            {t("Carrier")}
                           </span>
                         ) : (
                           <span className="rounded-full bg-blue-500/80 px-2 py-0.5 text-[7px] font-extrabold text-white backdrop-blur-md tracking-wider uppercase">
-                            Owner
+                            {t("Owner")}
                           </span>
                         )}
                       </div>
@@ -296,7 +298,7 @@ export default function TransaksiPage() {
                     {/* Header: Date & Status */}
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-semibold text-slate-400">
-                        {new Date(trx.created_at).toLocaleDateString("id-ID", {
+                        {new Date(trx.created_at).toLocaleDateString(language === "en" ? "en-US" : "id-ID", {
                           day: "numeric",
                           month: "short",
                         })}
@@ -333,7 +335,7 @@ export default function TransaksiPage() {
                         Rp{" "}
                         {Number(
                           trx.gross_amount ?? trx.deal?.agreed_fee ?? 0,
-                        ).toLocaleString("id-ID")}
+                        ).toLocaleString(language === "en" ? "en-US" : "id-ID")}
                       </p>
 
                       <div className="flex items-center gap-2">
@@ -355,9 +357,9 @@ export default function TransaksiPage() {
                           <span className="max-w-[64px] truncate text-[10px] font-bold text-slate-600 tracking-tight">
                             {trx.deal?.carrier_id === clerkId
                               ? trx.deal?.depositor?.name?.split(" ")[0] ||
-                                "Owner"
+                                t("Owner")
                               : trx.deal?.carrier?.name?.split(" ")[0] ||
-                                "Carrier"}
+                                t("Carrier")}
                           </span>
                         </div>
                       </div>
@@ -376,11 +378,11 @@ export default function TransaksiPage() {
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
               >
-                Prev
+                {t("Prev")}
               </button>
 
               <span className="text-sm text-base-content/70">
-                Halaman {currentPage} dari {totalPages}
+                {t("Halaman")} {currentPage} {t("dari")} {totalPages}
               </span>
 
               <button
@@ -391,7 +393,7 @@ export default function TransaksiPage() {
                   setCurrentPage((page) => Math.min(totalPages, page + 1))
                 }
               >
-                Next
+                {t("Next")}
               </button>
             </div>
           )}

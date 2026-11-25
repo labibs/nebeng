@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { useLanguage } from "../../lib/LanguageContext";
 
 function OpponentSummary({ isCarrierLogin }) {
+  const { t } = useLanguage();
   const [showFull, setShowFull] = useState(false);
   const limit = 60;
 
   const opponentRingkasan = isCarrierLogin
-    ? "Dana dari customer akan diteruskan kepada Anda setelah barang dinyatakan diterima oleh penerima. Pastikan proses pengiriman dilakukan sesuai kesepakatan."
-    : "Pastikan seluruh detail pesanan sudah sesuai sebelum melanjutkan pembayaran. Dana akan diteruskan kepada kurir setelah barang diterima oleh penerima.";
+    ? t("Dana dari customer akan diteruskan kepada Anda setelah barang dinyatakan diterima oleh penerima. Pastikan proses pengiriman dilakukan sesuai kesepakatan.")
+    : t("Pastikan seluruh detail pesanan sudah sesuai sebelum melanjutkan pembayaran. Dana akan diteruskan kepada kurir setelah barang diterima oleh penerima.");
 
   const isLong = opponentRingkasan.length > limit;
   const displayText = showFull ? opponentRingkasan : opponentRingkasan.slice(0, limit);
@@ -20,7 +22,7 @@ function OpponentSummary({ isCarrierLogin }) {
           className="text-blue-600 cursor-pointer ml-1"
           onClick={() => setShowFull(true)}
         >
-          ... selengkapnya
+          {t("... selengkapnya")}
         </button>
       )}
       {isLong && showFull && (
@@ -29,7 +31,7 @@ function OpponentSummary({ isCarrierLogin }) {
           className="text-blue-600 cursor-pointer ml-1"
           onClick={() => setShowFull(false)}
         >
-          {' '}tutup
+          {' '}{t("tutup")}
         </button>
       )}
     </span>

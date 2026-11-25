@@ -4,6 +4,7 @@ import L from "leaflet";
 import { X } from "lucide-react";
 import { apiFetch } from "../../lib/apiClient";
 import { parseLocation } from "../../lib/parseLocation";
+import { useLanguage } from "../../lib/LanguageContext";
 
 // Fix default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -17,6 +18,7 @@ L.Icon.Default.mergeOptions({
 });
 
 export default function LiveTrackingModal({ open, onClose, deal }) {
+  const { t } = useLanguage();
   const [courierPos, setCourierPos] = useState(null);
 
   const courierIcon = L.icon({
@@ -83,7 +85,7 @@ export default function LiveTrackingModal({ open, onClose, deal }) {
       <div className="bg-base-100 w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b">
-          <h3 className="font-semibold">Live Tracking Pengantaran</h3>
+          <h3 className="font-semibold">{t("Live Tracking Pengantaran")}</h3>
           <button onClick={onClose} className="btn btn-sm btn-circle">
             <X size={16} />
           </button>
@@ -129,17 +131,17 @@ export default function LiveTrackingModal({ open, onClose, deal }) {
         {/* Footer info */}
         <div className="p-4 text-sm space-y-1">
           <p>
-            📍 <b>Pickup:</b> {pickup.address}
+            📍 <b>{t("Pickup:")}</b> {pickup.address}
           </p>
           <p>
-            🏁 <b>Tujuan:</b> {delivery.address}
+            🏁 <b>{t("Tujuan:")}</b> {delivery.address}
           </p>
           {courierPos ? (
             <p className="text-emerald-600">
               🛵 Kurir sedang menuju lokasi tujuan
             </p>
           ) : (
-            <p className="opacity-60">Menunggu lokasi kurir…</p>
+            <p className="opacity-60">{t("Menunggu lokasi kurir…")}</p>
           )}
         </div>
       </div>

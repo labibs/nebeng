@@ -1,3 +1,5 @@
+import { useLanguage } from "../../lib/LanguageContext";
+
 export default function DealStatusBadge({
   dealStatus,
   transactionStatus,
@@ -5,6 +7,7 @@ export default function DealStatusBadge({
   deliveryStatus,
   size = "md", // sm | md | lg
 }) {
+  const { t } = useLanguage();
   const effectivePaymentStatus = paymentStatus ?? transactionStatus;
 
   let label = "Ulang Pembayaran";
@@ -55,5 +58,5 @@ export default function DealStatusBadge({
     color = "badge-error badge-outline opacity-70";
   }
 
-  return <span className={`badge ${color} badge-${size}`}>{label}</span>;
+  return <span className={`badge ${color} badge-${size}`}>{t(label)}</span>;
 }

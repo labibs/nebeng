@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function CartNegoModal({ isOpen, onClose, onSend, data }) {
+  const { t } = useLanguage();
   const [fee, setFee] = useState("");
   const [deliveryLoc, setDeliveryLoc] = useState("");
   const [notes, setNotes] = useState("");
@@ -76,9 +78,9 @@ export default function CartNegoModal({ isOpen, onClose, onSend, data }) {
           </div>
 
           <div className="px-6 pt-2 pb-4 text-center">
-            <h3 className="text-xl font-bold">Nego Penawaran</h3>
+            <h3 className="text-xl font-bold">{t("Nego Penawaran")}</h3>
             <p className="text-sm text-base-content/70 mt-1">
-              Sesuaikan tujuan, ongkos, atau catatan
+              {t("Sesuaikan tujuan, ongkos, atau catatan")}
             </p>
           </div>
 
@@ -86,7 +88,7 @@ export default function CartNegoModal({ isOpen, onClose, onSend, data }) {
             <div className="form-control">
               <label className="label py-1">
                 <span className="label-text font-semibold">
-                  Tujuan Pengantaran
+                  {t("Tujuan Pengantaran")}
                 </span>
               </label>
               <input
@@ -100,7 +102,7 @@ export default function CartNegoModal({ isOpen, onClose, onSend, data }) {
             <div className="form-control">
               <label className="label py-1">
                 <span className="label-text font-semibold">
-                  Ongkos / Jastip (Rp)
+                  {t("Ongkos / Jastip (Rp)")}
                 </span>
               </label>
               <div className="relative">
@@ -122,7 +124,7 @@ export default function CartNegoModal({ isOpen, onClose, onSend, data }) {
             <div className="form-control">
               <label className="label py-1">
                 <span className="label-text font-semibold">
-                  Catatan Tambahan
+                  {t("Catatan Tambahan")}
                 </span>
               </label>
               <textarea
@@ -139,13 +141,13 @@ export default function CartNegoModal({ isOpen, onClose, onSend, data }) {
               className="flex-1 btn btn-ghost btn-lg rounded-2xl"
               onClick={onClose}
             >
-              Batal
+              {t("Batal")}
             </button>
             <button
               className="flex-1 btn btn-warning btn-lg rounded-2xl text-white font-bold shadow-lg"
               onClick={handleSend}
             >
-              Kirim Nego
+              {t("Kirim Nego")}
             </button>
           </div>
         </div>

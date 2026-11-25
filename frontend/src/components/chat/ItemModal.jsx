@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Package } from "lucide-react";
 import { uploadPostImage } from "../../lib/uploadPostImage";
+import { useLanguage } from "../../lib/LanguageContext";
 
 export default function ItemModal({
   isOpen,
@@ -8,6 +9,7 @@ export default function ItemModal({
   onSend,
   initialData = {},
 }) {
+  const { t } = useLanguage();
   if (!isOpen) return null;
 
   return (
@@ -27,7 +29,7 @@ export default function ItemModal({
           <div className="px-6 pb-2 flex items-center justify-between flex-shrink-0">
             <h3 className="text-lg font-bold flex items-center gap-2">
               <Package size={20} />
-              Detail Barang Titipan
+              {t("Detail Barang Titipan")}
             </h3>
             <button
               onClick={onClose}
@@ -39,6 +41,7 @@ export default function ItemModal({
 
           <ItemForm
             initialData={initialData}
+            t={t}
             onSend={onSend}
             onClose={onClose}
           />
@@ -49,7 +52,7 @@ export default function ItemModal({
 }
 
 // Form terpisah agar lebih rapi
-function ItemForm({ initialData, onSend, onClose }) {
+function ItemForm({ initialData, onSend, onClose, t }) {
   const [description, setDescription] = useState(initialData.description || "");
   const [weight, setWeight] = useState(initialData.weight || "");
   const [files, setFiles] = useState([]);
@@ -111,7 +114,7 @@ function ItemForm({ initialData, onSend, onClose }) {
       handleClose();
     } catch (err) {
       console.error("Error uploading item photos:", err);
-      alert("Gagal upload foto barang");
+      alert(t("Gagal upload foto barang"));
     } finally {
       setUploading(false);
     }
@@ -140,12 +143,12 @@ function ItemForm({ initialData, onSend, onClose }) {
         {/* Description */}
         <div>
           <label className="block text-sm font-medium mb-2 text-slate-600">
-            Detail Barang
+            {t("Detail Barang")}
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Jelaskan detail barang (merk, warna, kondisi, dll)"
+            placeholder={t("Jelaskan detail barang (merk, warna, kondisi, dll)")}
             className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 resize-none"
             rows={3}
             required
@@ -155,13 +158,13 @@ function ItemForm({ initialData, onSend, onClose }) {
         {/* Weight/Size */}
         <div>
           <label className="block text-sm font-medium mb-2 text-slate-600">
-            Ukuran & Berat
+            {t("Ukuran & Berat")}
           </label>
           <input
             type="text"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
-            placeholder="Contoh: 30x20x10 cm, 2kg"
+            placeholder={t("Contoh: 30x20x10 cm, 2kg")}
             className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50"
             required
           />
@@ -170,7 +173,7 @@ function ItemForm({ initialData, onSend, onClose }) {
         {/* Photo Upload */}
         <div>
           <label className="block text-sm font-medium mb-2 text-slate-600">
-            Foto Barang ({previewUrls.length}/3)
+            {t("Foto Barang")} ({previewUrls.length}/3)
           </label>
 
           <input
@@ -216,7 +219,7 @@ function ItemForm({ initialData, onSend, onClose }) {
               📸 Foto barang:{" "}
               {previewUrls.length > 0
                 ? `${previewUrls.length} foto`
-                : "Tidak ada foto"}
+                : t("Tidak ada foto")}
             </p>
           </div>
         )}
@@ -228,7 +231,7 @@ function ItemForm({ initialData, onSend, onClose }) {
           disabled={uploading || !description.trim() || !weight.trim()}
           className="w-full flex items-center justify-center gap-2 rounded-2xl bg-[#4e73df] text-white py-3 text-[13px] font-semibold hover:bg-[#3d64c7] transition-colors shadow-sm disabled:opacity-50"
         >
-          {uploading ? "Mengupload..." : "Kirim Detail"}
+          {uploading ? t("Mengupload...") : t("Kirim Detail")}
         </button>
       </div>
     </>

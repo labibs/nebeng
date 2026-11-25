@@ -4,10 +4,11 @@ import {
   differenceInHours,
   differenceInDays,
 } from "date-fns";
-import { id as localeId } from "date-fns/locale";
+import { id as localeId, enUS as localeEn } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { useState, useEffect } from "react";
+import { useLanguage } from "../lib/LanguageContext";
 import L from "leaflet";
 import { apiFetch } from "../lib/apiClient";
 import { createOrReuseDealForPost } from "../lib/dealFlow";
@@ -67,6 +68,9 @@ function FitBounds({ points }) {
 }
 
 export default function PostCard({ post }) {
+  const { t, language } = useLanguage();
+  const dateLocale = language === "en" ? localeEn : localeId;
+  const numberLocale = language === "en" ? "en-US" : "id-ID";
   const navigate = useNavigate();
   const { user: clerkUser, isSignedIn } = useUser();
   const [open, setOpen] = useState(false);
@@ -89,7 +93,7 @@ export default function PostCard({ post }) {
   const poster = post.user || {};
   const posterClerkId = post.clerk_user_id || post.user_id || null;
   const username =
-    poster.name || (post.type === "titip" ? "Titipers" : "Orang Searah");
+    poster.name || (post.type === "titip" ? t("Titipers") : t("Orang Searah"));
   const userAvatar =
     poster.avatar_url ||
     "https://img.freepik.com/free-vector/user-circles-set_78370-4704.jpg";
@@ -105,7 +109,7 @@ export default function PostCard({ post }) {
   const formatRupiah = (value) => {
     const amount = Number(value);
     if (!Number.isFinite(amount)) return "0";
-    return new Intl.NumberFormat("id-ID", {
+    return new Intl.NumberFormat(numberLocale, {
       maximumFractionDigits: 0,
       minimumFractionDigits: 0,
     }).format(Math.trunc(amount));
@@ -179,7 +183,7 @@ export default function PostCard({ post }) {
     try {
       const date = new Date(dateString);
       return format(date, "EEEE, d MMM yyyy • HH:mm", {
-        locale: localeId,
+        locale: dateLocale,
       });
     } catch {
       return "";
@@ -192,13 +196,13 @@ export default function PostCard({ post }) {
       const date = new Date(dateString);
       const now = new Date();
       const minutes = differenceInMinutes(now, date);
-      if (minutes < 1) return "baru saja";
-      if (minutes < 60) return `${minutes} menit yang lalu`;
+      if (minutes < 1) return t("baru saja");
+      if (minutes < 60) return language === "en" ? `${minutes} min ago` : `${minutes} menit yang lalu`;
       const hours = differenceInHours(now, date);
-      if (hours < 24) return `${hours} jam yang lalu`;
+      if (hours < 24) return language === "en" ? `${hours} hr ago` : `${hours} jam yang lalu`;
       const days = differenceInDays(now, date);
-      if (days < 5) return `${days} hari yang lalu`;
-      return format(date, "EEEE, d MMM yyyy", { locale: localeId });
+      if (days < 5) return language === "en" ? `${days} days ago` : `${days} hari yang lalu`;
+      return format(date, "EEEE, d MMM yyyy", { locale: dateLocale });
     } catch {
       return "";
     }
@@ -344,7 +348,7 @@ export default function PostCard({ post }) {
     e.stopPropagation();
 
     if (!isSignedIn) {
-      alert("Kamu harus login dulu untuk menyimpan post!");
+      alert(t("Kamu harus login dulu untuk menyimpan post!"));
       return;
     }
 
@@ -355,7 +359,7 @@ export default function PostCard({ post }) {
     e.stopPropagation();
 
     if (!isSignedIn) {
-      alert("Kamu harus login dulu untuk repost!");
+      alert(t("Kamu harus login dulu untuk repost!"));
       return;
     }
 
@@ -375,9 +379,9 @@ export default function PostCard({ post }) {
       typeof window !== "undefined"
         ? `${window.location.origin}/post/${post.id}`
         : `/post/${post.id}`;
-    const title = post.item_description || post.description || "Numpak post";
+    const title = post.item_description || post.description || t("Numpak post");
     const text =
-      post.description || post.item_description || "Lihat postingan ini.";
+      post.description || post.item_description || t("Lihat postingan ini.");
 
     try {
       if (navigator.share) {
@@ -387,7 +391,7 @@ export default function PostCard({ post }) {
 
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(url);
-        alert("Link post disalin");
+        alert(t("Link post disalin"));
         return;
       }
 
@@ -403,12 +407,12 @@ export default function PostCard({ post }) {
     e.stopPropagation();
 
     if (!isSignedIn) {
-      alert("Kamu harus login dulu untuk deal!");
+      alert(t("Kamu harus login dulu untuk deal!"));
       return;
     }
 
     if (currentUserId === posterClerkId) {
-      alert("Kamu tidak bisa deal dengan postingan sendiri.");
+      alert(t("Kamu tidak bisa deal dengan postingan sendiri."));
       return;
     }
 
@@ -433,7 +437,7 @@ export default function PostCard({ post }) {
       });
 
       if (!dealId) {
-        alert("Gagal memulai deal.");
+        alert(t("Gagal memulai deal."));
         return;
       }
 
@@ -448,7 +452,7 @@ export default function PostCard({ post }) {
         currentUserId,
         posterClerkId,
       });
-      alert("Gagal memulai deal.");
+      alert(t("Gagal memulai deal."));
     } finally {
       setCreatingDeal(false);
     }
@@ -457,7 +461,7 @@ export default function PostCard({ post }) {
   const handleToggleLike = async (e) => {
     e.stopPropagation();
     if (!isSignedIn) {
-      alert("Kamu harus login dulu untuk like!");
+      alert(t("Kamu harus login dulu untuk like!"));
       return;
     }
     if (liking) return;
@@ -486,15 +490,15 @@ export default function PostCard({ post }) {
 
   const handleChatDeal = async () => {
     if (!isSignedIn) {
-      alert("Kamu harus login dulu untuk chat!");
+      alert(t("Kamu harus login dulu untuk chat!"));
       return;
     }
     if (!posterClerkId) {
-      alert("Data user tidak lengkap!");
+      alert(t("Data user tidak lengkap!"));
       return;
     }
     if (currentUserId === posterClerkId) {
-      alert("Gak bisa chat sama diri sendiri dong 😅");
+      alert(t("Gak bisa chat sama diri sendiri dong 😅"));
       return;
     }
     setLoadingChat(true);
@@ -514,7 +518,7 @@ export default function PostCard({ post }) {
             method: 'POST',
             body: JSON.stringify({
               conversation_id: conversationId,
-              content: 'Saya tertarik dengan penawaran ini.',
+              content: t("Saya tertarik dengan penawaran ini."),
               message_type: 'post_card',
               post_id: post.id,
             }),
@@ -527,7 +531,7 @@ export default function PostCard({ post }) {
       navigate(`/chat/${conversationId}`);
     } catch (error) {
       console.error("Error membuka chat:", error);
-      alert("Gagal membuka chat. Coba lagi ya!");
+      alert(t("Gagal membuka chat. Coba lagi ya!"));
     } finally {
       setLoadingChat(false);
     }
@@ -547,7 +551,7 @@ export default function PostCard({ post }) {
       >
         <LazyImage
           src={itemPhoto}
-          alt="Item"
+          alt={t("Foto item")}
           className="w-full h-full object-cover"
         />
       </div>
@@ -600,7 +604,7 @@ export default function PostCard({ post }) {
           >
             <span className="text-base">{config.icon}</span>
             <span className="text-xs font-medium text-white capitalize">
-              {config.label}
+              {t(config.label)}
             </span>
             <svg
               className={`w-3 h-3 text-white/70 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
@@ -714,14 +718,14 @@ export default function PostCard({ post }) {
                           className="pointer-events-auto bg-white/90 backdrop-blur shadow-lg px-3 py-1.5 rounded-full text-black font-bold text-xs flex items-center gap-1.5 active:scale-95 transition"
                         >
                           <ArrowLeft size={14} strokeWidth={3} />
-                          Kembali
+                          {t("Kembali")}
                         </button>
                         <div className="bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
                           {inlineMapMode === "dari"
-                            ? "Lokasi Asal"
+                            ? t("Lokasi Asal")
                             : inlineMapMode === "ke"
-                              ? "Lokasi Tujuan"
-                              : "Rute Perjalanan"}
+                              ? t("Lokasi Tujuan")
+                              : t("Rute Perjalanan")}
                         </div>
                       </div>
 
@@ -776,14 +780,14 @@ export default function PostCard({ post }) {
                             <div className="flex items-center gap-1.5 mb-1">
                               <span className="text-base">{config.icon}</span>
                               <h3 className="font-bold text-base truncate leading-tight">
-                                {config.label.charAt(0).toUpperCase() +
-                                  config.label.slice(1)}
+                                {t(config.label).charAt(0).toUpperCase() +
+                                  t(config.label).slice(1)}
                               </h3>
                             </div>
                             <div className="flex items-center gap-1.5 text-white/80">
                               <CalendarClock size={12} className="shrink-0" />
                               <p className="text-xs font-medium leading-tight">
-                                {displayDate || "Waktu fleksibel"}
+                                {displayDate || t("Waktu fleksibel")}
                               </p>
                             </div>
                           </div>
@@ -792,7 +796,7 @@ export default function PostCard({ post }) {
                         {/* Ongkos (Bottom of Left Column) */}
                         <div className="flex items-baseline gap-2">
                           <span className="text-xs font-bold text-white/60">
-                            Ongkos
+                            {t("Ongkos")}
                           </span>
                           <div className="flex items-baseline gap-1">
                             <span className="text-sm font-bold">Rp</span>
@@ -813,7 +817,7 @@ export default function PostCard({ post }) {
                           className="w-12 h-12 bg-white/15 rounded-lg flex flex-col items-center justify-center hover:bg-white/25 transition border border-white/10 group shadow-sm"
                         >
                           <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
-                            Dari
+                            {t("Dari")}
                           </span>
                           <MapPin size={14} className="text-white" />
                         </button>
@@ -826,7 +830,7 @@ export default function PostCard({ post }) {
                           className="w-12 h-12 bg-white/15 rounded-lg flex flex-col items-center justify-center hover:bg-white/25 transition border border-white/10 group shadow-sm"
                         >
                           <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
-                            Ke
+                            {t("Ke")}
                           </span>
                           <MapPin size={14} className="text-white" />
                         </button>
@@ -839,7 +843,7 @@ export default function PostCard({ post }) {
                           className="w-12 h-12 bg-white/20 rounded-lg flex flex-col items-center justify-center hover:bg-white/30 transition border border-white/10 group shadow-sm"
                         >
                           <span className="text-[9px] font-bold text-white/60 mb-0.5 leading-none">
-                            Rute
+                            {t("Rute")}
                           </span>
                           <Navigation size={14} className="text-white" />
                         </button>
@@ -859,7 +863,7 @@ export default function PostCard({ post }) {
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
                       <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider">
-                        Asal
+                        {t("Asal")}
                       </p>
                     </div>
                     <p className="text-sm font-semibold text-white leading-relaxed">
@@ -876,7 +880,7 @@ export default function PostCard({ post }) {
                           }}
                           className="ml-1 text-sky-400 font-bold hover:text-sky-300"
                         >
-                          {fromExpanded ? "Tutup" : "Selengkapnya"}
+                          {fromExpanded ? t("Tutup") : t("Selengkapnya")}
                         </button>
                       )}
                     </p>
@@ -889,7 +893,7 @@ export default function PostCard({ post }) {
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-2.5 h-2.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.5)]" />
                       <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider">
-                        Tujuan
+                        {t("Tujuan")}
                       </p>
                     </div>
                     <p className="text-sm font-semibold text-white leading-relaxed">
@@ -906,7 +910,7 @@ export default function PostCard({ post }) {
                           }}
                           className="ml-1 text-sky-400 font-bold hover:text-sky-300"
                         >
-                          {toExpanded ? "Tutup" : "Selengkapnya"}
+                          {toExpanded ? t("Tutup") : t("Selengkapnya")}
                         </button>
                       )}
                     </p>
@@ -916,7 +920,7 @@ export default function PostCard({ post }) {
                 {post.description && (
                   <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
                     <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
-                      Deskripsi
+                      {t("Deskripsi")}
                     </p>
                     <p className="text-sm text-white/90 leading-relaxed line-clamp-4">
                       {post.description}
@@ -928,8 +932,8 @@ export default function PostCard({ post }) {
                     <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
                       {post.type === "nitip_bawakan" ||
                       post.type === "nitip_belikan"
-                        ? "Barang yang dititipkan"
-                        : "Info tambahan"}
+                        ? t("Barang yang dititipkan")
+                        : t("Info tambahan")}
                     </p>
                     <p className="text-sm text-white/90 leading-relaxed line-clamp-4">
                       {post.item_description}
@@ -940,8 +944,8 @@ export default function PostCard({ post }) {
                   <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
                     <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
                       {isTitip
-                        ? "Perkiraan harga barang"
-                        : "Harga barang maksimal"}
+                        ? t("Perkiraan harga barang")
+                        : t("Harga barang maksimal")}
                     </p>
                     <p className="text-base font-bold text-white">
                       Rp{formatRupiah(post.price)}
@@ -951,7 +955,7 @@ export default function PostCard({ post }) {
                 {post.armada && (
                   <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
                     <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
-                      Armada
+                      {t("Armada")}
                     </p>
                     <div className="flex items-center gap-2">
                       <ArmadaIcon type={post.armada} />
@@ -964,10 +968,10 @@ export default function PostCard({ post }) {
                 {post.location && post.location.lat && post.location.lng && (
                   <div className="flex-shrink-0 w-72 snap-start rounded-2xl bg-white/10 p-4 border border-white/15 shadow-sm">
                     <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
-                      Lokasi
+                      {t("Lokasi")}
                     </p>
                     <p className="text-sm font-semibold text-white mb-1">
-                      {post.location.name || "Lokasi"}
+                      {post.location.name || t("Lokasi")}
                     </p>
                     {post.location.address && (
                       <p className="text-xs text-white/70 mb-2">
@@ -983,7 +987,7 @@ export default function PostCard({ post }) {
                       onClick={(e) => e.stopPropagation()}
                       className="text-xs text-sky-300 hover:text-sky-200 underline"
                     >
-                      Buka maps →
+                      {t("Buka maps")} →
                     </a>
                   </div>
                 )}
@@ -994,6 +998,7 @@ export default function PostCard({ post }) {
             {post.type !== "content" && (
               <div className="flex items-center justify-between pt-4 border-t border-white/10 px-1">
                 <button
+                  aria-label={t("Suka")}
                   className="flex flex-col items-center gap-1 group"
                   onClick={handleToggleLike}
                   disabled={liking}
@@ -1010,6 +1015,7 @@ export default function PostCard({ post }) {
                 </button>
 
                 <button
+                  aria-label={t("Komentar")}
                   className="flex flex-col items-center gap-1 group"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -1028,6 +1034,7 @@ export default function PostCard({ post }) {
                 </button>
 
                 <button
+                  aria-label={t("Chat dengan pemilik")}
                   className="flex flex-col items-center gap-1 group"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -1042,12 +1049,13 @@ export default function PostCard({ post }) {
                     />
                   </div>
                   <span className="text-[10px] font-bold text-white/60 tracking-tight">
-                    Chat
+                    {t("Chat")}
                   </span>
                 </button>
 
                 {/* CENTER PIECE: DEAL */}
                 <button
+                  aria-label={t("Ajukan deal")}
                   className="flex flex-col items-center gap-1.5 -mt-2 group"
                   onClick={handleDirectDeal}
                   disabled={creatingDeal}
@@ -1060,11 +1068,12 @@ export default function PostCard({ post }) {
                     />
                   </div>
                   <span className="text-[11px] font-black text-emerald-400 tracking-wider uppercase">
-                    {creatingDeal ? "Memproses" : "Deal"}
+                    {creatingDeal ? t("Memproses") : t("Deal")}
                   </span>
                 </button>
 
                 <button
+                  aria-label={t("Bagikan ulang post")}
                   className="flex flex-col items-center gap-1 group"
                   onClick={handleRepost}
                 >
@@ -1075,11 +1084,12 @@ export default function PostCard({ post }) {
                     />
                   </div>
                   <span className="text-[10px] font-bold text-white/60 tracking-tight">
-                    Repost
+                    {t("Repost")}
                   </span>
                 </button>
 
                 <button
+                  aria-label={saved ? t("Hapus dari tersimpan") : t("Simpan post")}
                   className="flex flex-col items-center gap-1 group"
                   onClick={handleToggleSave}
                 >
@@ -1090,11 +1100,12 @@ export default function PostCard({ post }) {
                     />
                   </div>
                   <span className="text-[10px] font-bold text-white/60 tracking-tight">
-                    {saved ? "Tersimpan" : "Simpan"}
+                    {saved ? t("Tersimpan") : t("Simpan")}
                   </span>
                 </button>
 
                 <button
+                  aria-label={t("Bagikan post")}
                   className="flex flex-col items-center gap-1 group"
                   onClick={handleShare}
                 >
@@ -1105,7 +1116,7 @@ export default function PostCard({ post }) {
                     />
                   </div>
                   <span className="text-[10px] font-bold text-white/60 tracking-tight">
-                    Share
+                    {t("Bagikan")}
                   </span>
                 </button>
               </div>
@@ -1137,7 +1148,7 @@ export default function PostCard({ post }) {
         latitude={post.from_lat}
         longitude={post.from_lng}
         address={post.from_city}
-        title="Lokasi Penjemputan"
+        title={t("Lokasi Penjemputan")}
       />
 
       {/* Ke Map Modal */}
@@ -1147,7 +1158,7 @@ export default function PostCard({ post }) {
         latitude={post.to_lat}
         longitude={post.to_lng}
         address={post.to_city}
-        title="Lokasi Tujuan"
+        title={t("Lokasi Tujuan")}
       />
 
       {/* Full Screen Image Viewer Modal */}
@@ -1160,6 +1171,7 @@ export default function PostCard({ post }) {
         {/* Close Button */}
         <button
           className="absolute top-10 right-6 z-[10001] bg-white/20 hover:bg-white/30 p-2.5 rounded-full backdrop-blur-md transition-colors border border-white/20"
+          aria-label={t("Tutup")}
           onClick={(e) => {
             e.stopPropagation();
             setFullImageOpen(false);
@@ -1171,7 +1183,7 @@ export default function PostCard({ post }) {
         <div className="w-full h-full p-4 flex items-center justify-center">
           <img
             src={itemPhoto}
-            alt="Full view"
+            alt={t("Tampilan penuh")}
             className={`max-w-full max-h-full object-contain transition-transform duration-500 ${
               fullImageOpen ? "scale-100" : "scale-90"
             }`}
@@ -1182,7 +1194,7 @@ export default function PostCard({ post }) {
         {/* Tips */}
         <div className="absolute bottom-10 left-0 right-0 text-center">
           <p className="text-white/40 text-xs font-medium tracking-wide uppercase">
-            Ketuk di mana saja untuk kembali
+            {t("Ketuk di mana saja untuk kembali")}
           </p>
         </div>
       </div>

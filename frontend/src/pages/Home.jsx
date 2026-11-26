@@ -414,12 +414,12 @@ export default function Home() {
             aria-label={t("Ngobrol untuk cari jasa")}
             className="rounded-full transition hover:-translate-y-0.5 active:scale-95"
           >
-            <AgentAvatar className="h-12 w-12 shadow-[0_10px_30px_rgba(78,80,190,0.4)]" />
+            <AgentAvatar className="h-12 w-12 shadow-[0_4px_12px_rgba(78,80,190,0.18)]" />
           </button>
           <div className={`overflow-hidden transition-all duration-300 ease-out ${isAiBubbleExpanded ? "max-w-48 opacity-100" : "max-w-0 opacity-0"}`}>
             <div
               aria-hidden={!isAiBubbleExpanded}
-              className="whitespace-nowrap rounded-full border border-white/80 bg-gradient-to-r from-violet-600 to-blue-600 py-2.5 pl-4 pr-7 text-left text-white shadow-[0_10px_30px_rgba(78,80,190,0.4)]"
+              className="whitespace-nowrap rounded-full border border-white/80 bg-gradient-to-r from-violet-600 to-blue-600 py-2.5 pl-4 pr-4 text-left text-white shadow-[0_4px_12px_rgba(78,80,190,0.18)]"
             >
               <span className="block text-[13px] font-bold">{t("Butuh bantuan?")}</span>
               <span className="block text-[10px] text-white/80">{t("Yuk, ngobrol")}</span>

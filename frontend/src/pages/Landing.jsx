@@ -6,7 +6,7 @@ import {
 } from "@clerk/clerk-react";
 import { Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { ArrowUpRight, X } from "lucide-react";
+import { ArrowUpRight, Languages, X } from "lucide-react";
 import { useLanguage } from "../lib/LanguageContext";
 
 const versionHistory = [
@@ -68,7 +68,7 @@ const versionHistory = [
 ];
 
 export default function Landing() {
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showVersionLog, setShowVersionLog] = useState(false);
 
@@ -193,6 +193,17 @@ export default function Landing() {
 
       <SignedOut>
         <div className="relative min-h-screen bg-[#f0f7ff] flex flex-col items-center justify-start sm:justify-center px-6 py-2 overflow-hidden text-slate-900">
+          <button
+            type="button"
+            onClick={() => setLanguage(language === "en" ? "id" : "en")}
+            aria-label={t("Ganti bahasa")}
+            title={t("Ganti bahasa")}
+            className="absolute right-4 top-4 z-20 inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-2 text-sm font-bold text-slate-700 shadow-sm backdrop-blur transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4e73df]"
+          >
+            <Languages size={16} aria-hidden="true" />
+            <span>{language === "en" ? "EN" : "ID"}</span>
+          </button>
+
           {/* Animated Background blobs like in Market page */}
           <div className="absolute -left-20 -top-20 h-80 w-80 rounded-full bg-blue-200/50 blur-3xl opacity-60" />
           <div className="absolute -right-20 top-60 h-[400px] w-[400px] rounded-full bg-blue-100/50 blur-3xl opacity-60" />

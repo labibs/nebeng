@@ -1,35 +1,24 @@
-# Environment
-.env
-.env.local
-.env.*.local
-
-# Compiled binaries
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-backend.exe
-backend_test.exe
-server
-
-# Test binary
-*.test
-
-# Go workspace
-go.work
-go.work.sum
-
-# Build output
-/dist
-/tmp
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
+*.log
 .DS_Store
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+Homestead.json
+Homestead.yaml
 Thumbs.db
